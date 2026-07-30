@@ -767,13 +767,8 @@
       // this component itself writes so nav doesn't trigger spurious
       // refreshes — except data-deck-skip, which now arrives from the host
       // re-render and is what updates the rail badge, print bookkeeping,
-      // and deckSkipped re-broadcast. Also ignore data-dc-tpl /
-      // data-om-slide-id — host-reserved bookkeeping stamps (the host's
-      // ATTR_RESERVED guard bounds them the same way) that structural
-      // edits renumber/re-mint on slides whose content didn't change;
-      // re-cloning on that churn is what made a slide move flash its
-      // thumbnails.
-      const OWN_ATTRS = /^data-(deck-(?!skip$)|screen-label$|om-(validate|slide-id)$|dc-tpl$)/;
+      // and deckSkipped re-broadcast.
+      const OWN_ATTRS = /^data-(deck-(?!skip$)|screen-label$|om-validate$)/;
       this._liveDirty = new Set();
       this._liveObserver = new MutationObserver((records) => {
         for (const r of records) {
@@ -2033,28 +2028,7 @@
         // instead keep it and emit a batched move.)
         this._clearSelection();
         this._dragFrom = idx();
-        // Deferred to the next frame: the [data-dragging] rule sets
-        // pointer-events:none on the drag SOURCE, and applying that
-        // synchronously inside dragstart makes Chromium (and WebKit) cancel
-        // the drag — dragstart then an immediate dragend, no dragover or
-        // drop, so thumbnails could not be reordered by dragging at all.
-        // One frame is invisible and lands before the first dragover needs
-        // the source to be hit-test-transparent. Guarded twice so the
-        // attribute can never strand on a thumb that is no longer being
-        // dragged (pointer-events:none would leave it unclickable for the
-        // session): the pending frame is cancelled in dragend
-        // (_cancelDragAttr), and the callback itself re-checks that THIS
-        // thumb is still the live drag source (a new drag on another thumb
-        // re-points the drag state). Deliberately NOT cancelled in
-        // _stopDragTrack — _startDragTrack calls it at the start of every
-        // drag, which would kill the mark this dragstart just scheduled
-        // (see _cancelDragAttr).
-        this._dragAttrRaf = requestAnimationFrame(() => {
-          this._dragAttrRaf = null;
-          if (this._dragFrom != null && this._dragThumb === thumb) {
-            thumb.setAttribute('data-dragging', '');
-          }
-        });
+        thumb.setAttribute('data-dragging', '');
         e.dataTransfer.effectAllowed = 'move';
         try { e.dataTransfer.setData('text/plain', String(this._dragFrom)); } catch (err) {}
         // Constrain the drag visual to the rail's vertical axis. The
@@ -2068,7 +2042,6 @@
         this._startDragTrack(thumb, e.clientY);
       });
       thumb.addEventListener('dragend', () => {
-        this._cancelDragAttr();
         thumb.removeAttribute('data-dragging');
         this._stopDragTrack();
         this._clearDrop();
@@ -2431,30 +2404,6 @@
         t.style.transform = 'translateY(' + this._dragTy + 'px)';
       };
       document.addEventListener('dragover', this._onDragTrack, true);
-    }
-
-    /** Cancel the thumb's deferred data-dragging mark if its frame has not
-     *  fired yet — see the dragstart deferral. Called from dragend only:
-     *  _stopDragTrack is the wrong home for it, because _startDragTrack
-     *  defensively calls _stopDragTrack at the START of every drag (its
-     *  lost-dragend reset), so a cancel there kills the mark the same
-     *  dragstart just scheduled. The strand that matters — pointer-
-     *  events:none left on a CONNECTED thumb that is no longer being
-     *  dragged — is closed two ways: dragend cancels the pending frame
-     *  here, and the frame callback re-checks that THIS thumb is still the
-     *  live drag source (_dragFrom and _dragThumb, both cleared/re-pointed
-     *  by dragend or by a new drag). The remaining lost-dragend case — the
-     *  source slide removed mid-drag, so no dragend fires — ends with that
-     *  thumb discarded by the rail reconcile (thumbs are keyed by slide
-     *  element and a removed slide's thumb is not reused), so a mark landing
-     *  on it is on a discarded node. The risk this defer adds over the old
-     *  synchronous set is therefore the narrow rAF-after-dragend window,
-     *  which the dragend cancel covers. */
-    _cancelDragAttr() {
-      if (this._dragAttrRaf != null) {
-        cancelAnimationFrame(this._dragAttrRaf);
-        this._dragAttrRaf = null;
-      }
     }
 
     _stopDragTrack() {

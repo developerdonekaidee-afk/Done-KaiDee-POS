@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="gate.js?v=p2-20260730k"></script>
 <meta charset="UTF-8">
-<meta name="build" content="p2-20260730k">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KaiDee POS — Back Office (แอดมินคนขาย)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,6 +112,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../doc-templates.js"></script>
 
 <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
@@ -164,16 +163,21 @@ function TrialGrantTool(){
     </div>
   </div>);
 }
-const DEFAULT_PKG={ trialDays:30, trialQuota:1, uatCodes:[], deviceAddon:79, addonFreeDays:30, packages:[
-  {id:'shop',name:'ร้านค้า',seats:1,monthly:199,yearly:1990},
-  {id:'pro', name:'ร้านค้า พลัส',seats:3,monthly:299,yearly:2990},
-] };
+const DEFAULT_PKG={ trialDays:30, trialQuota:1, uatCodes:[], deviceAddon:79, addonFreeDays:30, earlyBird:true, autoDebit:false,
+  addon:{ consign:{ name:'ขายฝาก', monthly:129, yearly:1290 } },
+  packages:[
+    {id:'starter',name:'เริ่มต้น',seats:1,monthly:99, yearly:990,  modules:{orders:true,delivery:false,reports:true,stock:true,backoffice:false},consign:false},
+    {id:'shop',   name:'ร้านค้า', seats:3,monthly:299,yearly:2990, modules:{orders:true,delivery:true, reports:true,stock:true,backoffice:false},consign:false},
+    {id:'pro',    name:'โปร',     seats:10,monthly:599,yearly:5990,modules:{orders:true,delivery:true, reports:true,stock:true,backoffice:true}, consign:false},
+  ] };
 function _migratePkg(a){ if(!a||typeof a!=='object') return null;
-  const addon=(a.addon&&a.addon.consign)?a.addon:{consign:{name:'ขายฝาก',monthly:129,yearly:1290}}; const earlyBird=a.earlyBird!==false;
+  const addon = (a.addon&&a.addon.consign) ? a.addon : { consign:{ name:'ขายฝาก', monthly:129, yearly:1290 } };
+  const earlyBird = a.earlyBird!==false;
   if(Array.isArray(a.packages)) return { trialDays:a.trialDays||30, trialQuota:a.trialQuota!=null?a.trialQuota:1, uatCodes:Array.isArray(a.uatCodes)?a.uatCodes:[], deviceAddon:a.deviceAddon!=null?a.deviceAddon:79, addonFreeDays:a.addonFreeDays!=null?a.addonFreeDays:30, autoDebit:!!a.autoDebit, earlyBird, addon, packages:a.packages };
   if(a.shop) return { trialDays:a.trialDays||30, trialQuota:a.trialQuota!=null?a.trialQuota:1, uatCodes:Array.isArray(a.uatCodes)?a.uatCodes:[], deviceAddon:a.deviceAddon!=null?a.deviceAddon:79, addonFreeDays:a.addonFreeDays!=null?a.addonFreeDays:30, autoDebit:!!a.autoDebit, earlyBird, addon, packages:[
-    {id:'shop',name:a.shop.name||'ร้านค้า',seats:a.shop.seats||1,monthly:a.shop.price||199,yearly:a.shop.yearly||1990},
-    {id:'pro', name:(a.pro&&a.pro.name)||'ร้านค้า พลัส',seats:(a.pro&&a.pro.seats)||3,monthly:(a.pro&&a.pro.price)||299,yearly:(a.pro&&a.pro.yearly)||2990},
+    {id:'starter',name:'เริ่มต้น',seats:1,monthly:99,yearly:990,modules:{orders:true,delivery:false,reports:true,stock:true},consign:false},
+    {id:'shop',name:a.shop.name||'ร้านค้า',seats:a.shop.seats||3,monthly:a.shop.price||a.shop.monthly||299,yearly:a.shop.yearly||2990,modules:{orders:true,delivery:true,reports:true,stock:true},consign:false},
+    {id:'pro', name:(a.pro&&a.pro.name)||'โปร',seats:(a.pro&&a.pro.seats)||10,monthly:(a.pro&&(a.pro.price||a.pro.monthly))||599,yearly:(a.pro&&a.pro.yearly)||5990,modules:{orders:true,delivery:true,reports:true,stock:true,backoffice:true},consign:false},
   ] };
   return null; }
 const loadPkg=()=>{ try{ const a=_migratePkg(JSON.parse(localStorage.getItem(PKG_LS))); if(a) return a; }catch(e){} return JSON.parse(JSON.stringify(DEFAULT_PKG)); };
@@ -289,12 +293,12 @@ function App(){
 
   if(!authed) return <Login onOk={()=>{ sessionStorage.setItem('kd_admin','1'); setAuthed(true); }}/>;
 
-  const nav = [['overview','📊','ภาพรวม'],['shops','🏪','ร้านค้า'],['payreq','🧾','คำขอชำระ'],['codereq','🔑','คำขอรหัส Office'],['billing','💳','การเงิน'],['wallets','👛','กระเป๋าเงิน'],['license','🔐','สิทธิ์ร้าน'],['support','💬','ช่วยเหลือ'],['settings','⚙️','ตั้งค่า']];
+  const nav = [['overview','📊','ภาพรวม'],['shops','🏪','ร้านค้า'],['payreq','🧾','คำขอชำระ'],['codereq','🔑','คำขอรหัส Office'],['deletions','🗑️','การลบร้าน'],['billing','💳','การเงิน'],['license','🔐','สิทธิ์ร้าน'],['docs','📄','เอกสาร'],['support','💬','ช่วยเหลือ'],['settings','⚙️','ตั้งค่า']];
   const selShop = sel ? db.shops.find(s=>s.id===sel) : null;
   return (
     <div className="app">
       <aside className="side">
-        <div className="logo"><div className="logo-mk">🍽️</div>
+        <div className="logo"><div className="logo-mk" style={{overflow:'hidden',background:'#fff'}}><img src="../assets/kaidee-logo.png" alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>
           <div><div style={{color:'#fff',fontWeight:700,fontSize:15.5}}>KaiDee POS</div><div style={{fontSize:11.5,color:'#7fa89c'}}>Back Office</div></div></div>
         {nav.map(([k,ic,l])=>(<button key={k} className={'nav'+(tab===k?' on':'')} onClick={()=>setTab(k)}><span className="ic">{ic}</span>{l}{k==='payreq'&&pendingPay>0&&<span className="navbadge">{pendingPay}</span>}</button>))}
         <div style={{marginTop:'auto',padding:'14px 10px 4px',borderTop:'1px solid rgba(255,255,255,.08)'}}>
@@ -319,10 +323,11 @@ function App(){
           {tab==='shops'    && <Shops db={db} onOpen={setSel}/>}
           {tab==='payreq'   && <PayRequests db={db} update={update} onPending={setPendingPay}/>}
           {tab==='codereq'  && <CodeRequests/>}
+          {tab==='deletions'&& <DeletionLog/>}
           {tab==='billing'  && <Billing db={db}/>}
-          {tab==='wallets'  && <Wallets/>}
           {tab==='support'  && <Support db={db}/>}
           {tab==='license'  && <LicenseAdmin/>}
+          {tab==='docs'     && <DocTemplates/>}
           {tab==='settings' && <Settings/>}
         </div>
       </main>
@@ -333,9 +338,59 @@ function App(){
 }
 
 /* ══ LOGIN ══ */
+function ResetSheet({onClose,onDone}){
+  const [step,setStep]=useState(1); const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState(''); const [msg,setMsg]=useState('');
+  const [phone,setPhone]=useState(''); const [otp,setOtp]=useState('');
+  const [p1,setP1]=useState(''); const [p2,setP2]=useState('');
+  const send=async()=>{ if(busy)return; setBusy(true); setErr(''); setMsg('');
+    try{ const r=await fetch(KD_API_BASE+'/admin/reset/request',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.ok){ setPhone(j.phone||''); setStep(2); setMsg('ส่งรหัส 6 หลักไป'+(j.via==='line'?' ทาง LINE ':' ทาง SMS ')+'เบอร์ '+(j.phone||'')+' · ใช้ได้ 10 นาที'); }
+      else setErr(j.error||('ส่งไม่สำเร็จ (HTTP '+r.status+')'));
+    }catch(e){ setErr('เชื่อมเซิร์ฟเวอร์ไม่ได้'); }
+    setBusy(false); };
+  const confirm=async()=>{ if(busy)return; setErr('');
+    if(otp.replace(/\D/g,'').length!==6){ setErr('กรอกรหัสยืนยัน 6 หลัก'); return; }
+    if(p1.length<6){ setErr('รหัสใหม่อย่างน้อย 6 ตัว'); return; }
+    if(p1!==p2){ setErr('รหัสใหม่สองช่องไม่ตรงกัน'); return; }
+    setBusy(true);
+    try{ const r=await fetch(KD_API_BASE+'/admin/reset/confirm',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({otp:otp.replace(/\D/g,''),next:p1})});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.ok){ if(j.token){ try{ sessionStorage.setItem('kd_admin_tok',j.token); }catch(e){} } setAdminPass(p1); setBusy(false); onDone(!!j.token); return; }
+      setErr(j.error||('ยืนยันไม่สำเร็จ (HTTP '+r.status+')'));
+    }catch(e){ setErr('เชื่อมเซิร์ฟเวอร์ไม่ได้'); }
+    setBusy(false); };
+  const inSt={width:'100%',marginTop:7,padding:'12px 14px'};
+  return (<div style={{position:'fixed',inset:0,background:'rgba(16,22,19,.5)',zIndex:60,display:'flex',alignItems:'center',justifyContent:'center',padding:18}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="card fade" style={{width:'100%',maxWidth:400,padding:22}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+        <div style={{fontWeight:700,fontSize:16.5,flex:1}}>รีเซ็ตรหัสแอดมิน</div>
+        <button className="btn sm" onClick={onClose}>✕</button>
+      </div>
+      <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.6,marginBottom:14}}>ระบบส่งรหัสยืนยัน 6 หลักไปเบอร์เจ้าของระบบที่ลงทะเบียนไว้ (ไม่ต้องกรอกเบอร์ · กันคนอื่นกดรีเซ็ต)</div>
+      {step===1 ? (<React.Fragment>
+        <button className="btn pri" style={{width:'100%',justifyContent:'center',padding:13,opacity:busy?.6:1}} onClick={send}>{busy?'กำลังส่ง…':'ส่งรหัสยืนยัน'}</button>
+      </React.Fragment>) : (<React.Fragment>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)'}}>รหัสยืนยัน 6 หลัก {phone&&<span style={{fontWeight:600,color:'var(--ink-3)'}}>· ส่งไป {phone}</span>}</label>
+        <input className="in mono" inputMode="numeric" maxLength={6} value={otp} onChange={e=>{setOtp(e.target.value);setErr('');}} placeholder="● ● ● ● ● ●" style={{...inSt,letterSpacing:4,fontSize:18,textAlign:'center'}} autoFocus/>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)',display:'block',marginTop:13}}>รหัสใหม่ (อย่างน้อย 6 ตัว)</label>
+        <input className="in" type="password" value={p1} onChange={e=>{setP1(e.target.value);setErr('');}} style={inSt}/>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)',display:'block',marginTop:13}}>ยืนยันรหัสใหม่</label>
+        <input className="in" type="password" value={p2} onChange={e=>{setP2(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&confirm()} style={inSt}/>
+        <div style={{display:'flex',gap:9,marginTop:16}}>
+          <button className="btn" style={{flex:'0 0 auto',padding:'13px 14px',opacity:busy?.6:1}} onClick={send}>ส่งใหม่</button>
+          <button className="btn pri" style={{flex:1,justifyContent:'center',padding:13,opacity:busy?.6:1}} onClick={confirm}>{busy?'กำลังตั้งรหัส…':'ตั้งรหัสใหม่ + เข้าระบบ'}</button>
+        </div>
+      </React.Fragment>)}
+      {msg&&!err&&<div style={{color:'var(--brand-ink)',fontSize:12.5,marginTop:11,fontWeight:600,lineHeight:1.6}}>{msg}</div>}
+      {err&&<div style={{color:'var(--danger)',fontSize:12.5,marginTop:11,fontWeight:600,lineHeight:1.6}}>{err}</div>}
+    </div>
+  </div>);
+}
 function Login({onOk}){
   const [pw,setPw]=useState(''); const [err,setErr]=useState('');
-  const [busy,setBusy]=useState(false);
+  const [busy,setBusy]=useState(false); const [reset,setReset]=useState(false);
   const go=async()=>{ if(busy)return; setErr(''); setBusy(true);
     // ลองล็อกอินกับ backend ก่อน (รหัสกลาง แชร์ทุกเครื่อง) — ถ้า backend ล่ม fallback รหัสในเครื่อง
     try{ const r=await fetch(KD_API_BASE+'/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:pw})});
@@ -346,7 +401,7 @@ function Login({onOk}){
     if(pw===getAdminPass()){ onOk(); } else setErr('รหัสไม่ถูกต้อง'); };
   return (<div className="login"><div className="box fade">
     <div style={{display:'flex',alignItems:'center',gap:11,marginBottom:6}}>
-      <div className="logo-mk" style={{width:44,height:44,fontSize:23}}>🍽️</div>
+      <div className="logo-mk" style={{width:44,height:44,fontSize:23,overflow:'hidden',background:'#fff'}}><img src="../assets/kaidee-logo.png" alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>
       <div><div style={{fontWeight:700,fontSize:17}}>KaiDee POS</div><div style={{fontSize:12.5,color:'var(--brand-ink)',fontWeight:600}}>Back Office · แอดมินคนขาย</div></div>
     </div>
     <div style={{fontSize:13.5,color:'var(--ink-2)',margin:'12px 0 18px'}}>เข้าสู่ระบบจัดการร้านค้าและการขาย</div>
@@ -354,7 +409,8 @@ function Login({onOk}){
     <input className="in" type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&go()} placeholder="••••••" style={{width:'100%',marginTop:7,padding:'12px 14px'}} autoFocus/>
     {err&&<div style={{color:'var(--danger)',fontSize:13,marginTop:8,fontWeight:600}}>{err}</div>}
     <button className="btn pri" style={{width:'100%',justifyContent:'center',marginTop:16,padding:'13px',opacity:busy?.6:1}} onClick={go}>{busy?'กำลังตรวจสอบ…':'เข้าสู่ระบบ'}</button>
-    <div style={{fontSize:11.5,color:'var(--ink-3)',textAlign:'center',marginTop:14}}>รหัสตั้งต้น: <b className="mono">kaidee2026</b> · เปลี่ยนได้ในตั้งค่า (มีผลทุกเครื่องผ่าน backend)</div>
+    <button className="btn" style={{width:'100%',justifyContent:'center',marginTop:9,padding:'11px',fontWeight:600}} onClick={()=>setReset(true)}>ลืมรหัส? รีเซ็ตด้วยรหัสยืนยันทาง SMS</button>
+    {reset&&<ResetSheet onClose={()=>setReset(false)} onDone={()=>{ setReset(false); onOk(); }}/>}
   </div></div>);
 }
 
@@ -521,6 +577,17 @@ function ShopDrawer({shop,onClose,patch,del,onManage}){
         );})}
         <div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:9,lineHeight:1.5}}>หน้าขาย · เปิด/ปิดร้าน · ร้านค้า เปิดใช้เสมอ · เปลี่ยนแล้วมีผลเมื่อแอปร้าน sync (getMyShop)</div>
       </div>
+      {/* add-ons per shop */}
+      <div className="card" style={{padding:'15px 17px',marginTop:18}}>
+        <div style={{fontWeight:700,fontSize:14,marginBottom:3}}>ส่วนเสริม (Add-on) ต่อร้าน</div>
+        <div style={{fontSize:12.5,color:'var(--ink-2)',marginBottom:9,lineHeight:1.5}}>เปิดเมื่อร้านจ่ายค่า add-on เพิ่ม · ร้านช่วงทดลองใช้ = ลองได้อยู่แล้วโดยไม่ต้องเปิด</div>
+        {[['consign','🤝 ระบบขายฝาก (Consignment)']].map(([k,l])=>{ const on=!!(shop.addons&&shop.addons[k]); return (
+          <label key={k} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',cursor:'pointer'}}>
+            <span style={{flex:1,fontSize:13.5,fontWeight:600}}>{l}</span>
+            <input type="checkbox" checked={on} onChange={e=>patch(shop.id,{addons:{...(shop.addons||{}),[k]:e.target.checked}})}/>
+          </label>
+        );})}
+      </div>
       {/* menu & stock manager (admin edits on behalf of shop) */}
       <div className="card" style={{padding:'15px 17px',marginTop:18}}>
         <div style={{fontWeight:700,fontSize:14,marginBottom:3}}>เมนู & สต๊อก (แก้แทนร้าน)</div>
@@ -564,9 +631,10 @@ function ShopDrawer({shop,onClose,patch,del,onManage}){
           <div><div style={{fontWeight:600,fontSize:13.5}}>{money(pm.amt)}</div><div style={{fontSize:11.5,color:'var(--ink-3)'}}>{pm.via}</div></div>
           <div style={{fontSize:12.5,color:'var(--ink-2)'}}>{fmtDate(pm.d)}</div></div>))}
       </div>
-      <div style={{display:'flex',gap:9,marginTop:16}}>
+      <div style={{display:'flex',gap:9,marginTop:16,flexWrap:'wrap'}}>
         <button className="btn line sm" style={{flex:1,justifyContent:'center'}} onClick={()=>window.open('https://chat.line.biz/','_blank')}>💬 ทักแชทร้าน</button>
-        <button className="btn line sm" style={{flex:1,justifyContent:'center'}} onClick={()=>window.open(location.origin+'/?shop='+encodeURIComponent(shop.id)+'&role=merchant','_blank')}>🔗 เปิดหลังบ้านร้าน</button>
+        <button className="btn line sm" style={{flex:1,justifyContent:'center'}} onClick={()=>window.open(location.origin+'/?shop='+encodeURIComponent(shop.id)+'&role=merchant','_blank')}>🔗 เปิดหน้าร้าน</button>
+        <button className="btn blue sm" style={{flex:1,justifyContent:'center'}} onClick={()=>{ location.href=location.pathname.replace(/admin\/?[^/]*$/,'')+'Shop%20Backoffice.html?shop='+encodeURIComponent(shop.id)+'&adminAccess=1'; }}>📊 เปิด Backoffice</button>
       </div>
       {/* danger zone — reset shop data to default */}
       <div className="card" style={{padding:'15px 17px',marginTop:14,border:'1px solid #F3C9C0',background:'#FFF7F5'}}>
@@ -614,81 +682,6 @@ function Billing({db}){
   </div>);
 }
 
-/* ══ WALLETS (กระเป๋าเงินทุกโมดูล · kd_biz_wallet_v1) ══ */
-const KDW_BIZ_KEY='kd_biz_wallet_v1', KDW_PLAT_KEY='kd_platform_wallet_v1';
-const KDW_MODS={pos:['🏪','ร้านค้า POS'],fitness:['🏋️','ฟิตเนส'],market:['🏪','ตลาด'],labor:['🛵','วิน'],app:['📱','อื่นๆ']};
-function kdwReadAll(){ try{ return JSON.parse(localStorage.getItem(KDW_BIZ_KEY))||{}; }catch(e){ return {}; } }
-function kdwWriteAll(all){ try{ localStorage.setItem(KDW_BIZ_KEY,JSON.stringify(all)); }catch(e){} }
-function Wallets(){
-  const [tick,setTick]=useState(0); const [q,setQ]=useState(''); const [open,setOpen]=useState(null);
-  const all=kdwReadAll();
-  const rows=Object.keys(all).map(k=>{ const a=all[k]||{}; const [mod,id]=k.split(':');
-    return {key:k,mod:mod||'app',id:id||'main',balance:Number(a.balance)||0,auto:a.auto!==false,ledger:Array.isArray(a.ledger)?a.ledger:[],updatedAt:a.updatedAt||0}; })
-    .filter(r=>!q||(r.key+' '+((KDW_MODS[r.mod]||[])[1]||'')).toLowerCase().includes(q.toLowerCase()))
-    .sort((a,b)=>b.updatedAt-a.updatedAt);
-  const plat=(()=>{ try{ return JSON.parse(localStorage.getItem(KDW_PLAT_KEY))||{ledger:[]}; }catch(e){ return {ledger:[]}; } })();
-  const platLed=(plat.ledger||[]);
-  const rev30=platLed.filter(x=>x.date&&(Date.now()-new Date(x.date))<30*864e5).reduce((a,x)=>a+(Number(x.amt)||0),0);
-  const revAll=platLed.reduce((a,x)=>a+(Number(x.amt)||0),0);
-  const totBal=rows.reduce((a,r)=>a+r.balance,0);
-  const act=(r,kind)=>{ const raw=prompt((kind==='topup'?'เติมเงินเข้ากระเป๋า ':'หัก/ปรับลดกระเป๋า ')+r.key+'\nยอดคงเหลือขณะนี้ '+money(r.balance)+'\n\nระบุจำนวนเงิน (บาท)','');
-    const v=Math.round((Number(raw)||0)*100)/100; if(!(v>0)) return;
-    if(kind!=='topup'&&v>r.balance){ alert('หักมากกว่ายอดคงเหลือไม่ได้'); return; }
-    const note=prompt('หมายเหตุ (บันทึกในเดินบัชี)', kind==='topup'?'แอดมินเติมเงินให้ (โอน/สลิป)':'แอดมินปรับลดยอด')||'ปรับโดยแอดมิน';
-    const a2=kdwReadAll(); const cur=a2[r.key]||{balance:0,ledger:[],auto:true};
-    const delta=kind==='topup'?v:-v; const bal=Math.round(((Number(cur.balance)||0)+delta)*100)/100;
-    cur.ledger=[...(cur.ledger||[]),{ts:new Date().toISOString(),type:kind==='topup'?'topup':'adjust',amount:delta,bal,note:note+' · Back Office'}];
-    cur.balance=bal; cur.updatedAt=Date.now(); a2[r.key]=cur; kdwWriteAll(a2); setTick(t=>t+1); };
-  const toggleAuto=(r)=>{ const a2=kdwReadAll(); const cur=a2[r.key]||{balance:0,ledger:[],auto:true}; cur.auto=!(cur.auto!==false); cur.updatedAt=Date.now(); a2[r.key]=cur; kdwWriteAll(a2); setTick(t=>t+1); };
-  const openRow=open?rows.find(r=>r.key===open):null;
-  return (<div key={tick}>
-    <div className="kpis" style={{gridTemplateColumns:'repeat(4,1fr)'}}>
-      <Kpi lbl="ยอดเงินค้างในกระเป๋าทั้งหมด" val={money(totBal)} delta={rows.length+' กระเป๋า'} ic="👛"/>
-      <Kpi lbl="รายได้ค่าบริการ 30 วัน" val={money(rev30)} delta={platLed.length+' รายการทั้งหมด'} up ic="📈"/>
-      <Kpi lbl="รายได้สะสมทั้งหมด" val={money(revAll)} delta="หักจากกระเป๋าผู้ใช้" ic="🏦"/>
-      <Kpi lbl="เปิดตัดอัตโนมัติ" val={rows.filter(r=>r.auto).length+'/'+rows.length} delta="ต่ออายุเองเมื่อครบรอบ" ic="🔁"/>
-    </div>
-    <div className="card" style={{overflow:'hidden',marginTop:16}}>
-      <div style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:12,borderBottom:'1px solid var(--hair)'}}>
-        <div style={{fontWeight:700,fontSize:15.5,flex:1}}>กระเป๋าเงินของผู้ใช้ (ทุกโมดูล)</div>
-        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหา pos:shop1 / fitness / market" style={{padding:'8px 11px',borderRadius:9,border:'1px solid var(--hair)',fontSize:13,fontFamily:'inherit',width:250}}/>
-      </div>
-      {rows.length?<table><thead><tr><th>โมดูล</th><th>รหัสธุรกิจ</th><th>ยอดคงเหลือ</th><th>ตัดอัตโนมัติ</th><th>เดินบัญชี</th><th>จัดการ</th></tr></thead><tbody>
-        {rows.map(r=>{ const m=KDW_MODS[r.mod]||KDW_MODS.app; return (<tr key={r.key}>
-          <td><div style={{display:'flex',alignItems:'center',gap:9}}><div className="shopmk" style={{width:30,height:30,fontSize:15}}>{m[0]}</div>{m[1]}</div></td>
-          <td className="num" style={{fontSize:13,color:'var(--ink-2)'}}>{r.id}</td>
-          <td className="num" style={{fontWeight:700}}>{money(r.balance)}</td>
-          <td><button onClick={()=>toggleAuto(r)} className={'badge '+(r.auto?'b-paid':'b-trial')} style={{border:'none',cursor:'pointer'}}>{r.auto?'✓ เปิด':'ปิด'}</button></td>
-          <td className="num" style={{fontSize:13}}>{r.ledger.length} รายการ</td>
-          <td><div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-            <button onClick={()=>act(r,'topup')} className="badge b-paid" style={{border:'none',cursor:'pointer'}}>+ เติมเงิน</button>
-            <button onClick={()=>act(r,'adjust')} className="badge b-expired" style={{border:'none',cursor:'pointer'}}>− ปรับลด</button>
-            <button onClick={()=>setOpen(open===r.key?null:r.key)} className="badge b-trial" style={{border:'none',cursor:'pointer'}}>ดูเดินบัญชี</button>
-          </div></td></tr>); })}
-      </tbody></table>:<div style={{padding:'28px 18px',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีกระเป๋าเงินในเครื่องนี้ — กระเป๋าจะถูกสร้างเมื่อผู้ใช้เติมเงินครั้งแรกจากเมนูแพ็กเกจของแต่ละโมดูล</div>}
-    </div>
-    {openRow && <div className="card" style={{overflow:'hidden',marginTop:16}}>
-      <div style={{padding:'14px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>เดินบัญชีกระเป๋า · {openRow.key}</div>
-      <table><thead><tr><th>เวลา</th><th>รายการ</th><th>จำนวน</th><th>คงเหลือ</th></tr></thead><tbody>
-        {[...openRow.ledger].reverse().slice(0,40).map((l,i)=>(<tr key={i}>
-          <td className="num" style={{fontSize:13}}>{l.ts?new Date(l.ts).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'-'}</td>
-          <td style={{fontSize:13.5}}>{l.note}</td>
-          <td className="num" style={{fontWeight:700,color:(l.amount||0)>0?'var(--brand)':'var(--danger)'}}>{(l.amount||0)>0?'+':''}{money(l.amount||0)}</td>
-          <td className="num" style={{fontSize:13}}>{money(l.bal||0)}</td></tr>))}
-      </tbody></table>
-    </div>}
-    <div className="card" style={{overflow:'hidden',marginTop:16}}>
-      <div style={{padding:'14px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>รายได้ค่าบริการระบบ (หักจากกระเป๋าผู้ใช้)</div>
-      {platLed.length?<table><thead><tr><th>วันที่</th><th>ผู้ใช้</th><th>รายการ</th><th>ช่องทาง</th><th>จำนวน</th></tr></thead><tbody>
-        {platLed.slice(0,20).map((x,i)=>(<tr key={x.id||i}><td className="num" style={{fontSize:13}}>{fmtDate(x.date)}</td>
-          <td style={{fontSize:13.5}}>{x.who}</td><td style={{fontSize:13,color:'var(--ink-2)'}}>{x.sub}</td>
-          <td style={{fontSize:13,color:'var(--ink-2)'}}>{x.method||'กระเป๋าเงิน'}</td>
-          <td className="num" style={{fontWeight:700}}>{money(x.amt||0)}</td></tr>))}
-      </tbody></table>:<div style={{padding:'28px 18px',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีรายได้บันทึกไว้</div>}
-    </div>
-  </div>);
-}
-
 /* ══ SUPPORT ══ */
 function Support({db}){
   const pri=p=>p==='สูง'?{background:'var(--danger-soft)',color:'var(--danger)'}:p==='กลาง'?{background:'var(--gold-soft)',color:'#B9781C'}:{background:'#EEF0EF',color:'var(--ink-2)'};
@@ -708,6 +701,47 @@ function Support({db}){
           <td style={{fontSize:13,color:'var(--ink-3)'}}>{t.when}</td><td><button className="btn ghost sm">ตอบ</button></td></tr>);})}
       </tbody></table>
     </div>
+  </div>);
+}
+
+/* ══ SETTINGS ══ */
+function DocTemplates(){
+  const KD=window.KD_DOC;
+  const [list,setList]=useState(()=>KD?KD.load():[]);
+  const [msg,setMsg]=useState('');
+  const upd=(i,k,v)=>setList(a=>a.map((x,j)=>j===i?{...x,[k]:v}:x));
+  const add=()=>setList(a=>[...a,{id:'doc'+Date.now().toString(36),cat:'อื่นๆ',icon:'📄',enabled:true,title:'เอกสารใหม่',body:'เนื้อหาเอกสาร… ใช้ {{ชื่อร้าน}} {{ที่อยู่}} {{เลขผู้เสียภาษี}} {{เบอร์}} {{วันที่}} {{ชื่อคู่ค้า}} แทนค่าอัตโนมัติ'}]);
+  const del=(i)=>{ if(!window.confirm('ลบเอกสารต้นแบบนี้?')) return; setList(a=>a.filter((_,j)=>j!==i)); };
+  const save=()=>{ KD.save(list); setMsg('บันทึกแล้ว ✓ — ร้านจะเห็นเมื่อเปิด Backoffice'); setTimeout(()=>setMsg(''),2800); };
+  const reset=()=>{ if(!window.confirm('คืนค่าต้นแบบเริ่มต้นทั้งหมด (ลบที่แก้เอง)?')) return; setList(KD.reset()); setMsg('คืนค่าเริ่มต้นแล้ว'); };
+  const CHIPS=['{{ชื่อร้าน}}','{{ที่อยู่}}','{{เลขผู้เสียภาษี}}','{{เบอร์}}','{{วันที่}}','{{ชื่อคู่ค้า}}'];
+  if(!KD) return <div className="card" style={{padding:22}}>โหลดคลังเอกสารไม่สำเร็จ (doc-templates.js)</div>;
+  return (<div style={{maxWidth:900}}>
+    <div className="card" style={{padding:'16px 20px',marginBottom:16,background:'var(--blue-soft)',border:'none',display:'flex',gap:12,alignItems:'flex-start'}}>
+      <span style={{fontSize:22}}>📄</span>
+      <div style={{flex:1,fontSize:13,color:'var(--ink-2)',lineHeight:1.6}}>ต้นแบบเอกสารกลางของแอป — ทุกร้านดึงชุดนี้ไปใช้ โดยระบบเติม <b>ชื่อร้าน/ที่อยู่/เลขภาษี</b> ให้อัตโนมัติใน Backoffice ของแต่ละร้าน · ใส่ตัวแปรด้วย <code className="mono">{'{{...}}'}</code></div>
+    </div>
+    <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
+      <span style={{fontSize:12.5,color:'var(--ink-3)',fontWeight:600}}>ตัวแปรที่ใช้ได้:</span>
+      {CHIPS.map(c=><span key={c} className="mono badge b-paid" style={{fontSize:11.5}}>{c}</span>)}
+    </div>
+    {list.map((t,i)=>(<div key={t.id} className="card" style={{padding:'16px 18px',marginBottom:14}}>
+      <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:10}}>
+        <input className="in" value={t.icon||''} onChange={e=>upd(i,'icon',e.target.value)} style={{width:52,textAlign:'center',fontSize:18}}/>
+        <input className="in" value={t.title} onChange={e=>upd(i,'title',e.target.value)} placeholder="ชื่อเอกสาร" style={{flex:1,fontWeight:700}}/>
+        <input className="in" value={t.cat} onChange={e=>upd(i,'cat',e.target.value)} placeholder="หมวด" style={{width:130}}/>
+        <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12.5,fontWeight:600,whiteSpace:'nowrap'}}><input type="checkbox" checked={t.enabled!==false} onChange={e=>upd(i,'enabled',e.target.checked)}/>เปิดใช้</label>
+        <button className="btn line sm" onClick={()=>del(i)} style={{color:'var(--danger)'}}>🗑️</button>
+      </div>
+      <textarea className="in" value={t.body} onChange={e=>upd(i,'body',e.target.value)} rows={8} style={{width:'100%',fontFamily:'var(--font)',fontSize:13,lineHeight:1.7,resize:'vertical'}}/>
+    </div>))}
+    <div style={{display:'flex',gap:9,alignItems:'center',flexWrap:'wrap',marginTop:4}}>
+      <button className="btn line sm" onClick={add}>+ เพิ่มเอกสาร</button>
+      <button className="btn pri sm" onClick={save}>บันทึกทั้งหมด</button>
+      <button className="btn line sm" onClick={reset}>คืนค่าเริ่มต้น</button>
+      {msg&&<span style={{fontSize:13,fontWeight:600,color:'var(--brand-ink)'}}>{msg}</span>}
+    </div>
+    <div style={{fontSize:12,color:'var(--ink-3)',marginTop:12,lineHeight:1.6}}>‹ เก็บในเบราว์เซอร์ (ชุดเดียวกับร้าน/หน้าดูเอกสาร) — เมื่อต่อ API Gateway ค่อยย้ายขึ้น backend ให้ใช้ร่วมทุกเครื่อง/แอดมิน</div>
   </div>);
 }
 
@@ -746,6 +780,11 @@ function Settings(){
       <div style={{fontWeight:700,fontSize:16}}>รหัสผ่านแอดมิน</div>
       <div className="sub" style={{marginBottom:14}}>เปลี่ยนรหัสเข้า Back Office (เก็บในเครื่องนี้)</div>
       <ChangePass/>
+    </div>
+    <div className="card" style={{padding:'20px 22px',marginTop:16}}>
+      <div style={{fontWeight:700,fontSize:16}}>การเข้าดู Backoffice ร้าน (สิทธิ์แอดมิน)</div>
+      <div className="sub" style={{marginBottom:14}}>คุมว่าแอดมินแอปเข้าดูหลังบ้านร้านได้นานแค่ไหน + ต้องให้เจ้าของร้านอนุมัติก่อนหรือไม่ (บันทึกล็อกทุกครั้งตาม PDPA)</div>
+      <AccessSettings/>
     </div>
     <div className="card" style={{padding:'20px 22px',marginTop:16,border:'1px solid #E7B4A9',background:'#FFF1EE'}}>
       <div style={{fontWeight:700,fontSize:16,color:'var(--danger)'}}>ล้างข้อมูลทั้งระบบ</div>
@@ -855,7 +894,9 @@ function PackagesSettings(){
   useEffect(()=>{ fetch(KD_API_BASE+'/packages').then(r=>r.ok&&r.json()).then(b=>{ const m=_migratePkg(b); if(m){ setP(m); savePkg(m); } }).catch(()=>{}); },[]);
   const updPkg=(i,k,v)=>setP(s=>({ ...s, packages:s.packages.map((x,j)=>j===i?{ ...x, [k]: k==='name'?v:(+v||0) }:x) }));
   const updMod=(i,mk,v)=>setP(s=>({ ...s, packages:s.packages.map((x,j)=>j===i?{ ...x, modules:{ ...(x.modules||{}), [mk]:v } }:x) }));
-  const MODS=[['orders','รับออเดอร์ลูกค้า (สั่งผ่าน LINE)'],['delivery','เดลิเวอรี'],['reports','รายงาน/สรุปยอด'],['stock','สต๊อกวัตถุดิบ']];
+  const updConsign=(i,v)=>setP(s=>({ ...s, packages:s.packages.map((x,j)=>j===i?{ ...x, consign:v }:x) }));
+  const updAddon=(k,v)=>setP(s=>({ ...s, addon:{ ...(s.addon||{}), consign:{ ...((s.addon||{}).consign||{name:'ขายฝาก'}), [k]:(+v||0) } } }));
+  const MODS=[['orders','รับออเดอร์ลูกค้า (สั่งผ่าน LINE)'],['delivery','เดลิเวอรี'],['reports','รายงาน/สรุปยอด'],['stock','สต๊อกวัตถุดิบ'],['backoffice','Backoffice (จอคอม)']];
   const addPkg=()=>setP(s=>({ ...s, packages:[...s.packages, {id:'pkg'+Date.now().toString(36),name:'แพ็กใหม่',seats:1,monthly:0,yearly:0}] }));
   const delPkg=(i)=>setP(s=>({ ...s, packages:s.packages.filter((_,j)=>j!==i) }));
   const save=()=>{ const pp={...p, trialDays: parseInt(p.trialDays,10)||30}; setP(pp); savePkg(pp); fetch(KD_API_BASE+'/packages',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(pp)}).then(()=>setMsg('บันทึกแล้ว ✓')).catch(()=>setMsg('บันทึกในเครื่อง')); };
@@ -891,8 +932,23 @@ function PackagesSettings(){
             <input type="checkbox" checked={on} onChange={e=>updMod(i,mk,e.target.checked)}/>{ml}
           </label>
         );})}
+        <label style={{display:'flex',alignItems:'center',gap:5,fontSize:12.5,cursor:'pointer',fontWeight:600,color:'var(--brand-ink)'}}>
+          <input type="checkbox" checked={!!pk.consign} onChange={e=>updConsign(i,e.target.checked)}/>🤝 บันเดิลขายฝากในแพ็กนี้
+        </label>
       </div>
     </div>))}
+    <div style={{padding:'13px 0',borderBottom:'1px solid var(--hair)'}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+        <div style={{flex:'1 1 130px',fontWeight:700,fontSize:14}}>🤝 Add-on: ระบบขายฝาก</div>
+        <span style={{fontSize:13,color:'var(--ink-3)'}}>รายเดือน ฿<input className="in" type="number" value={(p.addon&&p.addon.consign&&p.addon.consign.monthly)||0} onChange={e=>updAddon('monthly',e.target.value)} style={{width:76,margin:'0 4px'}}/></span>
+        <span style={{fontSize:13,color:'var(--ink-3)'}}>รายปี ฿<input className="in" type="number" value={(p.addon&&p.addon.consign&&p.addon.consign.yearly)||0} onChange={e=>updAddon('yearly',e.target.value)} style={{width:84,margin:'0 4px'}}/></span>
+      </div>
+      <div style={{fontSize:12,color:'var(--ink-3)',marginTop:4,lineHeight:1.45}}>ซื้อเสริมแยกจากแพ็กหลัก · เปิดใช้เฉพาะร้านที่จ่าย add-on (ตั้งเปิดต่อร้านที่หน้าจัดการร้าน) หรือบันเดิลในแพ็กด้านบน</div>
+    </div>
+    <label style={{display:'flex',alignItems:'center',gap:10,padding:'13px 0',borderBottom:'1px solid var(--hair)',cursor:'pointer'}}>
+      <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14}}>โชว์ป้าย “ราคายุคแรก (Early-bird)”</div><div style={{fontSize:12,color:'var(--ink-3)',lineHeight:1.45}}>แสดงในหน้าสมัคร — ล็อกราคาให้ผู้ใช้ยุคแรก สร้างแรงจูงใจให้สมัครเร็ว</div></div>
+      <input type="checkbox" checked={p.earlyBird!==false} onChange={e=>setP(s=>({...s,earlyBird:e.target.checked}))}/>
+    </label>
     <label style={{display:'flex',alignItems:'center',gap:10,padding:'13px 0',borderTop:'1px solid var(--hair)',marginTop:6,cursor:'pointer'}}>
       <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14}}>เปิดตัดบัตรอัตโนมัติ (ผูกบัตร)</div><div style={{fontSize:12,color:'var(--ink-3)',lineHeight:1.45}}>ต้องต่อ API Gateway ก่อน · ปิด = ซ่อนช่อง “ตัดบัตรอัตโนมัติ” ในหน้าต่ออายุของร้าน (เหลือแค่ โอน/พร้อมเพย์)</div></div>
       <input type="checkbox" checked={!!p.autoDebit} onChange={e=>setP(s=>({...s,autoDebit:e.target.checked}))}/>
@@ -903,6 +959,39 @@ function PackagesSettings(){
       {msg&&<span style={{fontSize:13,fontWeight:600,color:'var(--brand-ink)',marginLeft:4}}>{msg}</span>}
     </div>
     <div style={{fontSize:12,color:'var(--ink-3)',marginTop:10}}>มีผลกับตัวเลือกแพ็กเกจในแอปร้าน (รายเดือน/รายปี) · เก็บบน backend · ตั้งราคา 0 = ซ่อนช่องนั้น</div>
+  </div>);
+}
+function AccessSettings(){
+  const CFG_LS='kaidee_access_cfg_v1';
+  const load=()=>{ try{ return JSON.parse(localStorage.getItem(CFG_LS))||{}; }catch(e){ return {}; } };
+  const [cfg,setCfg]=useState(()=>({ approval:false, unit:'hours', value:12, ...load() }));
+  const [msg,setMsg]=useState('');
+  const upd=(k,v)=>setCfg(c=>({...c,[k]:v}));
+  useEffect(()=>{ fetch(KD_API_BASE+'/access-config').then(r=>r.ok&&r.json()).then(b=>{ if(b&&b.unit) setCfg(c=>({...c,...b})); }).catch(()=>{}); },[]);
+  const HRS=[1,4,8,12,24]; const DAYS=[1,7,30];
+  const opts = cfg.unit==='hours'?HRS:DAYS;
+  const setUnit=(u)=>setCfg(c=>({...c, unit:u, value:(u==='hours'?12:7)}));
+  const save=()=>{ try{ localStorage.setItem(CFG_LS,JSON.stringify(cfg)); }catch(e){} fetch(KD_API_BASE+'/access-config',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(cfg)}).catch(()=>{}); setMsg('บันทึกแล้ว ✓'); setTimeout(()=>setMsg(''),2200); };
+  const human = cfg.unit==='hours' ? (cfg.value+' ชั่วโมง') : (cfg.value+' วัน');
+  return (<div>
+    <label style={{display:'flex',alignItems:'flex-start',gap:11,padding:'10px 0',cursor:'pointer'}}>
+      <input type="checkbox" checked={!!cfg.approval} onChange={e=>upd('approval',e.target.checked)} style={{marginTop:3}}/>
+      <div><div style={{fontWeight:700,fontSize:14}}>ต้องให้เจ้าของร้านกดอนุมัติก่อน</div><div style={{fontSize:12.5,color:'var(--ink-3)',lineHeight:1.5}}>เปิด = แอดมินขอเข้า → เจ้าของกด“อนุมัติ”ในแอปก่อนถึงเข้าได้ (เหมือน 2FA) · ปิด = แอดมินเข้าได้ทันทีแต่ยังล็อกทุกครั้ง</div></div>
+    </label>
+    <div style={{fontSize:13,fontWeight:700,color:'var(--ink-2)',margin:'14px 0 7px'}}>ระยะเวลาที่เข้าดูได้ต่อครั้ง</div>
+    <div className="seg" style={{marginBottom:9}}>
+      <button className={cfg.unit==='hours'?'on':''} onClick={()=>setUnit('hours')}>ระดับชั่วโมง</button>
+      <button className={cfg.unit==='days'?'on':''} onClick={()=>setUnit('days')}>ระดับวัน/เดือน</button>
+    </div>
+    <div className="seg">
+      {opts.map(n=><button key={n} className={cfg.value===n?'on':''} onClick={()=>upd('value',n)}>{n} {cfg.unit==='hours'?'ชม.':'วัน'}</button>)}
+    </div>
+    <div style={{fontSize:12.5,color:'var(--ink-3)',marginTop:10,lineHeight:1.5}}>แอดมินจะเข้าดู Backoffice ร้านได้ครั้งละ <b>{human}</b> — ครบกำหนดต้องขอสิทธิ์ใหม่ (owner token หมดอายุตามค่านี้)</div>
+    <div style={{marginTop:14,display:'flex',gap:8,alignItems:'center'}}>
+      <button className="btn pri sm" onClick={save}>บันทึก</button>
+      {msg&&<span style={{fontSize:13,fontWeight:600,color:'var(--brand-ink)'}}>{msg}</span>}
+    </div>
+    <div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:12,lineHeight:1.6}}>‹ ค่านี้เก็บในเครื่อง — เมื่อต่อ backend/redeploy worker จะบังคับ TTL ของ owner token และขั้นขออนุมัติจริงตามค่านี้</div>
   </div>);
 }
 function ChangePass(){
@@ -986,6 +1075,34 @@ function PayRequests({db,update,onPending}){
 }
 
 /* ══ CODE REQUESTS (คำขอรหัส Office · เปิดวันย้อนหลัง) ══ */
+/* ══ DELETION LOG (หลักฐานการลบร้านถาวร · PDPA/consent) ══ */
+function DeletionLog(){
+  const [logs,setLogs] = useState([]);
+  const [err,setErr] = useState('');
+  const load = ()=>{ const tok=sessionStorage.getItem('kd_admin_tok')||''; fetch(KD_API_BASE+'/deletion-log'+(tok?('?token='+encodeURIComponent(tok)):''),{headers:tok?{'X-Admin-Token':tok}:{}}).then(r=>r.ok?r.json():{logs:[]}).then(j=>{ if(j&&Array.isArray(j.logs)) setLogs(j.logs); else if(j&&j.error) setErr(j.error); }).catch(()=>setErr('เชื่อม backend ไม่ได้ (ลอง login ออนไลน์)')); };
+  useEffect(()=>{ load(); const t=setInterval(load,15000); return ()=>clearInterval(t); },[]);
+  const dt = (ms)=> ms? new Date(+ms).toLocaleString('th-TH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  return (<div>
+    <div className="kpis" style={{gridTemplateColumns:'repeat(2,1fr)'}}>
+      <Kpi lbl="ร้านที่ลบถาวร (สะสม)" val={logs.length} delta="ผู้ใช้ยืนยัน consent เอง" down ic="🗑️"/>
+      <Kpi lbl="แพ็กเก่าเป็นโมฆะ" val={logs.filter(l=>l.package_void).length} delta="ไม่คืนเงิน" ic="❌"/>
+    </div>
+    {err && <div className="card" style={{padding:'14px 18px',marginTop:16,color:'var(--danger)',fontSize:13.5}}>{err}</div>}
+    <div className="card" style={{overflow:'hidden',marginTop:16}}>
+      <div style={{padding:'16px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>ประวัติการลบร้าน ({logs.length}) — หลักฐานการยินยอมถาวร</div>
+      {logs.length===0 && !err && <div style={{padding:'30px',textAlign:'center',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีการลบร้าน · เมื่อเจ้าของร้านกด “ลบร้าน · สมัครใหม่” จะบันทึกเข้าที่นี่</div>}
+      {logs.map((l,i)=>(<div key={l.id||i} style={{display:'flex',alignItems:'center',gap:14,padding:'14px 18px',borderBottom:'1px solid var(--hair)'}}>
+        <div className="shopmk">🗑️</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontWeight:700}}>{l.shop_name||l.shop_id||'-'}</div>
+          <div style={{fontSize:12.5,color:'var(--ink-3)'}} className="mono">{l.shop_id}{l.owner_name?(' · '+l.owner_name):''}{l.owner_line?(' · LINE '+String(l.owner_line).slice(0,10)+'…'):''}</div>
+          <div style={{fontSize:12,color:'var(--ink-3)',marginTop:2}}>ลบเมื่อ {dt(l.at)}{l.code?(' · รหัสยืนยัน '+l.code):''}</div>
+        </div>
+        {l.package_void ? <span className="badge b-expired">❌ แพ็กโมฆะ</span> : <span className="badge b-trial">–</span>}
+      </div>))}
+    </div>
+  </div>);
+}
 function CodeRequests(){
   const [reqs,setReqs] = useState([]);
   const [issued,setIssued] = useState({});   // id -> code (โชว์ให้แอดมินแจ้งร้าน)

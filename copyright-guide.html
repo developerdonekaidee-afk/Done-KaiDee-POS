@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730k"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730k">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คู่มือจดลิขสิทธิ์ & ปกป้องแอป — KaiDee</title>
+<meta name="omelette-owns-print" content="1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;
+    --blue:#1E73B0;--blue-ink:#155a8c;--blue-soft:#E6F0F8;
+    --gold:#E8992F;--gold-soft:#FDF0E2;--red:#D8452F;--red-soft:#FBEAE6;--green:#1E9E6A;
+    --ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--bg:#F4F7F6;--card:#fff;--hair:#E9EEEC;--hair-2:#DCE4E1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'IBM Plex Sans Thai',sans-serif}
+  body{background:var(--bg);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .num{font-family:'IBM Plex Mono',monospace}
+  .wrap{max-width:900px;margin:0 auto;padding:32px 22px 60px}
+  .hero{background:linear-gradient(152deg,#14A886 0%,#1E73B0 100%);border-radius:22px;padding:34px 32px;color:#fff;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.12)}
+  .hero .tag{display:inline-block;background:rgba(255,255,255,.2);border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:600;margin-bottom:14px}
+  .hero h1{font-size:28px;font-weight:700;letter-spacing:-.3px;line-height:1.25}
+  .hero p{font-size:15px;opacity:.94;margin-top:10px;max-width:640px}
+  .sec{margin-top:30px}
+  .sec-h{font-size:13px;font-weight:700;color:var(--brand-ink);letter-spacing:.4px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .sec-h::before{content:"";width:22px;height:3px;border-radius:2px;background:var(--brand)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:680px){.grid3{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:20px 22px}
+  .qc{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:20px;position:relative;overflow:hidden}
+  .qc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+  .qc.a::before{background:var(--brand)}.qc.b::before{background:var(--gold)}.qc.c::before{background:var(--blue)}
+  .qc .ic{font-size:26px}
+  .qc h3{font-size:16px;margin:8px 0 4px}
+  .qc .price{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:15px;margin:6px 0}
+  .qc.a .price{color:var(--brand-ink)}.qc.b .price{color:var(--gold)}.qc.c .price{color:var(--blue-ink)}
+  .qc p{font-size:13px;color:var(--ink-2)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border-radius:14px;overflow:hidden}
+  th,td{padding:12px 14px;border-bottom:1px solid var(--hair);text-align:left;vertical-align:top}
+  th{background:var(--brand-softer);color:var(--brand-ink);font-weight:700;font-size:12.5px}
+  td.r{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;white-space:nowrap}
+  .step{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:16px 18px 16px 20px;position:relative;margin-bottom:11px}
+  .step::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+  .step .n{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--brand);background:var(--brand-soft);border-radius:7px;padding:3px 9px;display:inline-block;margin-bottom:7px}
+  .step h4{font-size:15px;font-weight:700;margin-bottom:4px}
+  .step p{font-size:13.5px;color:var(--ink-2)}
+  .step a{color:var(--brand-ink)}
+  .note{border-radius:13px;padding:15px 17px;font-size:13.5px;line-height:1.7}
+  .note.warn{background:var(--gold-soft);border:1px solid #F0DFB0;color:#8A5A12}
+  .note.info{background:var(--blue-soft);border:1px solid #cfe1f0;color:var(--blue-ink)}
+  .note.ok{background:var(--brand-soft);border:1px solid #bfe6dc;color:var(--brand-ink)}
+  ul.clean{margin:0;padding-left:19px}ul.clean li{margin-bottom:7px;font-size:13.5px;color:var(--ink-2)}
+  .foot{margin-top:34px;text-align:center;color:var(--ink-3);font-size:12px;line-height:1.7}
+  .logo{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--brand-ink);font-size:15px}
+  .logo .d{width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+  a{color:var(--brand-ink)}
+  @media print{body{background:#fff}}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <span class="tag">คู่มือภายใน · KaiDee POS</span>
+    <h1>จดลิขสิทธิ์ & ปกป้องแอปจากการเลียนแบบ</h1>
+    <p>สรุปสั้นๆ ว่าอะไรจดได้ ค่าใช้จ่ายเท่าไร จดที่ไหน และจะกันคนก๊อปได้ยังไง — สำหรับเจ้าของแอป KaiDee</p>
+  </div>
+
+  <!-- QUICK -->
+  <div class="sec">
+    <div class="sec-h">ปกป้องได้ 3 ชั้น</div>
+    <div class="grid3">
+      <div class="qc a"><div class="ic">💻</div><h3>ลิขสิทธิ์ (โค้ด/ดีไซน์)</h3><div class="price">ฟรี</div><p>คุ้มครองโค้ด กราฟิก ข้อความ หน้าจอที่เราสร้างเอง — เกิดสิทธิ์อัตโนมัติตั้งแต่สร้าง จดแจ้งไว้เป็นหลักฐาน</p></div>
+      <div class="qc b"><div class="ic">™️</div><h3>เครื่องหมายการค้า (แบรนด์)</h3><div class="price">~1,600 ฿/จำพวก</div><p>คุ้มครอง <b>ชื่อ + โลโก้</b> (KaiDee / :D one) — กันคนใช้ชื่อ/โลโก้คล้ายได้ดีที่สุด</p></div>
+      <div class="qc c"><div class="ic">🔒</div><h3>ความลับทางการค้า</h3><div class="price">฿0</div><p>โค้ดฝั่ง server/สูตรคำนวณที่ไม่เปิดเผย — เลียนแบบยากสุด ไม่ต้องจดทะเบียน แค่เก็บเป็นความลับ</p></div>
+    </div>
+  </div>
+
+  <!-- COST -->
+  <div class="sec">
+    <div class="sec-h">ค่าใช้จ่าย (โดยประมาณ)</div>
+    <table>
+      <thead><tr><th>รายการ</th><th>ยื่นเอง</th><th>จ้างตัวแทน</th></tr></thead>
+      <tbody>
+        <tr><td>จดแจ้ง <b>ลิขสิทธิ์</b> (โปรแกรม/งานศิลป์)</td><td class="r">ฟรี</td><td class="r">+1,500–5,000 ฿</td></tr>
+        <tr><td><b>เครื่องหมายการค้า</b> — ค่าคำขอ (ต่อ 1 จำพวก)</td><td class="r">~1,000 ฿</td><td class="r">+3,000–8,000 ฿</td></tr>
+        <tr><td>เครื่องหมายการค้า — ค่ารับจดทะเบียน</td><td class="r">~600 ฿</td><td class="r">รวมในบริการ</td></tr>
+      </tbody>
+    </table>
+    <div class="note warn" style="margin-top:12px">ตัวเลขเป็นค่าประมาณ ควรตรวจอัตราล่าสุดที่ <b>ipthailand.go.th</b> อีกครั้ง · เครื่องหมายการค้าคุ้มครอง 10 ปี (ต่ออายุได้)</div>
+  </div>
+
+  <!-- STEPS COPYRIGHT -->
+  <div class="sec">
+    <div class="sec-h">ขั้นตอนจดแจ้งลิขสิทธิ์ (ฟรี)</div>
+    <div class="step"><span class="n">ขั้นที่ 1</span><h4>เตรียมผลงาน + ข้อมูลเจ้าของ</h4><p>ไฟล์โค้ด/สกรีนช็อตหน้าจอ, ชื่อผลงาน, วันเดือนปีที่สร้าง, ชื่อ-ที่อยู่เจ้าของสิทธิ์ (บุคคล/บริษัท)</p></div>
+    <div class="step"><span class="n">ขั้นที่ 2</span><h4>ยื่นคำขอแจ้งข้อมูลลิขสิทธิ์</h4><p>ยื่นออนไลน์ผ่านระบบ e-Filing ของกรมทรัพย์สินทางปัญญา (<b>ipthailand.go.th</b>) หรือยื่นที่กรมฯ / พาณิชย์จังหวัด — เลือกประเภทงาน “วรรณกรรม (โปรแกรมคอมพิวเตอร์)” และ/หรือ “ศิลปกรรม”</p></div>
+    <div class="step"><span class="n">ขั้นที่ 3</span><h4>รับหนังสือรับรองการแจ้ง</h4><p>เก็บไว้เป็นหลักฐานยืนยันว่าเราสร้างก่อน — ใช้อ้างอิงได้หากต้องฟ้องคนคัดลอก</p></div>
+  </div>
+
+  <!-- STEPS TM -->
+  <div class="sec">
+    <div class="sec-h">ขั้นตอนจดเครื่องหมายการค้า (แบรนด์)</div>
+    <div class="step"><span class="n">ขั้นที่ 1</span><h4>ตรวจชื่อ/โลโก้ซ้ำ</h4><p>ค้นในฐานเครื่องหมายการค้าของกรมฯ ว่ามีคนจด “KaiDee / :D one” หรือคล้ายกันไว้ก่อนหรือยัง</p></div>
+    <div class="step"><span class="n">ขั้นที่ 2</span><h4>เลือกจำพวกสินค้า/บริการ</h4><p>ซอฟต์แวร์/แอป มักอยู่จำพวก 9 และบริการที่เกี่ยวข้อง (เช่น 35, 42) — เลือกให้ตรงกับที่ใช้จริง</p></div>
+    <div class="step"><span class="n">ขั้นที่ 3</span><h4>ยื่นคำขอ + ชำระค่าธรรมเนียม</h4><p>ยื่นออนไลน์ (e-Filing) แนบไฟล์โลโก้ → รอตรวจสอบ/ประกาศโฆษณา → รับจดทะเบียน (กระบวนการใช้เวลาหลายเดือน–เป็นปี)</p></div>
+  </div>
+
+  <!-- ANTI-COPY -->
+  <div class="sec">
+    <div class="sec-h">กันคนเลียนแบบ + ตรวจจับการคัดลอก</div>
+    <div class="card">
+      <ul class="clean">
+        <li><b>ประกาศลิขสิทธิ์ในตัวงาน</b> — ใส่ © สงวนลิขสิทธิ์ + ชื่อเจ้าของ ในแอปและใน source code</li>
+        <li><b>Watermark / Canary ในโค้ด</b> — ฝังสตริง/ชื่อคลาสเฉพาะที่ไม่มีใครบังเอิญเขียนเหมือน ถ้าเจอในแอปคนอื่น = ก๊อปตรงๆ (หลักฐานชัด)</li>
+        <li><b>เก็บโค้ดฝั่ง server ไม่เปิดเผย</b> — คนนอกก๊อปได้แค่หน้าตา ไม่ได้ระบบจริง</li>
+        <li><b>ค้นแบรนด์เป็นระยะ</b> — Google / App Store / Play / Facebook / ฐานกรมฯ ว่ามีใครใช้ชื่อ-โลโก้คล้าย</li>
+        <li><b>เก็บหลักฐานการสร้าง</b> — ประวัติการแก้ไขไฟล์/วันที่ ไว้พิสูจน์ว่าเราทำก่อน</li>
+      </ul>
+      <div class="note info" style="margin-top:14px"><b>สิ่งที่กฎหมายไม่คุ้ม:</b> “ฟีเจอร์/ไอเดีย” (เช่น การจับคู่ยอดเงินเข้า) ใครทำแนวคิดเดียวกันได้ — จุดที่กันได้จริงคือ <b>แบรนด์ (เครื่องหมายการค้า) + โค้ด server ที่เป็นความลับ + ความเร็ว/ฐานลูกค้า</b></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="note ok">✅ <b>เริ่มจากอะไรก่อนดี:</b> 1) จดเครื่องหมายการค้า “ชื่อ+โลโก้” (กันเลียนแบบแบรนด์ตรงจุดสุด) → 2) จดแจ้งลิขสิทธิ์โค้ด/ดีไซน์ (ฟรี เก็บหลักฐาน) → 3) ปิดโค้ด server + ฝัง watermark</div>
+  </div>
+
+  <div class="foot">
+    <div class="logo"><span class="d">:D</span> KaiDee POS</div>
+    <div style="margin-top:6px">คู่มือภายในเพื่อการวางแผนเบื้องต้น · ไม่ใช่คำแนะนำทางกฎหมาย — กรณีมีข้อพิพาทควรปรึกษาทนาย/ตัวแทนสิทธิบัตร-เครื่องหมายการค้า</div>
+  </div>
+</div>
+</body>
+</html>

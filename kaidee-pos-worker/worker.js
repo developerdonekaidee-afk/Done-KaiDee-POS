@@ -61,14 +61,25 @@ async function linePush(env, to, messages) {
   } catch (e) { return false; }
 }
 
-/* ── SMS gateway (ตั้งค่าผ่าน env: SMS_ENDPOINT/SMS_KEY/SMS_SENDER) — ไม่ตั้ง = ข้าม, fallback LINE ── */
+/* ── SMS gateway (ตั้งค่าผ่าน env: SMS_ENDPOINT/SMS_KEY/SMS_SENDER · หรือ SMS_PROVIDER=twilio + SMS_SID/SMS_TOKEN/SMS_FROM) — ไม่ตั้ง = ข้าม, fallback LINE ── */
+const digitsOnly = (p) => String(p || '').replace(/\D/g, '');
+function e164th(p) { const s = digitsOnly(p); return s.startsWith('0') ? '+66' + s.slice(1) : (s.startsWith('66') ? '+' + s : '+' + s); }
 async function sendSMS(env, phone, text) {
-  if (!phone || !env.SMS_ENDPOINT) return false;
+  if (!phone) return false;
   try {
+    if (env.SMS_PROVIDER === 'twilio' && env.SMS_SID && env.SMS_TOKEN && env.SMS_FROM) {
+      const r = await fetch('https://api.twilio.com/2010-04-01/Accounts/' + env.SMS_SID + '/Messages.json', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded', Authorization: 'Basic ' + btoa(env.SMS_SID + ':' + env.SMS_TOKEN) },
+        body: new URLSearchParams({ To: e164th(phone), From: env.SMS_FROM, Body: text }),
+      });
+      return r.ok;
+    }
+    if (!env.SMS_ENDPOINT) return false;
     const r = await fetch(env.SMS_ENDPOINT, {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...(env.SMS_KEY ? { Authorization: 'Bearer ' + env.SMS_KEY } : {}) },
-      body: JSON.stringify({ to: phone, message: text, sender: env.SMS_SENDER || 'KaiDee' }),
+      body: JSON.stringify({ to: digitsOnly(phone), message: text, sender: env.SMS_SENDER || 'KaiDee' }),
     });
     return r.ok;
   } catch (e) { return false; }
@@ -144,6 +155,18 @@ async function getAdminHash(env) {
     if (r) { const j = JSON.parse(r.v || '{}'); if (j.passHash) return j.passHash; } } catch (e) {}
   return await sha256hex('kaidee2026');
 }
+/* ── รีเซ็ตรหัสแอดมินด้วย OTP (เบอร์เจ้าของระบบ = secret ADMIN_PHONE · LINE สำรอง = ADMIN_LINE_USER) ── */
+async function adminCfg(env) {
+  try { const r = await env.DB.prepare("SELECT v FROM app_config WHERE k='admin'").first();
+    if (r) return JSON.parse(r.v || '{}'); } catch (e) {}
+  return {};
+}
+async function adminCfgSave(env, patch) {
+  const cur = await adminCfg(env);
+  const v = JSON.stringify({ ...cur, ...patch, updatedAt: now() });
+  await env.DB.prepare("INSERT INTO app_config (k,v) VALUES ('admin',?) ON CONFLICT(k) DO UPDATE SET v=?").bind(v, v).run();
+}
+function maskPhone(p) { const s = digitsOnly(p); return s.length < 8 ? '—' : s.slice(0, 3) + '-xxx-' + s.slice(-4); }
 async function makeToken(env) {
   const exp = Date.now() + 12 * 3600e3;              // อายุ 12 ชม.
   const sig = await hmac(env, 'admin.' + exp);
@@ -407,6 +430,41 @@ export default {
           const v = JSON.stringify({ passHash: await sha256hex(b.next), updatedAt: now() });
           await env.DB.prepare("INSERT INTO app_config (k,v) VALUES ('admin',?) ON CONFLICT(k) DO UPDATE SET v=?").bind(v, v).run();
           return json({ ok: true }, req);
+        }
+        // POST /admin/reset/request → ส่ง OTP 6 หลักไปเบอร์เจ้าของระบบ
+        if (req.method === 'POST' && seg[1] === 'reset' && seg[2] === 'request') {
+          const cfg = await adminCfg(env);
+          const phone = cfg.phone || env.ADMIN_PHONE || '';
+          const lineUser = cfg.lineUser || env.ADMIN_LINE_USER || '';
+          if (!phone && !lineUser)
+            return json({ ok: false, error: 'ยังไม่ได้ตั้งเบอร์เจ้าของระบบ — ตั้ง secret ADMIN_PHONE (หรือ ADMIN_LINE_USER) ที่ Worker ก่อน' }, req, 501);
+          if (cfg.rstAt && now() - cfg.rstAt < 60e3)
+            return json({ ok: false, error: 'เพิ่งส่งไปเมื่อครู่ — รอ ' + Math.ceil((60e3 - (now() - cfg.rstAt)) / 1000) + ' วินาที' }, req, 429);
+          const otp = String(Math.floor(100000 + Math.random() * 900000));
+          const text = 'KaiDee POS: รหัสยืนยันรีเซ็ตรหัสแอดมิน ' + otp + ' (ใช้ได้ 10 นาที · ห้ามบอกใคร)';
+          let via = '';
+          if (phone && await sendSMS(env, phone, text)) via = 'sms';
+          else if (lineUser && await linePush(env, lineUser, [{ type: 'text', text }])) via = 'line';
+          if (!via) return json({ ok: false, error: 'ส่งรหัสไม่สำเร็จ — ตรวจ secret SMS_ENDPOINT/SMS_KEY (หรือ SMS_PROVIDER=twilio) และ LINE_TOKEN' }, req, 501);
+          await adminCfgSave(env, { rstHash: await sha256hex(otp + '|' + (digitsOnly(phone) || lineUser)), rstExp: now() + 600e3, rstTries: 0, rstAt: now() });
+          return json({ ok: true, phone: phone ? maskPhone(phone) : 'LINE', via, expiresIn: 600 }, req);
+        }
+        // POST /admin/reset/confirm {otp,next} → ตั้งรหัสใหม่
+        if (req.method === 'POST' && seg[1] === 'reset' && seg[2] === 'confirm') {
+          const b = await readBody();
+          const cfg = await adminCfg(env);
+          const phone = cfg.phone || env.ADMIN_PHONE || '';
+          const lineUser = cfg.lineUser || env.ADMIN_LINE_USER || '';
+          if (!cfg.rstHash || !cfg.rstExp) return json({ ok: false, error: 'ยังไม่ได้ขอรหัสยืนยัน' }, req, 400);
+          if (now() > cfg.rstExp) { await adminCfgSave(env, { rstHash: null, rstExp: null }); return json({ ok: false, error: 'รหัสยืนยันหมดอายุ — กดส่งใหม่' }, req, 400); }
+          if ((cfg.rstTries || 0) >= 5) return json({ ok: false, error: 'ใส่ผิดเกิน 5 ครั้ง — กดส่งรหัสใหม่' }, req, 429);
+          if (await sha256hex(digitsOnly(b.otp) + '|' + (digitsOnly(phone) || lineUser)) !== cfg.rstHash) {
+            await adminCfgSave(env, { rstTries: (cfg.rstTries || 0) + 1 });
+            return json({ ok: false, error: 'รหัสยืนยันไม่ถูกต้อง (เหลือ ' + (4 - (cfg.rstTries || 0)) + ' ครั้ง)' }, req, 401);
+          }
+          if ((b.next || '').length < 6) return json({ ok: false, error: 'รหัสใหม่ต้องอย่างน้อย 6 ตัว' }, req, 400);
+          await adminCfgSave(env, { passHash: await sha256hex(b.next), rstHash: null, rstExp: null, rstTries: 0 });
+          return json({ ok: true, token: await makeToken(env) }, req);
         }
       }
 
