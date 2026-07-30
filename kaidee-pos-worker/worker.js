@@ -253,6 +253,77 @@ async function ensureCodeReqTable(env){ if(_codeReqReady) return; _codeReqReady 
     id TEXT PRIMARY KEY, shop_id TEXT, shop_name TEXT, kind TEXT, note TEXT,
     status TEXT, code TEXT, used INTEGER DEFAULT 0,
     created_at INTEGER, handled_at INTEGER, handled_by TEXT )`).run(); }catch(e){} }
+// idempotent: กระเป๋าเงินค่าบริการระบบ (closed-loop) — ยอดอยู่ที่เซิร์ฟเท่านั้น · ทุกรายการเก็บหมด
+// wallets(biz_id, balance, auto) · wallet_txns = สเตทเมนต์ (append-only) · platform_revenue = รายได้ผู้ให้บริการ
+let _walletReady = false;
+async function ensureWallet(env) {
+  if (_walletReady) return; _walletReady = true;
+  try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS wallets (
+    biz_id TEXT PRIMARY KEY, balance REAL DEFAULT 0, auto INTEGER DEFAULT 1, updated_at INTEGER )`).run(); } catch (e) {}
+  // บัญชีรับเงินของแต่ละร้านเอง (ร้านตั้งเองจากหน้ากระเป๋า · ใช้ออก QR รับเงินลูกค้าของร้านนั้น)
+  for (const c of ['pp TEXT', 'bank TEXT', 'acct_no TEXT', 'acct_name TEXT', 'acct_at INTEGER'])
+    { try { await env.DB.prepare('ALTER TABLE wallets ADD COLUMN ' + c).run(); } catch (e) {} }
+  try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS wallet_txns (
+    id TEXT PRIMARY KEY, biz_id TEXT NOT NULL, ref TEXT, ts TEXT, type TEXT, amount REAL,
+    balance_after REAL, note TEXT, method TEXT, who TEXT, slip TEXT, idem TEXT, ref_doc TEXT,
+    status TEXT DEFAULT 'done', verified_by TEXT, created_at INTEGER, handled_at INTEGER, handled_by TEXT )`).run(); } catch (e) {}
+  try { await env.DB.prepare('CREATE INDEX IF NOT EXISTS ix_wtx_biz ON wallet_txns (biz_id, created_at DESC)').run(); } catch (e) {}
+  try { await env.DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS ux_wtx_idem ON wallet_txns (biz_id, idem)').run(); } catch (e) {}
+  try { await env.DB.prepare(`CREATE TABLE IF NOT EXISTS platform_revenue (
+    id TEXT PRIMARY KEY, biz_id TEXT, who TEXT, sub TEXT, amount REAL, method TEXT, type TEXT, created_at INTEGER )`).run(); } catch (e) {}
+}
+const r2c = (n) => Math.round((Number(n) || 0) * 100) / 100;
+// แจ้งเจ้าของกิจการทาง LINE OA (ใช้ owner_line ของร้าน POS · โมดูลอื่นข้ามไปถ้าไม่มี)
+async function walletNotify(env, biz, text) {
+  try {
+    const m = /^pos:(.+)$/.exec(biz); if (!m) return;
+    const s = await getShop(env, m[1]);
+    if (s && s.owner_line) await linePush(env, s.owner_line, [{ type: 'text', text }]);
+  } catch (e) {}
+}
+async function walletRow(env, biz) {
+  let w = await env.DB.prepare('SELECT * FROM wallets WHERE biz_id=?').bind(biz).first();
+  if (!w) { await env.DB.prepare('INSERT INTO wallets (biz_id,balance,auto,updated_at) VALUES (?,0,1,?)').bind(biz, now()).run();
+    w = { biz_id: biz, balance: 0, auto: 1, updated_at: now() }; }
+  w.balance = r2c(w.balance); return w;
+}
+// เลขอ้างอิงที่อ่านออกเหมือนสลิปธนาคาร: KDW + วัน + รันนิ่ง (เช่น KDW26073004821)
+function txnRef(d) { const p = (n, l) => String(n).padStart(l, '0');
+  return 'KDW' + p(d.getFullYear() % 100, 2) + p(d.getMonth() + 1, 2) + p(d.getDate(), 2) + p(Math.floor(Math.random() * 1e5), 5); }
+async function addTxn(env, biz, t) {
+  const d = new Date(); const id = 'wt' + now() + Math.random().toString(36).slice(2, 6);
+  const row = { id, ref: txnRef(d), ts: d.toISOString(), status: 'done', ...t };
+  await env.DB.prepare(`INSERT INTO wallet_txns
+    (id,biz_id,ref,ts,type,amount,balance_after,note,method,who,slip,idem,ref_doc,status,verified_by,created_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(
+      row.id, biz, row.ref, row.ts, row.type, r2c(row.amount),
+      row.balance_after === null || row.balance_after === undefined ? null : r2c(row.balance_after),
+      row.note || '', row.method || '', row.who || '', row.slip || null, row.idem || null, row.ref_doc || '',
+      row.status, row.verified_by || null, now()).run();
+  return row;
+}
+// ตรวจสลิปกับธนาคารของจริง (SlipOK / EasySlip) — ตั้ง secret แล้วเติมเงินเข้าทันทีโดยไม่ต้องรอแอดมิน
+// env: SLIP_VERIFY_URL (endpoint ผู้ให้บริการ) · SLIP_VERIFY_KEY · SLIP_ACCOUNT (เลขบัญชีปลายทางที่ต้องตรง)
+async function verifySlip(env, { slip, amount, payload, acct }) {
+  if (!env.SLIP_VERIFY_URL || !env.SLIP_VERIFY_KEY) return { ok: false, skipped: 'no-provider' };
+  try {
+    const r = await fetch(env.SLIP_VERIFY_URL, { method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + env.SLIP_VERIFY_KEY },
+      body: JSON.stringify({ data: payload || undefined, image: payload ? undefined : slip, amount }) });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j) return { ok: false, error: 'ตรวจสลิปไม่สำเร็จ' };
+    const d = j.data || j;
+    const paid = r2c(d.amount || d.paidAmount || 0);
+    const acct2 = String((d.receiver && (d.receiver.account && (d.receiver.account.value || d.receiver.account.bank)) ) || d.receiverAccount || '');
+    const okAmt = paid === r2c(amount);
+    const want = String(acct || env.SLIP_ACCOUNT || '').replace(/\D/g, '');
+    const okAcct = !want || acct2.replace(/\D/g, '').endsWith(want.slice(-4));
+    if (d.success === false) return { ok: false, error: 'สลิปไม่ผ่านการตรวจกับธนาคาร' };
+    if (!okAmt) return { ok: false, error: 'ยอดในสลิปไม่ตรง (สลิป ฿' + paid + ')' };
+    if (!okAcct) return { ok: false, error: 'บัญชีปลายทางไม่ใช่บัญชีระบบ' };
+    return { ok: true, by: 'slip-api', txRef: d.transRef || d.ref || '' };
+  } catch (e) { return { ok: false, error: 'ติดต่อผู้ให้บริการตรวจสลิปไม่สำเร็จ' }; }
+}
 // idempotent: เพิ่มคอลัมน์ kind/addon ให้ pay_requests (คำขอซื้อ add-on แยกจากต่ออายุ)
 let _payReqColsReady = false;
 async function ensurePayReqCols(env){ if(_payReqColsReady) return; _payReqColsReady = true;
@@ -838,7 +909,207 @@ export default {
         }
       }
 
-      /* ── CODE REQUESTS (คำขอรหัส Office · เปิดวันย้อนหลัง) — global ── */
+      /* ── WALLET (กระเป๋าค่าบริการระบบ · closed-loop) ──
+         ยอดคงเหลืออยู่ฝั่งเซิร์ฟเวอร์เท่านั้น · ทุกการเคลื่อนไหวเขียน wallet_txns (แก้ย้อนหลังไม่ได้)
+         GET    /wallet/:biz                 → {balance,auto,updatedAt,pending}
+         GET    /wallet/:biz/txns?limit=&cursor= → สเตทเมนต์ (ใหม่→เก่า)
+         POST   /wallet/:biz/topup           → คำขอเติมเงิน (status=pending · ยังไม่เพิ่มยอด)
+         POST   /wallet/:biz/charge          → หักค่าบริการ (atomic · ยอดไม่พอ = 402)
+         POST   /wallet/:biz/auto {on}       → สวิตช์ตัดอัตโนมัติ
+         GET    /wallet-topups?status=       → คิวคำขอเติมเงิน (แอดมิน)
+         PATCH  /wallet-txns/:id {status,by} → อนุมัติ/ปฏิเสธคำขอเติมเงิน (แอดมิน)
+         POST   /wallet/:biz/adjust          → แอดมินเติม/ปรับลด (แอดมิน) */
+      if (seg[0] === 'wallet' || seg[0] === 'wallet-txns' || seg[0] === 'wallet-topups' || seg[0] === 'wallet-webhook' || seg[0] === 'wallet-account' || seg[0] === 'wallet-verify') {
+        await ensureWallet(env);
+        const isAdmin = async () => { const t = req.headers.get('X-Admin-Token') || url.searchParams.get('token'); return !env.ADMIN_SECRET || await verifyToken(env, t); };
+
+        if (seg[0] === 'wallet-topups' && req.method === 'GET') {
+          if (!(await isAdmin())) return json({ error: 'admin only' }, req, 403);
+          const st = url.searchParams.get('status') || 'pending';
+          const { results } = await env.DB.prepare(
+            "SELECT * FROM wallet_txns WHERE type='topup' AND status=? ORDER BY created_at DESC LIMIT 300").bind(st).all();
+          return json(results, req);
+        }
+
+        // PATCH /wallet-txns/:id — อนุมัติ (เพิ่มยอด) / ปฏิเสธคำขอเติมเงิน
+        if (seg[0] === 'wallet-txns' && req.method === 'PATCH' && seg[1]) {
+          if (!(await isAdmin())) return json({ error: 'admin only' }, req, 403);
+          const b = await readBody();
+          const t = await env.DB.prepare('SELECT * FROM wallet_txns WHERE id=?').bind(seg[1]).first();
+          if (!t) return err('txn not found', req, 404);
+          if (t.status !== 'pending') return err('รายการนี้ถูกดำเนินการแล้ว (' + t.status + ')', req, 409);
+          if (b.status === 'rejected') {
+            await env.DB.prepare('UPDATE wallet_txns SET status=?,handled_at=?,handled_by=?,note=? WHERE id=?')
+              .bind('rejected', now(), b.by || 'admin', (t.note || '') + (b.reason ? ' · ปฏิเสธ: ' + b.reason : ' · ปฏิเสธ'), seg[1]).run();
+            const p = walletNotify(env, t.biz_id, `❌ คำขอเติมเงิน ${t.ref} ฿${t.amount} ไม่ผ่านการตรวจสอบ${b.reason ? '\nเหตุผล: ' + b.reason : ''}\nยอดในกระเป๋าไม่เปลี่ยนแปลง`);
+            if (ctx && ctx.waitUntil) ctx.waitUntil(p);
+            return json({ ok: true, status: 'rejected' }, req);
+          }
+          const w = await walletRow(env, t.biz_id);
+          const bal = r2c(w.balance + t.amount);
+          await env.DB.prepare('UPDATE wallet_txns SET status=?,balance_after=?,handled_at=?,handled_by=? WHERE id=?')
+            .bind('done', bal, now(), b.by || 'admin', seg[1]).run();
+          await env.DB.prepare('UPDATE wallets SET balance=?,updated_at=? WHERE biz_id=?').bind(bal, now(), t.biz_id).run();
+          const p2 = walletNotify(env, t.biz_id, `✅ เติมเงินสำเร็จ ฿${t.amount}\nเลขอ้างอิง ${t.ref}\nยอดคงเหลือในกระเป๋า ฿${bal}`);
+          if (ctx && ctx.waitUntil) ctx.waitUntil(p2);
+          return json({ ok: true, status: 'done', balance: bal }, req);
+        }
+
+        if (seg[0] === 'wallet' && seg[1]) {
+          const biz = decodeURIComponent(seg[1]);
+          const w = await walletRow(env, biz);
+
+          if (req.method === 'GET' && seg[2] === 'txns') {
+            const lim = Math.min(300, Number(url.searchParams.get('limit')) || 60);
+            const { results } = await env.DB.prepare(
+              'SELECT id,ref,ts,type,amount,balance_after,note,method,status,created_at FROM wallet_txns WHERE biz_id=? ORDER BY created_at DESC LIMIT ?')
+              .bind(biz, lim).all();
+            return json(results, req);
+          }
+          if (req.method === 'GET' && !seg[2]) {
+            const p = await env.DB.prepare("SELECT COUNT(*) n, COALESCE(SUM(amount),0) s FROM wallet_txns WHERE biz_id=? AND status='pending'").bind(biz).first();
+            return json({ biz, balance: w.balance, auto: !!w.auto, updatedAt: w.updated_at, pendingCount: (p && p.n) || 0, pendingAmount: (p && p.s) || 0,
+              acct: { promptpay: w.pp || '', bank: w.bank || '', acctNo: w.acct_no || '', acctName: w.acct_name || '' } }, req);
+          }
+          // บัญชีรับเงินของร้านนี้ — ร้านตั้ง/แก้เองได้ (เก็บต่อร้าน ไม่กระทบร้านอื่น)
+          if (seg[2] === 'account') {
+            if (req.method === 'GET')
+              return json({ promptpay: w.pp || '', bank: w.bank || '', acctNo: w.acct_no || '', acctName: w.acct_name || '', updatedAt: w.acct_at || 0 }, req);
+            if (req.method === 'POST' || req.method === 'PUT') {
+              const b = await readBody();
+              const pp = String(b.promptpay || '').replace(/[^\d]/g, '');
+              if (pp && !(pp.length === 10 || pp.length === 13)) return err('พร้อมเพย์ต้องเป็นเบอร์มือถือ 10 หลัก หรือเลขบัตรประชาชน 13 หลัก', req);
+              await env.DB.prepare('UPDATE wallets SET pp=?,bank=?,acct_no=?,acct_name=?,acct_at=?,updated_at=? WHERE biz_id=?')
+                .bind(pp, b.bank || '', String(b.acctNo || '').replace(/[^\d-]/g, ''), b.acctName || '', now(), now(), biz).run();
+              return json({ ok: true, promptpay: pp, bank: b.bank || '', acctNo: b.acctNo || '', acctName: b.acctName || '' }, req);
+            }
+          }
+          if (req.method === 'POST' && seg[2] === 'auto') {
+            const b = await readBody();
+            await env.DB.prepare('UPDATE wallets SET auto=?,updated_at=? WHERE biz_id=?').bind(b.on === false ? 0 : 1, now(), biz).run();
+            return json({ ok: true, auto: b.on !== false }, req);
+          }
+          // คำขอเติมเงิน — ยอดยังไม่ขึ้นจนแอดมินยืนยัน (กันเติมเงินฟรี)
+          if (req.method === 'POST' && seg[2] === 'topup') {
+            const b = await readBody(); const amt = r2c(b.amount);
+            if (!(amt > 0)) return err('จำนวนเงินไม่ถูกต้อง', req);
+            if (amt > 200000) return err('เติมครั้งละไม่เกิน ฿200,000', req);
+            let slip = b.slip || null;
+            if (slip && env.SLIPS) { const m = /^data:(image\/\w+);base64,(.+)$/.exec(slip);
+              if (m) { try { const bytes = Uint8Array.from(atob(m[2]), c => c.charCodeAt(0));
+                const key = `walletslip/${biz.replace(/[^\w:-]/g, '_')}/${now()}.${m[1].split('/')[1]}`;
+                await env.SLIPS.put(key, bytes, { httpMetadata: { contentType: m[1] } });
+                slip = `${url.origin}/img/${key}`; } catch (e) {} } }
+            const t = await addTxn(env, biz, { type: 'topup', amount: amt, status: 'pending', balance_after: null,
+              note: b.note || 'เติมเงินเข้ากระเป๋า', method: b.method || 'promptpay', who: b.who || '', slip });
+            // เช็กยอดจริงกับธนาคาร (ถ้าตั้ง SLIP_VERIFY_*) → ผ่าน = เงินเข้ากระเป๋าทันที ไม่ต้องรอแอดมิน
+            if (slip || b.qrPayload) {
+              const acctRow = await env.DB.prepare("SELECT v FROM app_config WHERE k='wallet_acct'").first();
+              let acctCfg = {}; try { acctCfg = acctRow ? JSON.parse(acctRow.v || '{}') : {}; } catch (e) {}
+              const v = await verifySlip(env, { slip, amount: amt, payload: b.qrPayload, acct: acctCfg.acctNo || acctCfg.promptpay || '' });
+              if (v.ok) {
+                const bal2 = r2c(w.balance + amt);
+                await env.DB.prepare("UPDATE wallet_txns SET status='done',balance_after=?,verified_by=?,handled_at=? WHERE id=?")
+                  .bind(bal2, v.by, now(), t.id).run();
+                await env.DB.prepare('UPDATE wallets SET balance=?,updated_at=? WHERE biz_id=?').bind(bal2, now(), biz).run();
+                return json({ ok: true, status: 'done', auto: true, ref: t.ref, id: t.id, balance: bal2 }, req, 201);
+              }
+              if (v.error) await env.DB.prepare('UPDATE wallet_txns SET note=? WHERE id=?').bind((t.note || '') + ' · ตรวจอัตโนมัติไม่ผ่าน: ' + v.error, t.id).run();
+            }
+            if (env.ADMIN_LINE) { const p = linePush(env, env.ADMIN_LINE, [{ type: 'text',
+              text: `👛 คำขอเติมเงินกระเป๋า\n${b.who || biz}\nยอด: ฿${amt}\nเลขอ้างอิง: ${t.ref}\n\nเปิด Back Office → กระเป๋าเงิน เพื่อยืนยัน` }]).catch(() => {});
+              if (ctx && ctx.waitUntil) ctx.waitUntil(p); }
+            return json({ ok: true, status: 'pending', ref: t.ref, id: t.id, balance: w.balance }, req, 201);
+          }
+          // หักค่าบริการ — ตรวจยอดฝั่งเซิร์ฟ · idem กันกดซ้ำ
+          if (req.method === 'POST' && seg[2] === 'charge') {
+            const b = await readBody(); const amt = r2c(b.amount);
+            if (!(amt > 0)) return err('จำนวนเงินไม่ถูกต้อง', req);
+            if (b.idem) { const dup = await env.DB.prepare('SELECT * FROM wallet_txns WHERE biz_id=? AND idem=?').bind(biz, String(b.idem)).first();
+              if (dup) return json({ ok: true, dedup: true, ref: dup.ref, balance: dup.balance_after }, req); }
+            if (w.balance < amt) return json({ ok: false, error: 'ยอดกระเป๋าไม่พอ', balance: w.balance, short: r2c(amt - w.balance) }, req, 402);
+            const bal = r2c(w.balance - amt);
+            const t = await addTxn(env, biz, { type: b.type || 'fee', amount: -amt, status: 'done', balance_after: bal,
+              note: b.note || 'ค่าบริการระบบ', method: 'wallet', who: b.who || '', idem: b.idem || null, ref_doc: b.ref || '' });
+            await env.DB.prepare('UPDATE wallets SET balance=?,updated_at=? WHERE biz_id=?').bind(bal, now(), biz).run();
+            // รายได้แพลตฟอร์ม (ledger กลาง) — หลักฐานว่าได้รับยอดแล้ว
+            await env.DB.prepare('INSERT INTO platform_revenue (id,biz_id,who,sub,amount,method,type,created_at) VALUES (?,?,?,?,?,?,?,?)')
+              .bind(t.id, biz, b.who || biz, b.note || 'ค่าบริการระบบ', amt, 'wallet', b.type || 'saas', now()).run();
+            return json({ ok: true, balance: bal, ref: t.ref, id: t.id }, req);
+          }
+          // ⛔️ ถอนเป็นเงินสด/โอนออก = ทำไม่ได้ตลอดกาล (closed-loop · ยังไม่มีใบอนุญาตเงินอิเลกทรอนิกส์) — ปิดที่เซิร์ฟเวอร์ด้วย ห้ามเปิดโดยไม่มีใบอนุญาต
+          if (seg[2] === 'withdraw' || seg[2] === 'transfer' || seg[2] === 'payout') {
+            return json({ ok: false, error: 'กระเป๋าในระบบใช้จ่ายค่าบริการระบบเท่านั้น · ถอนเป็นเงินสด/โอนออกไม่ได้ (closed-loop)', code: 'WITHDRAW_NOT_ALLOWED' }, req, 403);
+          }
+          // แอดมินเติม/ปรับลด (เขียนชื่อผู้ทำรายการไว้ในสเตทเมนต์)
+          if (req.method === 'POST' && seg[2] === 'adjust') {
+            if (!(await isAdmin())) return json({ error: 'admin only' }, req, 403);
+            const b = await readBody(); const amt = r2c(b.amount);
+            if (!amt) return err('จำนวนเงินไม่ถูกต้อง', req);
+            const bal = r2c(w.balance + amt);
+            if (bal < 0) return err('ปรับลดเกินยอดคงเหลือ', req);
+            const t = await addTxn(env, biz, { type: amt > 0 ? 'adjust-in' : 'adjust-out', amount: amt, status: 'done', balance_after: bal,
+              note: b.note || 'ปรับยอดโดยแอดมิน · Back Office', method: 'admin', who: b.by || 'admin' });
+            await env.DB.prepare('UPDATE wallets SET balance=?,updated_at=? WHERE biz_id=?').bind(bal, now(), biz).run();
+            return json({ ok: true, balance: bal, ref: t.ref }, req);
+          }
+        }
+        // GET /wallet — รายการกระเป๋าทั้งหมด (แอดมิน)
+        if (seg[0] === 'wallet' && !seg[1] && req.method === 'GET') {
+          if (!(await isAdmin())) return json({ error: 'admin only' }, req, 403);
+          const { results } = await env.DB.prepare('SELECT * FROM wallets ORDER BY updated_at DESC LIMIT 500').all();
+          return json(results, req);
+        }
+        // GET/PUT /wallet-verify — เปิด/ปิดวิธีตรวจเงินเข้า (ตั้งไว้ล่วงหน้า · เปิดใช้เมื่อได้คีย์ผู้ให้บริการ)
+        if (seg[0] === 'wallet-verify') {
+          if (req.method === 'GET') {
+            const r = await env.DB.prepare("SELECT v FROM app_config WHERE k='wallet_verify'").first();
+            const c = r ? JSON.parse(r.v || '{}') : {};
+            return json({ slipAuto: c.slipAuto !== false, provider: c.provider || '', minAuto: c.minAuto || 0, lineSlip: !!c.lineSlip,
+              ready: { slipApi: !!(env.SLIP_VERIFY_URL && env.SLIP_VERIFY_KEY), webhook: !!env.WALLET_WEBHOOK_SECRET, lineOA: !!env.LINE_TOKEN } }, req);
+          }
+          if (req.method === 'PUT' || req.method === 'POST') {
+            if (!(await isAdmin())) return json({ error: 'admin only' }, req, 403);
+            const b = await readBody();
+            const v = JSON.stringify({ slipAuto: b.slipAuto !== false, provider: b.provider || '', minAuto: Number(b.minAuto) || 0, lineSlip: !!b.lineSlip });
+            await env.DB.prepare("INSERT INTO app_config (k,v) VALUES ('wallet_verify',?) ON CONFLICT(k) DO UPDATE SET v=?").bind(v, v).run();
+            return json({ ok: true }, req);
+          }
+        }
+        // GET/PUT /wallet-account — บัญชีรับเงินกลางของระบบ (พร้อมเพย์/เลขธนาคาร) — ทุกโมดูลเติมเงินเข้าที่นี่
+        if (seg[0] === 'wallet-account') {
+          if (req.method === 'GET') {
+            const r = await env.DB.prepare("SELECT v FROM app_config WHERE k='wallet_acct'").first();
+            const a = r ? JSON.parse(r.v || '{}') : {};
+            return json({ promptpay: a.promptpay || '', bank: a.bank || '', acctNo: a.acctNo || '', acctName: a.acctName || '', note: a.note || '' }, req);
+          }
+          if (req.method === 'PUT' || req.method === 'POST') {
+            if (!(await isAdmin())) return json({ error: 'admin only' }, req, 403);
+            const b = await readBody();
+            const v = JSON.stringify({ promptpay: String(b.promptpay || '').replace(/[^\d]/g, ''), bank: b.bank || '',
+              acctNo: String(b.acctNo || '').replace(/[^\d-]/g, ''), acctName: b.acctName || '', note: b.note || '' });
+            await env.DB.prepare("INSERT INTO app_config (k,v) VALUES ('wallet_acct',?) ON CONFLICT(k) DO UPDATE SET v=?").bind(v, v).run();
+            return json({ ok: true }, req);
+          }
+        }
+        // POST /wallet-webhook — ตัวเช็กยอดอัตโนมัติจากธนาคาร/VA/gateway (ไม่ต้องแนบสลิป)
+        // body {biz, amount, ref, provider, secret} · ต้องตั้ง env.WALLET_WEBHOOK_SECRET
+        if (seg[0] === 'wallet-webhook' && req.method === 'POST') {
+          const b = await readBody();
+          if (!env.WALLET_WEBHOOK_SECRET || (req.headers.get('X-Webhook-Secret') || b.secret) !== env.WALLET_WEBHOOK_SECRET)
+            return json({ ok: false, error: 'unauthorized' }, req, 403);
+          const biz = String(b.biz || ''); const amt = r2c(b.amount);
+          if (!biz || !(amt > 0)) return err('biz & amount required', req);
+          const idem = 'wh:' + (b.ref || b.transRef || now());
+          const dup = await env.DB.prepare('SELECT * FROM wallet_txns WHERE biz_id=? AND idem=?').bind(biz, idem).first();
+          if (dup) return json({ ok: true, dedup: true, ref: dup.ref, balance: dup.balance_after }, req);
+          const w = await walletRow(env, biz); const bal = r2c(w.balance + amt);
+          const t = await addTxn(env, biz, { type: 'topup', amount: amt, status: 'done', balance_after: bal, idem,
+            note: 'เติมเงินเข้ากระเป๋า · ระบบตรวจยอดเข้าบัญชีอัตโนมัติ', method: b.provider || 'bank', verified_by: 'webhook', ref_doc: b.ref || '' });
+          await env.DB.prepare('UPDATE wallets SET balance=?,updated_at=? WHERE biz_id=?').bind(bal, now(), biz).run();
+          return json({ ok: true, ref: t.ref, balance: bal }, req, 201);
+        }
+      }
       if (seg[0] === 'code-requests') {
         await ensureCodeReqTable(env);
         // POST /code-requests/verify {shopId, code} → ตรวจรหัสที่ออกแล้ว (ใช้ครั้งเดียว)

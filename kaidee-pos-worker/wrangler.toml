@@ -1,0 +1,32 @@
+# Worker: kaidee-pos (API หลักของแพลตฟอร์ม) — ใส่ไฟล์นี้แล้ว push = deploy อัตโนมัติ ไม่ต้องเปิดหน้า Cloudflare
+# สตานะ R2: user เปิด R2 + สร้าง bucket kaidee-slips → สลิปเข้า R2 เก็บเป็นลิงก์ /img/<key> (D1 ไม่บวม)
+name = "kaidee-pos"
+main = "worker.js"
+compatibility_date = "2026-07-30"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kaidee"
+database_id = "d7c726df-526e-4326-9820-fad615246440"
+
+# R2 เก็บสลิป/รูป (30 ก.ค. 69: user สั่งเปิด R2)
+# ต้องมี bucket ชื่อนี้ก่อน push:  npx wrangler r2 bucket create kaidee-slips
+# (ถ้ายังขื้น code 10042 = ยังไม่เปิด R2 ที่ Dashboard → R2 → Enable)
+[[r2_buckets]]
+binding = "SLIPS"
+bucket_name = "kaidee-slips"
+
+[[durable_objects.bindings]]
+name = "SHOP_HUB"
+class_name = "ShopHub"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ShopHub"]
+
+# secret ทั้งหมดตั้งที่หน้า Cloudflare (Settings → Variables and Secrets) — ห้ามใส่ในไฟล์นี้:
+#   ADMIN_SECRET · ADMIN_PHONE · ADMIN_LINE · ADMIN_LINE_USER · LINE_TOKEN
+#   SMS_ENDPOINT · SMS_KEY · SMS_SENDER · SMS_PROVIDER · SMS_SID · SMS_TOKEN · SMS_FROM
+#   SLIP_VERIFY_URL · SLIP_VERIFY_KEY · SLIP_ACCOUNT   (ตรวจสลิปกับธนาคารอัตโนมัติ)
+#   WALLET_WEBHOOK_SECRET                              (ยอดเข้าบัญชีอัตโนมัติ · POST /wallet-webhook)
+#   PAY_SECRET_KEY · TRIAL_DAYS
