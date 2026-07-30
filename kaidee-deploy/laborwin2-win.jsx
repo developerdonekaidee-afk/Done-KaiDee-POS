@@ -138,9 +138,9 @@ function WinPlan({win,up,flash,nWorkers}){
   const curT=WIN_TIERS.find(t=>t.id===cur)||WIN_TIERS[0];
   const due=priceOf(curT);
   const exp=win.plan&&win.plan.expiry?new Date(win.plan.expiry):null;
-  const choose=(tid)=>{ const t=WIN_TIERS.find(x=>x.id===tid); const amt=priceOf(t);
+  const choose=async(tid)=>{ const t=WIN_TIERS.find(x=>x.id===tid); const amt=priceOf(t);
     if(amt>0){ if(!KDW){ flash('กระเป๋าเงินยังไม่พร้อม'); return; }
-      const res=KDW.charge(bizId,amt,{who:'วิน '+win.name,sub:'ค่าบริการระบบวิน '+t.th+(cycle==='yr'?' (รายปี)':' (รายเดือน)'),type:'fee'});
+      const res=await KDW.charge(bizId,amt,{who:'วิน '+win.name,sub:'ค่าบริการระบบวิน '+t.th+(cycle==='yr'?' (รายปี)':' (รายเดือน)'),type:'fee',idem:'winplan:'+tid+':'+cycle+':'+new Date().toISOString().slice(0,7)});
       setWTick(x=>x+1);
       if(!res.ok){ flash(res.short>0?('ยอดกระเป๋าไม่พอ · ขาดอีก '+B(res.short)):res.error); return; } }
     const days=cycle==='yr'?365:30;

@@ -559,7 +559,7 @@ function CrmApp({ store, onEnter, onCancel }){
     const _feats = { ...(s.features||{}), ...((s.addons&&s.addons.consign)?{consign:true}:{}) };
     // เขียนลง store จริง → ร้านใหม่พร้อมใช้ทันที
     store.setShop(prev=>({ ...prev, name:s.name, emoji:s.emoji, logo:s.logo||null, phone:s.phone||'',
-      branch:'', isOpen:true, open:s.open, close:s.close, cat:s.cat, vertical:s.vertical||'food', owner:s.owner||null, shopId:s.shopId, consent:s.consent||null, features:_feats }));
+      branch:'', isOpen:true, open:s.open, close:s.close, hoursSet:true, cat:s.cat, vertical:s.vertical||'food', owner:s.owner||null, shopId:s.shopId, consent:s.consent||null, features:_feats }));
     store.setPay(prev=>({ ...prev, shopName:s.name, promptpay:s.promptpay }));
     store.setSub(_sub);
     if(store.setCostMode) store.setCostMode('simple');
@@ -571,7 +571,7 @@ function CrmApp({ store, onEnter, onCancel }){
       const k='kaidee_pos_v1'; const c=JSON.parse(localStorage.getItem(k)||'{}');
       // สมัครใหม่ = เริ่มร้านสดทั้งหมด (ไม่ sync ของเก่า) — ล้าง raw/purchases/wastes/staffList/riders + VAT/voidPin ด้วย
       localStorage.setItem(k, JSON.stringify({ lang: c.lang||'th',
-        shop:{ name:s.name, emoji:s.emoji, logo:s.logo||null, phone:s.phone||'', branch:'', isOpen:true, open:s.open, close:s.close, cat:s.cat, vertical:s.vertical||'food', owner:s.owner||null, shopId:s.shopId, consent:s.consent||null, features:_feats },
+        shop:{ name:s.name, emoji:s.emoji, logo:s.logo||null, phone:s.phone||'', branch:'', isOpen:true, open:s.open, close:s.close, hoursSet:true, cat:s.cat, vertical:s.vertical||'food', owner:s.owner||null, shopId:s.shopId, consent:s.consent||null, features:_feats },
         pay:{ shopName:s.name, promptpay:s.promptpay, bank:'', acct:'', accept:{ promptpay:true, cash:true, cod:true }, autoSlip:true, vatMode:'off', vatRate:7, taxId:'', taxAddr:'', taxBranch:'สำนักงานใหญ่' },
         sub:_sub,
         costMode:'simple', menu: fMenu,

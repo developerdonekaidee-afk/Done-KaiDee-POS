@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="gate.js?v=p2-20260730k"></script>
+<script src="gate.js?v=p2-20260731a"></script>
 <meta charset="UTF-8">
-<meta name="build" content="p2-20260730k">
+<meta name="build" content="p2-20260731a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KaiDee POS — Back Office (แอดมินคนขาย)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,6 +114,7 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="doc-templates.js?v=p2-20260731a"></script>
 
 <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
@@ -260,9 +261,9 @@ function App(){
     try{
       const r=await fetch(KD_API_BASE+'/shops/'+id,{method:'DELETE',headers:{'content-type':'application/json','X-Admin-Token':tok},body:JSON.stringify({token:tok})});
       if(r.status===404){ update(d=>({...d, shops:d.shops.filter(x=>x.id!==id)})); return; }   // ร้านหายจาก DB อยู่แล้ว = ถือว่าลบสำเร็จ
-      if(!r.ok){ let j={}; try{ j=await r.json(); }catch(e){} alert('ลบไม่สำเร็จ: '+(j.error||('HTTP '+r.status))+(r.status===403?'\n\n→ ออกจากระบบ แล้วล็อกอินใหม่ด้วยรหัสแอดมิน (ออนไลน์) ก่อนลบ':'')); return; }
+      if(!r.ok){ let j={}; try{ j=await r.json(); }catch(e){} kdToast('ลบไม่สำเร็จ: '+(j.error||('HTTP '+r.status))+(r.status===403?'\n\n→ ออกจากระบบ แล้วล็อกอินใหม่ด้วยรหัสแอดมิน (ออนไลน์) ก่อนลบ':'')); return; }
       update(d=>({...d, shops:d.shops.filter(x=>x.id!==id)}));
-    }catch(e){ alert('ลบไม่สำเร็จ — เชื่อมต่อ backend ไม่ได้'); }
+    }catch(e){ kdToast('ลบไม่สำเร็จ — เชื่อมต่อ backend ไม่ได้'); }
   };
   const patchShop = (id,patch)=>{ update(d=>{ const s=d.shops.find(x=>x.id===id); if(s) Object.assign(s,patch); return d; });
     if(liveRef.current){
@@ -289,12 +290,12 @@ function App(){
 
   if(!authed) return <Login onOk={()=>{ sessionStorage.setItem('kd_admin','1'); setAuthed(true); }}/>;
 
-  const nav = [['overview','📊','ภาพรวม'],['shops','🏪','ร้านค้า'],['payreq','🧾','คำขอชำระ'],['codereq','🔑','คำขอรหัส Office'],['billing','💳','การเงิน'],['wallets','👛','กระเป๋าเงิน'],['license','🔐','สิทธิ์ร้าน'],['support','💬','ช่วยเหลือ'],['settings','⚙️','ตั้งค่า']];
+  const nav = [['overview','📊','ภาพรวม'],['shops','🏪','ร้านค้า'],['payreq','🧾','คำขอชำระ'],['codereq','🔑','คำขอรหัส Office'],['deletions','🗑️','การลบร้าน'],['billing','💳','การเงิน'],['wallets','👛','กระเป๋าเงิน'],['license','🔐','สิทธิ์ร้าน'],['docs','📄','เอกสาร'],['support','💬','ช่วยเหลือ'],['settings','⚙️','ตั้งค่า']];
   const selShop = sel ? db.shops.find(s=>s.id===sel) : null;
   return (
     <div className="app">
       <aside className="side">
-        <div className="logo"><div className="logo-mk">🍽️</div>
+        <div className="logo"><div className="logo-mk" style={{overflow:'hidden',background:'#fff'}}><img src="assets/kaidee-logo.png" alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>
           <div><div style={{color:'#fff',fontWeight:700,fontSize:15.5}}>KaiDee POS</div><div style={{fontSize:11.5,color:'#7fa89c'}}>Back Office</div></div></div>
         {nav.map(([k,ic,l])=>(<button key={k} className={'nav'+(tab===k?' on':'')} onClick={()=>setTab(k)}><span className="ic">{ic}</span>{l}{k==='payreq'&&pendingPay>0&&<span className="navbadge">{pendingPay}</span>}</button>))}
         <div style={{marginTop:'auto',padding:'14px 10px 4px',borderTop:'1px solid rgba(255,255,255,.08)'}}>
@@ -319,10 +320,12 @@ function App(){
           {tab==='shops'    && <Shops db={db} onOpen={setSel}/>}
           {tab==='payreq'   && <PayRequests db={db} update={update} onPending={setPendingPay}/>}
           {tab==='codereq'  && <CodeRequests/>}
+          {tab==='deletions'&& <DeletionLog/>}
           {tab==='billing'  && <Billing db={db}/>}
           {tab==='wallets'  && <Wallets/>}
           {tab==='support'  && <Support db={db}/>}
           {tab==='license'  && <LicenseAdmin/>}
+          {tab==='docs'     && <DocTemplates/>}
           {tab==='settings' && <Settings/>}
         </div>
       </main>
@@ -333,9 +336,59 @@ function App(){
 }
 
 /* ══ LOGIN ══ */
+function ResetSheet({onClose,onDone}){
+  const [step,setStep]=useState(1); const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState(''); const [msg,setMsg]=useState('');
+  const [phone,setPhone]=useState(''); const [otp,setOtp]=useState('');
+  const [p1,setP1]=useState(''); const [p2,setP2]=useState('');
+  const send=async()=>{ if(busy)return; setBusy(true); setErr(''); setMsg('');
+    try{ const r=await fetch(KD_API_BASE+'/admin/reset/request',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.ok){ setPhone(j.phone||''); setStep(2); setMsg('ส่งรหัส 6 หลักไป'+(j.via==='line'?' ทาง LINE ':' ทาง SMS ')+'เบอร์ '+(j.phone||'')+' · ใช้ได้ 10 นาที'); }
+      else setErr(j.error||('ส่งไม่สำเร็จ (HTTP '+r.status+')'));
+    }catch(e){ setErr('เชื่อมเซิร์ฟเวอร์ไม่ได้'); }
+    setBusy(false); };
+  const confirm=async()=>{ if(busy)return; setErr('');
+    if(otp.replace(/\D/g,'').length!==6){ setErr('กรอกรหัสยืนยัน 6 หลัก'); return; }
+    if(p1.length<6){ setErr('รหัสใหม่อย่างน้อย 6 ตัว'); return; }
+    if(p1!==p2){ setErr('รหัสใหม่สองช่องไม่ตรงกัน'); return; }
+    setBusy(true);
+    try{ const r=await fetch(KD_API_BASE+'/admin/reset/confirm',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({otp:otp.replace(/\D/g,''),next:p1})});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.ok){ if(j.token){ try{ sessionStorage.setItem('kd_admin_tok',j.token); }catch(e){} } setAdminPass(p1); setBusy(false); onDone(!!j.token); return; }
+      setErr(j.error||('ยืนยันไม่สำเร็จ (HTTP '+r.status+')'));
+    }catch(e){ setErr('เชื่อมเซิร์ฟเวอร์ไม่ได้'); }
+    setBusy(false); };
+  const inSt={width:'100%',marginTop:7,padding:'12px 14px'};
+  return (<div style={{position:'fixed',inset:0,background:'rgba(16,22,19,.5)',zIndex:60,display:'flex',alignItems:'center',justifyContent:'center',padding:18}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="card fade" style={{width:'100%',maxWidth:400,padding:22}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+        <div style={{fontWeight:700,fontSize:16.5,flex:1}}>รีเซ็ตรหัสแอดมิน</div>
+        <button className="btn sm" onClick={onClose}>✕</button>
+      </div>
+      <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.6,marginBottom:14}}>ระบบส่งรหัสยืนยัน 6 หลักไปเบอร์เจ้าของระบบที่ลงทะเบียนไว้ (ไม่ต้องกรอกเบอร์ · กันคนอื่นกดรีเซ็ต)</div>
+      {step===1 ? (<React.Fragment>
+        <button className="btn pri" style={{width:'100%',justifyContent:'center',padding:13,opacity:busy?.6:1}} onClick={send}>{busy?'กำลังส่ง…':'ส่งรหัสยืนยัน'}</button>
+      </React.Fragment>) : (<React.Fragment>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)'}}>รหัสยืนยัน 6 หลัก {phone&&<span style={{fontWeight:600,color:'var(--ink-3)'}}>· ส่งไป {phone}</span>}</label>
+        <input className="in mono" inputMode="numeric" maxLength={6} value={otp} onChange={e=>{setOtp(e.target.value);setErr('');}} placeholder="● ● ● ● ● ●" style={{...inSt,letterSpacing:4,fontSize:18,textAlign:'center'}} autoFocus/>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)',display:'block',marginTop:13}}>รหัสใหม่ (อย่างน้อย 6 ตัว)</label>
+        <input className="in" type="password" value={p1} onChange={e=>{setP1(e.target.value);setErr('');}} style={inSt}/>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)',display:'block',marginTop:13}}>ยืนยันรหัสใหม่</label>
+        <input className="in" type="password" value={p2} onChange={e=>{setP2(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&confirm()} style={inSt}/>
+        <div style={{display:'flex',gap:9,marginTop:16}}>
+          <button className="btn" style={{flex:'0 0 auto',padding:'13px 14px',opacity:busy?.6:1}} onClick={send}>ส่งใหม่</button>
+          <button className="btn pri" style={{flex:1,justifyContent:'center',padding:13,opacity:busy?.6:1}} onClick={confirm}>{busy?'กำลังตั้งรหัส…':'ตั้งรหัสใหม่ + เข้าระบบ'}</button>
+        </div>
+      </React.Fragment>)}
+      {msg&&!err&&<div style={{color:'var(--brand-ink)',fontSize:12.5,marginTop:11,fontWeight:600,lineHeight:1.6}}>{msg}</div>}
+      {err&&<div style={{color:'var(--danger)',fontSize:12.5,marginTop:11,fontWeight:600,lineHeight:1.6}}>{err}</div>}
+    </div>
+  </div>);
+}
 function Login({onOk}){
   const [pw,setPw]=useState(''); const [err,setErr]=useState('');
-  const [busy,setBusy]=useState(false);
+  const [busy,setBusy]=useState(false); const [reset,setReset]=useState(false);
   const go=async()=>{ if(busy)return; setErr(''); setBusy(true);
     // ลองล็อกอินกับ backend ก่อน (รหัสกลาง แชร์ทุกเครื่อง) — ถ้า backend ล่ม fallback รหัสในเครื่อง
     try{ const r=await fetch(KD_API_BASE+'/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:pw})});
@@ -346,7 +399,7 @@ function Login({onOk}){
     if(pw===getAdminPass()){ onOk(); } else setErr('รหัสไม่ถูกต้อง'); };
   return (<div className="login"><div className="box fade">
     <div style={{display:'flex',alignItems:'center',gap:11,marginBottom:6}}>
-      <div className="logo-mk" style={{width:44,height:44,fontSize:23}}>🍽️</div>
+      <div className="logo-mk" style={{width:44,height:44,fontSize:23,overflow:'hidden',background:'#fff'}}><img src="assets/kaidee-logo.png" alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>
       <div><div style={{fontWeight:700,fontSize:17}}>KaiDee POS</div><div style={{fontSize:12.5,color:'var(--brand-ink)',fontWeight:600}}>Back Office · แอดมินคนขาย</div></div>
     </div>
     <div style={{fontSize:13.5,color:'var(--ink-2)',margin:'12px 0 18px'}}>เข้าสู่ระบบจัดการร้านค้าและการขาย</div>
@@ -354,7 +407,8 @@ function Login({onOk}){
     <input className="in" type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&go()} placeholder="••••••" style={{width:'100%',marginTop:7,padding:'12px 14px'}} autoFocus/>
     {err&&<div style={{color:'var(--danger)',fontSize:13,marginTop:8,fontWeight:600}}>{err}</div>}
     <button className="btn pri" style={{width:'100%',justifyContent:'center',marginTop:16,padding:'13px',opacity:busy?.6:1}} onClick={go}>{busy?'กำลังตรวจสอบ…':'เข้าสู่ระบบ'}</button>
-    <div style={{fontSize:11.5,color:'var(--ink-3)',textAlign:'center',marginTop:14}}>รหัสตั้งต้น: <b className="mono">kaidee2026</b> · เปลี่ยนได้ในตั้งค่า (มีผลทุกเครื่องผ่าน backend)</div>
+    <button className="btn" style={{width:'100%',justifyContent:'center',marginTop:9,padding:'11px',fontWeight:600}} onClick={()=>setReset(true)}>ลืมรหัส? รีเซ็ตด้วยรหัสยืนยันทาง SMS</button>
+    {reset&&<ResetSheet onClose={()=>setReset(false)} onDone={()=>{ setReset(false); onOk(); }}/>}
   </div></div>);
 }
 
@@ -458,11 +512,44 @@ function Shops({db,onOpen}){
 }
 
 /* ══ SHOP DRAWER ══ */
+/* FX-016: ชีตยืนยัน/กรอกค่าในหน้าเอง — prompt/confirm/alert ถูกบล็อกในเบราว์เซอร์ในแอป/PWA */
+function kdToast(msg){ let el=document.getElementById('kd-toast');
+  if(!el){ el=document.createElement('div'); el.id='kd-toast'; el.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none'; document.body.appendChild(el); }
+  const b=document.createElement('div'); b.textContent=msg;
+  b.style.cssText='background:#12211E;color:#fff;font-weight:600;font-size:13.5px;line-height:1.5;padding:11px 16px;border-radius:12px;max-width:88vw;white-space:pre-line;box-shadow:0 8px 24px rgba(0,0,0,.22)';
+  el.appendChild(b); setTimeout(()=>b.remove(),4600); }
+function AskSheet({title,body,fields,confirmWord,okText,danger,onCancel,onOk}){
+  const fs=fields||[];
+  const [v,setV]=useState(()=>{ const o={}; fs.forEach(f=>{ o[f.key]=f.value!=null?f.value:''; }); return o; });
+  const [w,setW]=useState('');
+  const ready=(!confirmWord||w.trim().toUpperCase()===String(confirmWord).toUpperCase())&&fs.every(f=>f.req===false||String(v[f.key]==null?'':v[f.key]).trim()!=='');
+  const lb={fontSize:12.5,fontWeight:700,color:'var(--ink-2)',display:'block',marginBottom:4};
+  const inp={width:'100%',padding:'11px 12px',minHeight:44};
+  return (<div className="scrim" onClick={onCancel} style={{display:'flex',alignItems:'center',justifyContent:'center',zIndex:400,padding:16}}>
+    <div className="card" onClick={e=>e.stopPropagation()} style={{width:'min(430px,94vw)',padding:'20px 22px',maxHeight:'88vh',overflowY:'auto'}}>
+      <div style={{fontWeight:700,fontSize:16,marginBottom:6,color:danger?'var(--danger)':'var(--ink)'}}>{title}</div>
+      {body&&<div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.55,whiteSpace:'pre-line',marginBottom:13}}>{body}</div>}
+      {fs.map(f=>(<div key={f.key} style={{marginBottom:11}}>
+        <label style={lb}>{f.label}</label>
+        <input className="in" type={f.type||'text'} min={f.type==='number'?'0':undefined} value={v[f.key]} placeholder={f.placeholder||''} onChange={e=>setV(s=>({...s,[f.key]:e.target.value}))} style={inp}/>
+      </div>))}
+      {confirmWord&&<div style={{marginBottom:11}}>
+        <label style={lb}>พิมพ์ {confirmWord} เพื่อยืนยัน</label>
+        <input className="in" value={w} onChange={e=>setW(e.target.value)} placeholder={confirmWord} style={inp}/>
+      </div>}
+      <div style={{display:'flex',gap:9,marginTop:4}}>
+        <button className="btn" style={{padding:'12px 16px',minHeight:44}} onClick={onCancel}>ยกเลิก</button>
+        <button className={danger?'btn danger':'btn pri'} style={{flex:1,minHeight:44,opacity:ready?1:.45,pointerEvents:ready?'auto':'none'}} onClick={()=>onOk(v)}>{okText||'ยืนยัน'}</button>
+      </div>
+    </div>
+  </div>);
+}
 function ShopDrawer({shop,onClose,patch,del,onManage}){
   const p=planInfo(shop);
-  const doDelete=()=>{ let ok=true; try{ ok=window.confirm(`ลบร้าน “${shop.name}” ถาวร?\n\n⚠️ เมนู/ออเดอร์/สมาชิก/สต๊อก ทั้งหมดจะถูกลบ กู้คืนไม่ได้`); }catch(e){ ok=true; }
-    if(ok===false) return;   // confirm ใช้ได้และผู้ใช้กดยกเลิก · (undefined/throw = เบราว์เซอร์ในแอปบล็อก → ถือว่ายืนยัน)
-    del(shop.id); onClose(); };
+  const [askDel,setAskDel]=useState(false); const [delTxt,setDelTxt]=useState('');
+  // FX-015: ยืนยันในหน้าเอง — window.confirm ถูกบล็อกในเบราว์เซอร์ในแอป/PWA แล้วเคยลบทันทีโดยไม่ถาม
+  const doDelete=()=>{ setDelTxt(''); setAskDel(true); };
+  const confirmDelete=()=>{ if(delTxt.trim()!==shop.name.trim()) return; setAskDel(false); del(shop.id); onClose(); };
   const [ed,setEd]=useState(false);
   const [f,setF]=useState({name:shop.name,emoji:shop.emoji,cat:shop.cat,phone:shop.owner.phone||''});
   const EMO=['🍳','🍜','☕','🍔','🍦','🥗','🍱','🧋','🍗','🍕','🐟','🍰','🥤','🍚','🍤'];
@@ -473,11 +560,10 @@ function ShopDrawer({shop,onClose,patch,del,onManage}){
   const pkgList=(pkg&&pkg.packages&&pkg.packages.length)?pkg.packages:[{name:'ร้านค้า',seats:1,monthly:199},{name:'ร้านค้า พลัส',seats:3,monthly:299}];
   const toggleSusp=()=>{ patch(shop.id,{status:shop.status==='suspended'?'active':'suspended'}); };
   const [rsMsg,setRsMsg]=useState('');
-  const resetData=async(wipeMenu)=>{
-    const ask=wipeMenu
-      ? `ล้างข้อมูลร้าน “${shop.name}” ทั้งหมด (ออเดอร์+สมาชิก+เมนู) กลับเป็นค่าเริ่มต้น?`
-      : `ล้างข้อมูลการขายของร้าน “${shop.name}” (ออเดอร์+สมาชิก+ตัวนับคิว) เก็บเมนูไว้?`;
-    if(!window.confirm(ask+'\n\n⚠️ ลบแล้วกู้คืนไม่ได้')) return;
+  const [askReset,setAskReset]=useState(null);
+  const resetData=(wipeMenu)=>setAskReset({wipeMenu:!!wipeMenu});
+  const doReset=async(wipeMenu)=>{
+    setAskReset(null);
     setRsMsg('กำลังล้าง…');
     try{ const tok=sessionStorage.getItem('kd_admin_tok')||'';
       const r=await fetch(KD_API_BASE+'/shops/'+shop.id+'/reset',{method:'POST',headers:{'content-type':'application/json','X-Admin-Token':tok},body:JSON.stringify({wipeMenu:!!wipeMenu,token:tok})});
@@ -583,6 +669,18 @@ function ShopDrawer({shop,onClose,patch,del,onManage}){
         <div style={{fontWeight:700,fontSize:14,marginBottom:3,color:'var(--danger)'}}>ลบร้านถาวร</div>
         <div style={{fontSize:12.5,color:'var(--ink-2)',marginBottom:11,lineHeight:1.5}}>ลบร้านนี้ออกจากระบบพร้อมข้อมูลทั้งหมด — ใช้เมื่อร้านเลิก/สมัครทดสอบแล้วไม่ใช้จริง (กู้คืนไม่ได้)</div>
         <button className="btn danger sm" onClick={doDelete}>🗑️ ลบร้านนี้ถาวร</button>
+        {askReset && <AskSheet danger okText="ล้างข้อมูล" title={askReset.wipeMenu?'ล้างข้อมูลร้านทั้งหมด + เมนู':'ล้างข้อมูลการขายของร้านนี้'}
+          body={(askReset.wipeMenu?`ออเดอร์ · สมาชิก · เมนู ของร้าน “${shop.name}” จะถูกลบกลับเป็นค่าเริ่มต้น`:`ออเดอร์ · สมาชิก · ตัวนับคิว ของร้าน “${shop.name}” จะถูกลบ (เก็บเมนูไว้)`)+'\n⚠️ ลบแล้วกู้คืนไม่ได้ — พิมพ์ชื่อร้านให้ตรงเพื่อยืนยัน'}
+          confirmWord={shop.name} onCancel={()=>setAskReset(null)} onOk={()=>doReset(askReset.wipeMenu)}/>}
+        {askDel && <div style={{marginTop:12,border:'1px solid var(--danger)',borderRadius:12,padding:14,background:'var(--danger-soft)'}}>
+          <div style={{fontWeight:700,fontSize:13.5,color:'var(--danger)',marginBottom:6}}>ยืนยันลบร้าน “{shop.name}” ถาวร</div>
+          <div style={{fontSize:12.5,color:'var(--ink-2)',lineHeight:1.55,marginBottom:10}}>เมนู · ออเดอร์ · สมาชิก · สต๊อก ทั้งหมดจะถูกลบ กู้คืนไม่ได้ — พิมพ์ชื่อร้านให้ตรงเพื่อยืนยัน</div>
+          <input className="in" value={delTxt} onChange={e=>setDelTxt(e.target.value)} placeholder={shop.name} style={{width:'100%',padding:'10px 12px'}}/>
+          <div style={{display:'flex',gap:8,marginTop:11}}>
+            <button className="btn sm" onClick={()=>setAskDel(false)}>ยกเลิก</button>
+            <button className="btn danger sm" onClick={confirmDelete} style={{opacity:delTxt.trim()===shop.name.trim()?1:.45,pointerEvents:delTxt.trim()===shop.name.trim()?'auto':'none'}}>ลบถาวร</button>
+          </div>
+        </div>}
       </div>
     </div>
   </div></div>);
@@ -598,9 +696,9 @@ function Billing({db}){
   const thisMonth=all.filter(x=>x.d.startsWith('2026-07')).reduce((a,x)=>a+x.amt,0);
   return (<div>
     <div className="kpis" style={{gridTemplateColumns:'repeat(4,1fr)'}}>
-      <Kpi lbl="รายได้ต่อเดือน (MRR)" val={money(mrr)} delta="+฿597" up ic="💳"/>
+      <Kpi lbl="รายได้ต่อเดือน (MRR)" val={money(mrr)} delta={`${paid.length} ร้านจ่ายอยู่`} ic="💳"/>
       <Kpi lbl="เก็บได้เดือนนี้" val={money(thisMonth)} delta={`${all.filter(x=>x.d.startsWith('2026-07')).length} บิล`} ic="🧾"/>
-      <Kpi lbl="สมาชิกจ่ายเงิน" val={paid.length} delta="อัตราคงอยู่ 92%" up ic="✓"/>
+      <Kpi lbl="สมาชิกจ่ายเงิน" val={paid.length} delta={`จากทั้งหมด ${db.shops.length} ร้าน`} ic="✓"/>
       <Kpi lbl="ค้างชำระ" val={db.shops.filter(s=>planInfo(s).label==='หมดอายุ').length} delta="ตามทวง" down ic="⚠️"/>
     </div>
     <div className="card" style={{overflow:'hidden',marginTop:16}}>
@@ -614,78 +712,239 @@ function Billing({db}){
   </div>);
 }
 
-/* ══ WALLETS (กระเป๋าเงินทุกโมดูล · kd_biz_wallet_v1) ══ */
-const KDW_BIZ_KEY='kd_biz_wallet_v1', KDW_PLAT_KEY='kd_platform_wallet_v1';
-const KDW_MODS={pos:['🏪','ร้านค้า POS'],fitness:['🏋️','ฟิตเนส'],market:['🏪','ตลาด'],labor:['🛵','วิน'],app:['📱','อื่นๆ']};
-function kdwReadAll(){ try{ return JSON.parse(localStorage.getItem(KDW_BIZ_KEY))||{}; }catch(e){ return {}; } }
-function kdwWriteAll(all){ try{ localStorage.setItem(KDW_BIZ_KEY,JSON.stringify(all)); }catch(e){} }
+/* ══ WALLETS (กระเป๋าเงินทุกโมดูล · ยอด+ประวัติอ่านจาก backend D1) ══ */
+const KDW_PLAT_KEY='kd_platform_wallet_v1';
+const KDW_MODS={pos:['🏪','ร้านค้า POS'],fitness:['🏋️','ฟิตเนส'],market:['🏪','ตลาด'],labor:['🛵','วิน'],sponsor:['🎁','สปอนเซอร์'],app:['📱','อื่นๆ']};
+function kdwApiBase(){ try{ return (window.KD_API_BASE||localStorage.getItem('kd_api_base')||'').replace(/\/+$/,''); }catch(e){ return ''; } }
+async function kdwApi(path,opt){ const b=kdwApiBase(); if(!b) return {__offline:true};
+  const o=opt||{}; const h={'Content-Type':'application/json'};
+  try{ const t=sessionStorage.getItem('kd_admin_tok')||localStorage.getItem('kd_admin_tok'); if(t) h['X-Admin-Token']=t; }catch(e){}
+  const r=await fetch(b+path,{method:o.method||'GET',headers:h,body:o.body?JSON.stringify(o.body):undefined});
+  let j=null; try{ j=await r.json(); }catch(e){}
+  return r.ok?(j||{}):{__err:true,status:r.status,...(j||{})}; }
 function Wallets(){
-  const [tick,setTick]=useState(0); const [q,setQ]=useState(''); const [open,setOpen]=useState(null);
-  const all=kdwReadAll();
-  const rows=Object.keys(all).map(k=>{ const a=all[k]||{}; const [mod,id]=k.split(':');
-    return {key:k,mod:mod||'app',id:id||'main',balance:Number(a.balance)||0,auto:a.auto!==false,ledger:Array.isArray(a.ledger)?a.ledger:[],updatedAt:a.updatedAt||0}; })
-    .filter(r=>!q||(r.key+' '+((KDW_MODS[r.mod]||[])[1]||'')).toLowerCase().includes(q.toLowerCase()))
-    .sort((a,b)=>b.updatedAt-a.updatedAt);
+  const [rows,setRows]=useState([]); const [queue,setQueue]=useState([]); const [q,setQ]=useState('');
+  const [open,setOpen]=useState(null); const [txns,setTxns]=useState([]);
+  const [acct,setAcct]=useState({promptpay:'',bank:'',acctNo:'',acctName:''});
+  const [vf,setVf]=useState({slipAuto:true,provider:'',lineSlip:false,ready:{}});
+  const [msg,setMsg]=useState(''); const [busy,setBusy]=useState(false);
+  const live=!!kdwApiBase();
+  const load=async()=>{ setBusy(true);
+    const [w,qu,ac,v]=await Promise.all([kdwApi('/wallet'),kdwApi('/wallet-topups?status=pending'),kdwApi('/wallet-account'),kdwApi('/wallet-verify')]);
+    if(Array.isArray(w)) setRows(w.map(r=>{ const [mod,id]=String(r.biz_id||'').split(':');
+      return {key:r.biz_id,mod:mod||'app',id:id||'main',balance:Number(r.balance)||0,auto:r.auto!==0,updatedAt:r.updated_at||0,
+        pp:r.pp||'',bank:r.bank||'',acctNo:r.acct_no||''}; }));
+    if(Array.isArray(qu)) setQueue(qu);
+    if(ac&&!ac.__err&&!ac.__offline) setAcct({promptpay:ac.promptpay||'',bank:ac.bank||'',acctNo:ac.acctNo||'',acctName:ac.acctName||''});
+    if(v&&!v.__err&&!v.__offline) setVf({slipAuto:v.slipAuto!==false,provider:v.provider||'',lineSlip:!!v.lineSlip,ready:v.ready||{}});
+    setBusy(false); };
+  useEffect(()=>{ load(); },[]);
+  const showTxns=async(k)=>{ if(open===k){ setOpen(null); setTxns([]); return; }
+    setOpen(k); const r=await kdwApi('/wallet/'+encodeURIComponent(k)+'/txns?limit=60'); setTxns(Array.isArray(r)?r:[]); };
+  const [askRej,setAskRej]=useState(null); const [askAdj,setAskAdj]=useState(null);
+  const approve=async(t,ok,reason)=>{
+    if(!ok&&!reason){ setAskRej(t); return; }
+    setBusy(true);
+    const r=await kdwApi('/wallet-txns/'+t.id,{method:'PATCH',body:ok?{status:'confirmed',by:'admin'}:{status:'rejected',by:'admin',reason}});
+    setBusy(false);
+    setMsg(r.__err?('ทำรายการไม่สำเร็จ: '+(r.error||r.status)):(ok?('อนุมัติแล้ว · ยอดใหม่ '+money(r.balance)):'ปฏิเสธคำขอแล้ว · แจ้งร้านทาง LINE ให้อัตโนมัติ'));
+    load(); };
+  const adjust=(r,kind)=>setAskAdj({row:r,kind});
+  const doAdjust=async(r,kind,raw,noteRaw)=>{
+    const v=Math.round((Number(raw)||0)*100)/100;
+    if(!(v>0)){ setMsg('ระบุจำนวนเงินมากกว่า 0'); return; }
+    if(kind!=='topup'&&v>r.balance){ setMsg('ปรับลดเกินยอดคงเหลือไม่ได้'); return; }
+    setAskAdj(null); const note=(noteRaw||'').trim()||'ปรับโดยแอดมิน';
+    setBusy(true); const res=await kdwApi('/wallet/'+encodeURIComponent(r.key)+'/adjust',{method:'POST',body:{amount:kind==='topup'?v:-v,note:note+' · Back Office',by:'admin'}});
+    setBusy(false); setMsg(res.__err?('ไม่สำเร็จ: '+(res.error||res.status)):('บันทึกแล้ว · ยอดใหม่ '+money(res.balance))); load(); };
+  const toggleAuto=async(r)=>{ await kdwApi('/wallet/'+encodeURIComponent(r.key)+'/auto',{method:'POST',body:{on:!r.auto}}); load(); };
+  const saveAcct=async()=>{ setBusy(true); const r=await kdwApi('/wallet-account',{method:'PUT',body:acct}); setBusy(false);
+    setMsg(r.__err?('บันทึกบัญชีไม่สำเร็จ: '+(r.error||r.status)):'บันทึกบัญชีรับเงินของระบบแล้ว · ทุกโมดูลจะโชว์บัญชีนี้ตอนเติมเงิน'); };
+  const saveVf=async(patch)=>{ const nv={...vf,...patch}; setVf(nv);
+    const r=await kdwApi('/wallet-verify',{method:'PUT',body:{slipAuto:nv.slipAuto,provider:nv.provider,lineSlip:nv.lineSlip}});
+    setMsg(r.__err?'บันทึกการตั้งค่าไม่สำเร็จ':'บันทึกการตั้งค่าแล้ว'); };
   const plat=(()=>{ try{ return JSON.parse(localStorage.getItem(KDW_PLAT_KEY))||{ledger:[]}; }catch(e){ return {ledger:[]}; } })();
-  const platLed=(plat.ledger||[]);
+  const platLed=plat.ledger||[];
   const rev30=platLed.filter(x=>x.date&&(Date.now()-new Date(x.date))<30*864e5).reduce((a,x)=>a+(Number(x.amt)||0),0);
-  const revAll=platLed.reduce((a,x)=>a+(Number(x.amt)||0),0);
+  const list=rows.filter(r=>!q||(r.key+' '+((KDW_MODS[r.mod]||[])[1]||'')).toLowerCase().includes(q.toLowerCase()));
   const totBal=rows.reduce((a,r)=>a+r.balance,0);
-  const act=(r,kind)=>{ const raw=prompt((kind==='topup'?'เติมเงินเข้ากระเป๋า ':'หัก/ปรับลดกระเป๋า ')+r.key+'\nยอดคงเหลือขณะนี้ '+money(r.balance)+'\n\nระบุจำนวนเงิน (บาท)','');
-    const v=Math.round((Number(raw)||0)*100)/100; if(!(v>0)) return;
-    if(kind!=='topup'&&v>r.balance){ alert('หักมากกว่ายอดคงเหลือไม่ได้'); return; }
-    const note=prompt('หมายเหตุ (บันทึกในเดินบัชี)', kind==='topup'?'แอดมินเติมเงินให้ (โอน/สลิป)':'แอดมินปรับลดยอด')||'ปรับโดยแอดมิน';
-    const a2=kdwReadAll(); const cur=a2[r.key]||{balance:0,ledger:[],auto:true};
-    const delta=kind==='topup'?v:-v; const bal=Math.round(((Number(cur.balance)||0)+delta)*100)/100;
-    cur.ledger=[...(cur.ledger||[]),{ts:new Date().toISOString(),type:kind==='topup'?'topup':'adjust',amount:delta,bal,note:note+' · Back Office'}];
-    cur.balance=bal; cur.updatedAt=Date.now(); a2[r.key]=cur; kdwWriteAll(a2); setTick(t=>t+1); };
-  const toggleAuto=(r)=>{ const a2=kdwReadAll(); const cur=a2[r.key]||{balance:0,ledger:[],auto:true}; cur.auto=!(cur.auto!==false); cur.updatedAt=Date.now(); a2[r.key]=cur; kdwWriteAll(a2); setTick(t=>t+1); };
-  const openRow=open?rows.find(r=>r.key===open):null;
-  return (<div key={tick}>
+  const pendAmt=queue.reduce((a,t)=>a+(Number(t.amount)||0),0);
+  return (<div>
+    {!live && <div className="card" style={{padding:'14px 18px',marginBottom:14,background:'var(--danger-soft)',color:'var(--danger)',fontSize:13.5,fontWeight:600}}>ยังไม่ได้ตั้งที่อยู่ backend (kd_api_base) — หน้านี้ต้องต่อเซิร์ฟเวอร์เพื่ออ่านยอดกระเป๋าจริง</div>}
+    {msg && <div className="card" style={{padding:'12px 18px',marginBottom:14,fontSize:13.5,fontWeight:600}}>{msg} <button onClick={()=>setMsg('')} style={{border:'none',background:'none',color:'var(--ink-3)',cursor:'pointer',fontSize:12.5,fontFamily:'inherit'}}>ปิด</button></div>}
+    {askRej && <AskSheet danger okText="ปฏิเสธคำขอ" title="ไม่อนุมัติคำขอเติมเงิน" body={'ร้านจะเห็นเหตุผลนี้ในประวัติและได้รับแจ้งทาง LINE'}
+      fields={[{key:'reason',label:'เหตุผลที่ไม่อนุมัติ',value:'ยอดในสลิปไม่ตรง / ไม่พบเงินเข้าบัญชี'}]}
+      onCancel={()=>setAskRej(null)} onOk={v=>{ const t=askRej; setAskRej(null); approve(t,false,v.reason); }}/>}
+    {askAdj && <AskSheet okText={askAdj.kind==='topup'?'เติมเงิน':'ปรับลดยอด'} danger={askAdj.kind!=='topup'}
+      title={(askAdj.kind==='topup'?'เติมเงินเข้ากระเป๋า ':'ปรับลดกระเป๋า ')+askAdj.row.key}
+      body={'ยอดคงเหลือปัจจุบัน '+money(askAdj.row.balance)+' · รายการนี้บันทึกถาวรในประวัติ'}
+      fields={[{key:'amt',label:'จำนวนเงิน (บาท)',type:'number',placeholder:'0'},{key:'note',label:'หมายเหตุ',req:false,value:askAdj.kind==='topup'?'แอดมินเติมเงินให้ (ตรวจยอดเข้าบัญชีแล้ว)':'แอดมินปรับลดยอด'}]}
+      onCancel={()=>setAskAdj(null)} onOk={v=>doAdjust(askAdj.row,askAdj.kind,v.amt,v.note)}/>}
     <div className="kpis" style={{gridTemplateColumns:'repeat(4,1fr)'}}>
       <Kpi lbl="ยอดเงินค้างในกระเป๋าทั้งหมด" val={money(totBal)} delta={rows.length+' กระเป๋า'} ic="👛"/>
-      <Kpi lbl="รายได้ค่าบริการ 30 วัน" val={money(rev30)} delta={platLed.length+' รายการทั้งหมด'} up ic="📈"/>
-      <Kpi lbl="รายได้สะสมทั้งหมด" val={money(revAll)} delta="หักจากกระเป๋าผู้ใช้" ic="🏦"/>
+      <Kpi lbl="คำขอเติมเงินรอตรวจ" val={queue.length} delta={money(pendAmt)} ic="⏳"/>
+      <Kpi lbl="รายได้ค่าบริการ 30 วัน" val={money(rev30)} delta={platLed.length+' รายการ (สำเนาในเครื่อง)'} up ic="📈"/>
       <Kpi lbl="เปิดตัดอัตโนมัติ" val={rows.filter(r=>r.auto).length+'/'+rows.length} delta="ต่ออายุเองเมื่อครบรอบ" ic="🔁"/>
     </div>
+
+    {/* คิวอนุมัติเติมเงิน */}
+    <div className="card" style={{overflow:'hidden',marginTop:16}}>
+      <div style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:12,borderBottom:'1px solid var(--hair)'}}>
+        <div style={{fontWeight:700,fontSize:15.5,flex:1}}>คำขอเติมเงินรอตรวจสอบ</div>
+        <button onClick={load} className="badge b-trial" style={{border:'none',cursor:'pointer'}}>{busy?'กำลังโหลด…':'รีเฟรช'}</button>
+      </div>
+      {queue.length?<table><thead><tr><th>เวลา</th><th>กระเป๋า</th><th>ยอดที่แจ้ง</th><th>เลขอ้างอิง</th><th>สลิป</th><th>ตรวจ</th></tr></thead><tbody>
+        {queue.map(t=>(<tr key={t.id}>
+          <td className="num" style={{fontSize:13}}>{t.ts?new Date(t.ts).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'-'}</td>
+          <td style={{fontSize:13.5}}>{t.who||t.biz_id}<div className="num" style={{fontSize:12,color:'var(--ink-3)'}}>{t.biz_id}</div></td>
+          <td className="num" style={{fontWeight:700}}>{money(t.amount)}</td>
+          <td className="mono" style={{fontSize:12.5}}>{t.ref}</td>
+          <td>{t.slip?<a href={t.slip} target="_blank" rel="noreferrer" className="badge b-trial" style={{textDecoration:'none'}}>ดูสลิป</a>:<span style={{fontSize:12.5,color:'var(--ink-3)'}}>ไม่แนบ</span>}</td>
+          <td><div style={{display:'flex',gap:6}}>
+            <button onClick={()=>approve(t,true)} className="badge b-paid" style={{border:'none',cursor:'pointer'}}>✓ เงินเข้าจริง</button>
+            <button onClick={()=>approve(t,false)} className="badge b-expired" style={{border:'none',cursor:'pointer'}}>✕ ไม่พบเงิน</button>
+          </div></td></tr>))}
+      </tbody></table>:<div style={{padding:'26px 18px',color:'var(--ink-3)',fontSize:13.5}}>ไม่มีคำขอรอตรวจ — คำขอจะเข้ามาที่นี่เมื่อร้านกดแจ้งเติมเงินจากเมนูแพ็กเกจ (ถ้าเปิดตรวจสลิปอัตโนมัติและตรวจผ่าน จะเข้ายอดเองไม่ต้องผ่านคิวนี้)</div>}
+    </div>
+
+    {/* บัญชีรับเงินของระบบ + ช่องทางตรวจเงินเข้า */}
+    <div className="card" style={{padding:'16px 18px',marginTop:16}}>
+      <div style={{fontWeight:700,fontSize:15.5,marginBottom:3}}>บัญชีรับเงินของระบบ (ปลายทางเวลาร้านเติมเงิน)</div>
+      <div style={{fontSize:13,color:'var(--ink-2)',marginBottom:12,lineHeight:1.55}}>ตั้งที่นี่ครั้งเดียว — ทุกโมดูล (ร้านค้า · ฟิตเนส · ตลาด · วิน · สปอนเซอร์) โชว์บัญชีนี้ตอนเติมเงิน และใช้เทียบว่าสลิปโอนเข้าบัญชีเราจริง</div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:12}}>
+        {[['promptpay','พร้อมเพย์ (เบอร์มือถือ 10 หลัก หรือเลขนิติบุคคล 13 หลัก)'],['acctName','ชื่อบัญชี'],['bank','ธนาคาร'],['acctNo','เลขที่บัญชี']].map(([k,l])=>(
+          <label key={k} style={{display:'block'}}>
+            <span style={{display:'block',fontSize:12,color:'var(--ink-3)',marginBottom:4}}>{l}</span>
+            <input value={acct[k]} onChange={e=>setAcct({...acct,[k]:e.target.value})} style={{width:'100%',boxSizing:'border-box',padding:'10px 12px',borderRadius:9,border:'1px solid var(--hair)',fontSize:13.5,fontFamily:'inherit'}}/>
+          </label>))}
+      </div>
+      <button onClick={saveAcct} className="badge b-paid" style={{border:'none',cursor:'pointer',marginTop:12,padding:'9px 14px',fontSize:13}}>บันทึกบัญชีรับเงิน</button>
+      <div style={{height:1,background:'var(--hair)',margin:'16px 0'}}/>
+      <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>ช่องทางตรวจว่าเงินเข้าจริง</div>
+      <div style={{display:'flex',flexDirection:'column',gap:9}}>
+        <label style={{display:'flex',gap:9,alignItems:'flex-start',cursor:'pointer'}}>
+          <input type="checkbox" checked={vf.slipAuto} onChange={e=>saveVf({slipAuto:e.target.checked})} style={{width:17,height:17,marginTop:2}}/>
+          <span style={{fontSize:13.5,lineHeight:1.5}}>ตรวจสลิปกับธนาคารอัตโนมัติ (SlipOK / EasySlip) — ผ่านแล้วเงินเข้ากระเป๋าทันที
+            <span className={'badge '+(vf.ready.slipApi?'b-paid':'b-expired')} style={{marginLeft:8}}>{vf.ready.slipApi?'พร้อมใช้ (ตั้งคีย์แล้ว)':'ยังไม่ได้ตั้งคีย์ SLIP_VERIFY_URL / SLIP_VERIFY_KEY'}</span></span>
+        </label>
+        <div style={{fontSize:13.5,paddingLeft:26,lineHeight:1.5}}>ยอดเข้าบัญชีอัตโนมัติ (Bank API / VA / payment gateway → webhook)
+          <span className={'badge '+(vf.ready.webhook?'b-paid':'b-expired')} style={{marginLeft:8}}>{vf.ready.webhook?'พร้อมใช้ (ตั้ง WALLET_WEBHOOK_SECRET แล้ว)':'ยังไม่ได้ตั้ง WALLET_WEBHOOK_SECRET'}</span></div>
+        <label style={{display:'flex',gap:9,alignItems:'flex-start',cursor:'pointer'}}>
+          <input type="checkbox" checked={vf.lineSlip} onChange={e=>saveVf({lineSlip:e.target.checked})} style={{width:17,height:17,marginTop:2}}/>
+          <span style={{fontSize:13.5,lineHeight:1.5}}>ให้ร้านส่งสลิปเข้า LINE OA ได้ (บอทรับรูป → เข้าคิวเติมเงินให้เอง)
+            <span className={'badge '+(vf.ready.lineOA?'b-paid':'b-expired')} style={{marginLeft:8}}>{vf.ready.lineOA?'LINE OA พร้อม':'ยังไม่ได้ตั้ง LINE_TOKEN'}</span></span>
+        </label>
+      </div>
+      <div style={{marginTop:12,background:'var(--gold-soft)',borderRadius:10,padding:'11px 13px',fontSize:12.5,color:'#7A5B08',lineHeight:1.6}}>
+        ⚖️ กระเป๋าเป็น closed-loop — ใช้จ่ายค่าบริการระบบเท่านั้น <b>ถอนเป็นเงินสด/โอนออกไม่ได้</b> (ฝั่งเซิร์ฟปิด endpoint ถอนไว้แล้ว) · ถ้ายังไม่เปิดช่องทางตรวจอัตโนมัติ ทุกคำขอจะรอให้กดยืนยันในคิวด้านบน
+      </div>
+    </div>
+
+    {/* ตารางกระเป๋า */}
     <div className="card" style={{overflow:'hidden',marginTop:16}}>
       <div style={{padding:'14px 18px',display:'flex',alignItems:'center',gap:12,borderBottom:'1px solid var(--hair)'}}>
         <div style={{fontWeight:700,fontSize:15.5,flex:1}}>กระเป๋าเงินของผู้ใช้ (ทุกโมดูล)</div>
         <input value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหา pos:shop1 / fitness / market" style={{padding:'8px 11px',borderRadius:9,border:'1px solid var(--hair)',fontSize:13,fontFamily:'inherit',width:250}}/>
       </div>
-      {rows.length?<table><thead><tr><th>โมดูล</th><th>รหัสธุรกิจ</th><th>ยอดคงเหลือ</th><th>ตัดอัตโนมัติ</th><th>เดินบัญชี</th><th>จัดการ</th></tr></thead><tbody>
-        {rows.map(r=>{ const m=KDW_MODS[r.mod]||KDW_MODS.app; return (<tr key={r.key}>
+      {list.length?<table><thead><tr><th>โมดูล</th><th>รหัสธุรกิจ</th><th>บัญชีของร้าน</th><th>ยอดคงเหลือ</th><th>ตัดอัตโนมัติ</th><th>จัดการ</th></tr></thead><tbody>
+        {list.map(r=>{ const m=KDW_MODS[r.mod]||KDW_MODS.app; return (<tr key={r.key}>
           <td><div style={{display:'flex',alignItems:'center',gap:9}}><div className="shopmk" style={{width:30,height:30,fontSize:15}}>{m[0]}</div>{m[1]}</div></td>
           <td className="num" style={{fontSize:13,color:'var(--ink-2)'}}>{r.id}</td>
+          <td className="num" style={{fontSize:12.5,color:'var(--ink-3)'}}>{r.pp||r.acctNo?((r.pp?'พร้อมเพย์ '+r.pp:'')+(r.acctNo?(r.pp?' · ':'')+(r.bank||'')+' '+r.acctNo:'')):'ยังไม่ตั้ง'}</td>
           <td className="num" style={{fontWeight:700}}>{money(r.balance)}</td>
           <td><button onClick={()=>toggleAuto(r)} className={'badge '+(r.auto?'b-paid':'b-trial')} style={{border:'none',cursor:'pointer'}}>{r.auto?'✓ เปิด':'ปิด'}</button></td>
-          <td className="num" style={{fontSize:13}}>{r.ledger.length} รายการ</td>
           <td><div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-            <button onClick={()=>act(r,'topup')} className="badge b-paid" style={{border:'none',cursor:'pointer'}}>+ เติมเงิน</button>
-            <button onClick={()=>act(r,'adjust')} className="badge b-expired" style={{border:'none',cursor:'pointer'}}>− ปรับลด</button>
-            <button onClick={()=>setOpen(open===r.key?null:r.key)} className="badge b-trial" style={{border:'none',cursor:'pointer'}}>ดูเดินบัญชี</button>
+            <button onClick={()=>adjust(r,'topup')} className="badge b-paid" style={{border:'none',cursor:'pointer'}}>+ เติมเงิน</button>
+            <button onClick={()=>adjust(r,'adjust')} className="badge b-expired" style={{border:'none',cursor:'pointer'}}>− ปรับลด</button>
+            <button onClick={()=>showTxns(r.key)} className="badge b-trial" style={{border:'none',cursor:'pointer'}}>ประวัติ</button>
           </div></td></tr>); })}
-      </tbody></table>:<div style={{padding:'28px 18px',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีกระเป๋าเงินในเครื่องนี้ — กระเป๋าจะถูกสร้างเมื่อผู้ใช้เติมเงินครั้งแรกจากเมนูแพ็กเกจของแต่ละโมดูล</div>}
+      </tbody></table>:<div style={{padding:'28px 18px',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีกระเป๋าเงิน — กระเป๋าจะถูกสร้างเมื่อผู้ใช้แจ้งเติมเงินครั้งแรกจากเมนูแพ็กเกจของแต่ละโมดูล</div>}
     </div>
-    {openRow && <div className="card" style={{overflow:'hidden',marginTop:16}}>
-      <div style={{padding:'14px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>เดินบัญชีกระเป๋า · {openRow.key}</div>
-      <table><thead><tr><th>เวลา</th><th>รายการ</th><th>จำนวน</th><th>คงเหลือ</th></tr></thead><tbody>
-        {[...openRow.ledger].reverse().slice(0,40).map((l,i)=>(<tr key={i}>
+
+    {open && <div className="card" style={{overflow:'hidden',marginTop:16}}>
+      <div style={{padding:'14px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>ประวัติการทำรายการ · {open}</div>
+      {txns.length?<table><thead><tr><th>เวลา</th><th>รายการ</th><th>เลขอ้างอิง</th><th>จำนวน</th><th>คงเหลือ</th><th>สถานะ</th></tr></thead><tbody>
+        {txns.map((l,i)=>(<tr key={l.id||i}>
           <td className="num" style={{fontSize:13}}>{l.ts?new Date(l.ts).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'-'}</td>
           <td style={{fontSize:13.5}}>{l.note}</td>
+          <td className="mono" style={{fontSize:12.5,color:'var(--ink-3)'}}>{l.ref}</td>
           <td className="num" style={{fontWeight:700,color:(l.amount||0)>0?'var(--brand)':'var(--danger)'}}>{(l.amount||0)>0?'+':''}{money(l.amount||0)}</td>
-          <td className="num" style={{fontSize:13}}>{money(l.bal||0)}</td></tr>))}
-      </tbody></table>
+          <td className="num" style={{fontSize:13}}>{l.balance_after==null?'—':money(l.balance_after)}</td>
+          <td><span className={'badge '+(l.status==='done'?'b-paid':l.status==='pending'?'b-trial':'b-expired')}>{l.status==='done'?'สำเร็จ':l.status==='pending'?'รอตรวจ':'ไม่ผ่าน'}</span></td></tr>))}
+      </tbody></table>:<div style={{padding:'24px 18px',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีรายการ</div>}
     </div>}
-    <div className="card" style={{overflow:'hidden',marginTop:16}}>
-      <div style={{padding:'14px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>รายได้ค่าบริการระบบ (หักจากกระเป๋าผู้ใช้)</div>
-      {platLed.length?<table><thead><tr><th>วันที่</th><th>ผู้ใช้</th><th>รายการ</th><th>ช่องทาง</th><th>จำนวน</th></tr></thead><tbody>
-        {platLed.slice(0,20).map((x,i)=>(<tr key={x.id||i}><td className="num" style={{fontSize:13}}>{fmtDate(x.date)}</td>
-          <td style={{fontSize:13.5}}>{x.who}</td><td style={{fontSize:13,color:'var(--ink-2)'}}>{x.sub}</td>
-          <td style={{fontSize:13,color:'var(--ink-2)'}}>{x.method||'กระเป๋าเงิน'}</td>
-          <td className="num" style={{fontWeight:700}}>{money(x.amt||0)}</td></tr>))}
-      </tbody></table>:<div style={{padding:'28px 18px',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีรายได้บันทึกไว้</div>}
+  </div>);
+}
+
+/* ══ DELETION LOG (หลักฐานการลบร้านถาวร · PDPA/consent) ══ */
+function DeletionLog(){
+  const [logs,setLogs] = useState([]);
+  const [err,setErr] = useState('');
+  const load = ()=>{ const tok=sessionStorage.getItem('kd_admin_tok')||''; fetch(KD_API_BASE+'/deletion-log'+(tok?('?token='+encodeURIComponent(tok)):''),{headers:tok?{'X-Admin-Token':tok}:{}}).then(r=>r.ok?r.json():{logs:[]}).then(j=>{ if(j&&Array.isArray(j.logs)) setLogs(j.logs); else if(j&&j.error) setErr(j.error); }).catch(()=>setErr('เชื่อม backend ไม่ได้ (ลอง login ออนไลน์)')); };
+  useEffect(()=>{ load(); const t=setInterval(load,15000); return ()=>clearInterval(t); },[]);
+  const dt = (ms)=> ms? new Date(+ms).toLocaleString('th-TH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  return (<div>
+    <div className="kpis" style={{gridTemplateColumns:'repeat(2,1fr)'}}>
+      <Kpi lbl="ร้านที่ลบถาวร (สะสม)" val={logs.length} delta="ผู้ใช้ยืนยัน consent เอง" down ic="🗑️"/>
+      <Kpi lbl="แพ็กเก่าเป็นโมฆะ" val={logs.filter(l=>l.package_void).length} delta="ไม่คืนเงิน" ic="❌"/>
     </div>
+    {err && <div className="card" style={{padding:'14px 18px',marginTop:16,color:'var(--danger)',fontSize:13.5}}>{err}</div>}
+    <div className="card" style={{overflow:'hidden',marginTop:16}}>
+      <div style={{padding:'16px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>ประวัติการลบร้าน ({logs.length}) — หลักฐานการยินยอมถาวร</div>
+      {logs.length===0 && !err && <div style={{padding:'30px',textAlign:'center',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีการลบร้าน · เมื่อเจ้าของร้านกด “ลบร้าน · สมัครใหม่” จะบันทึกเข้าที่นี่</div>}
+      {logs.map((l,i)=>(<div key={l.id||i} style={{display:'flex',alignItems:'center',gap:14,padding:'14px 18px',borderBottom:'1px solid var(--hair)'}}>
+        <div className="shopmk">🗑️</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontWeight:700}}>{l.shop_name||l.shop_id||'-'}</div>
+          <div style={{fontSize:12.5,color:'var(--ink-3)'}} className="mono">{l.shop_id}{l.owner_name?(' · '+l.owner_name):''}{l.owner_line?(' · LINE '+String(l.owner_line).slice(0,10)+'…'):''}</div>
+          <div style={{fontSize:12,color:'var(--ink-3)',marginTop:2}}>ลบเมื่อ {dt(l.at)}{l.code?(' · รหัสยืนยัน '+l.code):''}</div>
+        </div>
+        {l.package_void ? <span className="badge b-expired">❌ แพ็กโมฆะ</span> : <span className="badge b-trial">–</span>}
+      </div>))}
+    </div>
+  </div>);
+}
+
+/* ══ DOC TEMPLATES (ต้นแบบเอกสารกลาง · doc-templates.js) ══ */
+function DocTemplates(){
+  const KD=window.KD_DOC;
+  const [list,setList]=useState(()=>KD?KD.load():[]);
+  const [msg,setMsg]=useState(''); const [askDel,setAskDel]=useState(null); const [askReset,setAskReset]=useState(false);
+  const upd=(i,k,v)=>setList(a=>a.map((x,j)=>j===i?{...x,[k]:v}:x));
+  const add=()=>setList(a=>[...a,{id:'doc'+Date.now().toString(36),cat:'อื่นๆ',icon:'📄',enabled:true,title:'เอกสารใหม่',body:'เนื้อหาเอกสาร… ใช้ {{ชื่อร้าน}} {{ที่อยู่}} {{เลขผู้เสียภาษี}} {{เบอร์}} {{วันที่}} {{ชื่อคู่ค้า}} แทนค่าอัตโนมัติ'}]);
+  const save=()=>{ KD.save(list); setMsg('บันทึกแล้ว ✓ — ร้านจะเห็นเมื่อเปิด Backoffice'); setTimeout(()=>setMsg(''),2800); };
+  const CHIPS=['{{ชื่อร้าน}}','{{ที่อยู่}}','{{เลขผู้เสียภาษี}}','{{เบอร์}}','{{วันที่}}','{{ชื่อคู่ค้า}}'];
+  if(!KD) return <div className="card" style={{padding:22}}>โหลดคลังเอกสารไม่สำเร็จ (doc-templates.js)</div>;
+  return (<div style={{maxWidth:900}}>
+    {askDel!=null && <AskSheet danger okText="ลบเอกสาร" title="ลบเอกสารต้นแบบนี้?" body={'“'+((list[askDel]||{}).title||'')+'” จะถูกลบออกจากคลังเอกสารกลาง (กดบันทึกทั้งหมดเพื่อยืนยันถาวร)'}
+      onCancel={()=>setAskDel(null)} onOk={()=>{ const i=askDel; setAskDel(null); setList(a=>a.filter((_,j)=>j!==i)); }}/>}
+    {askReset && <AskSheet danger okText="คืนค่าเริ่มต้น" title="คืนค่าต้นแบบเริ่มต้นทั้งหมด" body="เอกสารที่แก้เองจะหายทั้งหมด แทนด้วยชุดต้นแบบของระบบ"
+      onCancel={()=>setAskReset(false)} onOk={()=>{ setAskReset(false); setList(KD.reset()); setMsg('คืนค่าเริ่มต้นแล้ว'); }}/>}
+    <div className="card" style={{padding:'16px 20px',marginBottom:16,background:'var(--blue-soft)',border:'none',display:'flex',gap:12,alignItems:'flex-start'}}>
+      <span style={{fontSize:22}}>📄</span>
+      <div style={{flex:1,fontSize:13,color:'var(--ink-2)',lineHeight:1.6}}>ต้นแบบเอกสารกลางของแอป — ทุกร้านดึงชุดนี้ไปใช้ โดยระบบเติม <b>ชื่อร้าน/ที่อยู่/เลขภาษี</b> ให้อัตโนมัติใน Backoffice ของแต่ละร้าน · ใส่ตัวแปรด้วย <code className="mono">{'{{...}}'}</code></div>
+    </div>
+    <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14,alignItems:'center'}}>
+      <span style={{fontSize:12.5,color:'var(--ink-3)',fontWeight:600}}>ตัวแปรที่ใช้ได้:</span>
+      {CHIPS.map(c=><span key={c} className="mono badge b-paid" style={{fontSize:11.5}}>{c}</span>)}
+    </div>
+    {list.map((t,i)=>(<div key={t.id} className="card" style={{padding:'16px 18px',marginBottom:14}}>
+      <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:10}}>
+        <input className="in" value={t.icon||''} onChange={e=>upd(i,'icon',e.target.value)} style={{width:52,textAlign:'center',fontSize:18}}/>
+        <input className="in" value={t.title} onChange={e=>upd(i,'title',e.target.value)} placeholder="ชื่อเอกสาร" style={{flex:1,fontWeight:700}}/>
+        <input className="in" value={t.cat} onChange={e=>upd(i,'cat',e.target.value)} placeholder="หมวด" style={{width:130}}/>
+        <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12.5,fontWeight:600,whiteSpace:'nowrap'}}><input type="checkbox" checked={t.enabled!==false} onChange={e=>upd(i,'enabled',e.target.checked)}/>เปิดใช้</label>
+        <button className="btn line sm" onClick={()=>setAskDel(i)} style={{color:'var(--danger)'}}>🗑️</button>
+      </div>
+      <textarea className="in" value={t.body} onChange={e=>upd(i,'body',e.target.value)} rows={8} style={{width:'100%',fontFamily:'var(--font)',fontSize:13,lineHeight:1.7,resize:'vertical'}}/>
+    </div>))}
+    <div style={{display:'flex',gap:9,alignItems:'center',flexWrap:'wrap',marginTop:4}}>
+      <button className="btn line sm" onClick={add}>+ เพิ่มเอกสาร</button>
+      <button className="btn pri sm" onClick={save}>บันทึกทั้งหมด</button>
+      <button className="btn line sm" onClick={()=>setAskReset(true)}>คืนค่าเริ่มต้น</button>
+      {msg&&<span style={{fontSize:13,fontWeight:600,color:'var(--brand-ink)'}}>{msg}</span>}
+    </div>
+    <div style={{fontSize:12,color:'var(--ink-3)',marginTop:12,lineHeight:1.6}}>‹ เก็บในเบราว์เซอร์ (ชุดเดียวกับร้าน/หน้าดูเอกสาร) — เมื่อต่อ API Gateway ค่อยย้ายขึ้น backend ให้ใช้ร่วมทุกเครื่อง/แอดมิน</div>
   </div>);
 }
 
@@ -697,7 +956,7 @@ function Support({db}){
     <div className="kpis" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
       <Kpi lbl="ตั๋วเปิดอยู่" val={db.tickets.filter(t=>t.status==='open').length} delta="ต้องตอบ" down ic="📨"/>
       <Kpi lbl="กำลังดำเนินการ" val={db.tickets.filter(t=>t.status==='progress').length} delta="" ic="🔧"/>
-      <Kpi lbl="ตอบเฉลี่ย" val="1.4 ชม." delta="ดีขึ้น 12%" up ic="⚡"/>
+      <Kpi lbl="ปิดเรื่องแล้ว" val={db.tickets.filter(t=>t.status==='done'||t.status==='closed').length} delta={`ทั้งหมด ${db.tickets.length} เรื่อง`} ic="⚡"/>
     </div>
     <div className="card" style={{overflow:'hidden',marginTop:16}}>
       <div style={{padding:'16px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>ตั๋วช่วยเหลือร้านค้า</div>
@@ -759,10 +1018,9 @@ function Settings(){
 }
 function SystemReset(){
   const [busy,setBusy]=useState(false); const [msg,setMsg]=useState('');
+  const [ask,setAsk]=useState(false);
   const wipe=async()=>{
-    if(!window.confirm('ล้างข้อมูลทั้งระบบ — ลบทุกร้านและข้อมูลทั้งหมด?\n\n⚠️ กู้คืนไม่ได้')) return;
-    const w=window.prompt('พิมพ์  DELETE  เพื่อยืนยันล้างทั้งระบบ');
-    if((w||'').trim().toUpperCase()!=='DELETE'){ setMsg('ยกเลิก — พิมพ์ไม่ตรง'); return; }
+    setAsk(false);
     setBusy(true); setMsg('กำลังลบ…');
     const tok=sessionStorage.getItem('kd_admin_tok')||'';
     try{
@@ -775,7 +1033,8 @@ function SystemReset(){
     }catch(e){ setBusy(false); setMsg('ล้างไม่สำเร็จ — backend ไม่ตอบ'); }
   };
   return (<div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
-    <button className="btn danger sm" onClick={wipe} disabled={busy}>{busy?'กำลังลบ…':'🗑️ ล้างข้อมูลทั้งระบบ'}</button>
+    <button className="btn danger sm" onClick={()=>setAsk(true)} disabled={busy}>{busy?'กำลังลบ…':'🗑️ ล้างข้อมูลทั้งระบบ'}</button>
+    {ask && <AskSheet danger okText="ล้างทั้งระบบ" title="ล้างข้อมูลทั้งระบบ" body={'ลบทุกร้านและข้อมูลทั้งหมดออกจากเซิร์ฟเวอร์\n⚠️ กู้คืนไม่ได้'} confirmWord="DELETE" onCancel={()=>setAsk(false)} onOk={wipe}/>}
     {msg&&<span style={{fontSize:12.5,fontWeight:600,color:msg.includes('✓')?'var(--brand-ink)':'var(--danger)'}}>{msg}</span>}
   </div>);
 }
@@ -858,15 +1117,18 @@ function PackagesSettings(){
   const MODS=[['orders','รับออเดอร์ลูกค้า (สั่งผ่าน LINE)'],['delivery','เดลิเวอรี'],['reports','รายงาน/สรุปยอด'],['stock','สต๊อกวัตถุดิบ']];
   const addPkg=()=>setP(s=>({ ...s, packages:[...s.packages, {id:'pkg'+Date.now().toString(36),name:'แพ็กใหม่',seats:1,monthly:0,yearly:0}] }));
   const delPkg=(i)=>setP(s=>({ ...s, packages:s.packages.filter((_,j)=>j!==i) }));
-  const save=()=>{ const pp={...p, trialDays: parseInt(p.trialDays,10)||30}; setP(pp); savePkg(pp); fetch(KD_API_BASE+'/packages',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(pp)}).then(()=>setMsg('บันทึกแล้ว ✓')).catch(()=>setMsg('บันทึกในเครื่อง')); };
+  const save=()=>{ const n0=(x,d)=>{ const v=parseInt(x,10); return isNaN(v)?d:Math.max(0,v); };
+    const pp={...p, trialDays:n0(p.trialDays,30), trialQuota:n0(p.trialQuota,1), deviceAddon:n0(p.deviceAddon,79), addonFreeDays:n0(p.addonFreeDays,30),
+      packages:(p.packages||[]).map(pk=>({...pk, monthly:n0(pk.monthly,0), yearly:n0(pk.yearly,0), seats:Math.max(1,n0(pk.seats,1))})) };
+    setMsg(''); setP(pp); savePkg(pp); fetch(KD_API_BASE+'/packages',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(pp)}).then(()=>setMsg('บันทึกแล้ว ✓')).catch(()=>setMsg('บันทึกในเครื่อง')); };
   return (<div>
     <div style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',borderBottom:'1px solid var(--hair)'}}>
       <div style={{flex:1,fontWeight:700,fontSize:14.5}}>ทดลองใช้ (ฟรี)</div>
-      <span style={{fontSize:13,color:'var(--ink-3)'}}><input className="in" type="number" value={p.trialDays==null?'':p.trialDays} onChange={e=>{ const v=e.target.value; setP(s=>({...s,trialDays:v===''?'':(parseInt(v,10)||0)})); }} min="0" style={{width:58,margin:'0 4px'}}/>วัน</span>
+      <span style={{fontSize:13,color:'var(--ink-3)'}}><input className="in" type="number" value={p.trialDays==null?'':p.trialDays} onChange={e=>{ const v=e.target.value; setP(s=>({...s,trialDays:v===''?'':Math.max(0,parseInt(v,10)||0)})); }} min="0" style={{width:58,margin:'0 4px'}}/>วัน</span>
     </div>
     <div style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',borderBottom:'1px solid var(--hair)'}}>
       <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14.5}}>โควตาทดลองต่อบัญชี</div><div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:2,lineHeight:1.4}}>ลบร้านแล้วสมัครใหม่ = ตัดจากโควตานี้ · หมด = ต้องจ่าย (ใส่บัตรก่อนทดลอง)</div></div>
-      <span style={{fontSize:13,color:'var(--ink-3)'}}><input className="in" type="number" value={p.trialQuota==null?'':p.trialQuota} onChange={e=>{ const v=e.target.value; setP(s=>({...s,trialQuota:v===''?'':(parseInt(v,10)||0)})); }} min="0" style={{width:58,margin:'0 4px'}}/>ครั้ง</span>
+      <span style={{fontSize:13,color:'var(--ink-3)'}}><input className="in" type="number" value={p.trialQuota==null?'':p.trialQuota} onChange={e=>{ const v=e.target.value; setP(s=>({...s,trialQuota:v===''?'':Math.max(0,parseInt(v,10)||0)})); }} min="0" style={{width:58,margin:'0 4px'}}/>ครั้ง</span>
     </div>
     <div style={{padding:'11px 0',borderBottom:'1px solid var(--hair)'}}>
       <div style={{fontWeight:700,fontSize:14.5,marginBottom:4}}>รหัสทดสอบ UAT (ใช้ฟรีตลอดชีพ)</div>
@@ -880,9 +1142,9 @@ function PackagesSettings(){
     <TrialGrantTool/>
     {p.packages.map((pk,i)=>(<div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'11px 0',borderBottom:'1px solid var(--hair)',flexWrap:'wrap'}}>
       <input className="in" value={pk.name} onChange={e=>updPkg(i,'name',e.target.value)} placeholder="ชื่อแพ็ก" style={{flex:'1 1 130px',fontWeight:700,fontSize:14}}/>
-      <span style={{fontSize:13,color:'var(--ink-3)'}}>รายเดือน ฿<input className="in" type="number" value={pk.monthly} onChange={e=>updPkg(i,'monthly',e.target.value)} style={{width:76,margin:'0 4px'}}/></span>
-      <span style={{fontSize:13,color:'var(--ink-3)'}}>รายปี ฿<input className="in" type="number" value={pk.yearly} onChange={e=>updPkg(i,'yearly',e.target.value)} style={{width:84,margin:'0 4px'}}/></span>
-      <span style={{fontSize:13,color:'var(--ink-3)'}}><input className="in" type="number" value={pk.seats} onChange={e=>updPkg(i,'seats',e.target.value)} style={{width:52,margin:'0 4px'}}/>เครื่อง</span>
+      <span style={{fontSize:13,color:'var(--ink-3)'}}>รายเดือน ฿<input className="in" type="number" min="0" value={pk.monthly} onChange={e=>updPkg(i,'monthly',Math.max(0,parseInt(e.target.value,10)||0))} style={{width:76,margin:'0 4px'}}/></span>
+      <span style={{fontSize:13,color:'var(--ink-3)'}}>รายปี ฿<input className="in" type="number" min="0" value={pk.yearly} onChange={e=>updPkg(i,'yearly',Math.max(0,parseInt(e.target.value,10)||0))} style={{width:84,margin:'0 4px'}}/></span>
+      <span style={{fontSize:13,color:'var(--ink-3)'}}><input className="in" type="number" min="1" value={pk.seats} onChange={e=>updPkg(i,'seats',Math.max(1,parseInt(e.target.value,10)||1))} style={{width:52,margin:'0 4px'}}/>เครื่อง</span>
       <button className="btn line sm" onClick={()=>delPkg(i)} style={{color:'var(--danger)'}}>ลบ</button>
       <div style={{flexBasis:'100%',display:'flex',flexWrap:'wrap',gap:'6px 14px',marginTop:2,paddingLeft:2}}>
         <span style={{fontSize:12,color:'var(--ink-3)',fontWeight:600,alignSelf:'center'}}>โมดูลที่เปิดในแพ็กนี้:</span>
@@ -1061,11 +1323,14 @@ function MenuManager({shopId}){
     if(!dirty.length){ setBusy(false); setMsg('ไม่มีรายการที่แก้'); return; }
     let ok=0; for(const it of dirty){ if(await saveOne(it)) ok++; }
     setBusy(false); setMsg(ok===dirty.length?`บันทึก ${ok} เมนู ✓`:`บันทึกได้ ${ok}/${dirty.length} — backend ไม่ตอบบางรายการ`); };
-  const del=async(it)=>{ if(!window.confirm(`ลบเมนู “${it.th||'ไม่มีชื่อ'}”?`)) return;
+  const [askDelIt,setAskDelIt]=useState(null);
+  const del=(it)=>setAskDelIt(it);
+  const doDel=async(it)=>{ setAskDelIt(null);
     setItems(a=>a.filter(x=>x.id!==it.id));
     if(!it._new){ try{ await fetch(KD_API_BASE+'/menu/'+encodeURIComponent(it.id)+'?shop='+encodeURIComponent(shopId),{method:'DELETE'}); }catch(e){} } };
   if(items===null) return <div style={{padding:'44px',textAlign:'center',color:'var(--ink-3)'}}>กำลังโหลดเมนู…</div>;
   return (<div>
+    {askDelIt && <AskSheet danger okText="ลบเมนู" title={`ลบเมนู “${askDelIt.th||'ไม่มีชื่อ'}”?`} body="เมนูนี้จะถูกลบออกจากร้าน" onCancel={()=>setAskDelIt(null)} onOk={()=>doDel(askDelIt)}/>}
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,gap:10,flexWrap:'wrap'}}>
       <div style={{fontSize:13,color:'var(--ink-3)'}}>{items.length} เมนู · แก้ราคา/ต้นทุน/หมวด · ปิดขายเมื่อของหมด</div>
       <div style={{display:'flex',gap:8,alignItems:'center'}}>{msg&&<span style={{fontSize:12.5,fontWeight:600,color:msg.includes('✓')?'var(--brand-ink)':'var(--danger)'}}>{msg}</span>}

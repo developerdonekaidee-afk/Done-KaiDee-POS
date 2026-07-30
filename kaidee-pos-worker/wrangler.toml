@@ -22,7 +22,7 @@ class_name = "ShopHub"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["ShopHub"]
+new_sqlite_classes = ["ShopHub"]
 
 # secret ทั้งหมดตั้งที่หน้า Cloudflare (Settings → Variables and Secrets) — ห้ามใส่ในไฟล์นี้:
 #   ADMIN_SECRET · ADMIN_PHONE · ADMIN_LINE · ADMIN_LINE_USER · LINE_TOKEN

@@ -1535,10 +1535,22 @@ function FabToggleCard({ lang }){
   </div>);
 }
 function kdDeviceAddon(){ try{ const b=(typeof KD_PKG_CACHE!=='undefined'&&KD_PKG_CACHE)||JSON.parse(localStorage.getItem('kaidee_pkg_v1')||'{}'); const list=_kdPkgList(b)||[]; const maxSeats=Math.max(3,...list.map(p=>Number(p.seats)||1)); return { monthly:Number(b.deviceAddon)||0, maxSeats, freeDays:b.addonFreeDays==null?30:Number(b.addonFreeDays) }; }catch(e){ return { monthly:0, maxSeats:3, freeDays:30 }; } }
-/* ══ กระเป๋าเงินร้าน (wallet) — ใช้จ่ายค่าบริการระบบ ระหว่างยังไม่เปิด API Gateway บัตรเครดิต ══ */
+/* ══ กระเป๋าเงินร้าน — ใช้ตัวกลาง window.KDW (ยอด+ประวัติอยู่ที่ backend) ══
+   เดิมป๊อตกระเป๋าแยกคีย์ kd_shop_wallet_v1 → ย้ายยอดเก่าเข้า KDW ครั้งเดียว (FX-022) */
 const KD_SHOP_WALLET_KEY='kd_shop_wallet_v1';
-function kdShopWallet(){ try{ const w=JSON.parse(localStorage.getItem(KD_SHOP_WALLET_KEY)||'{}'); return { balance:Number(w.balance)||0, ledger:Array.isArray(w.ledger)?w.ledger:[] }; }catch(e){ return { balance:0, ledger:[] }; } }
-function kdShopWalletWrite(amount,type,note){ const w=kdShopWallet(); w.balance=Math.round((w.balance+Number(amount||0))*100)/100; w.ledger.push({ ts:new Date().toISOString(), type, amount:Number(amount||0), bal:w.balance, note:note||'' }); try{ localStorage.setItem(KD_SHOP_WALLET_KEY,JSON.stringify(w)); }catch(e){} return w; }
+function kdWalletBiz(){ const id=(typeof window!=='undefined'&&window.KD_SHOP)||'shop1';
+  return window.KDW?window.KDW.biz('pos',id):('pos:'+id); }
+let _kdWalMigrated=false;
+async function kdWalletMigrate(){
+  if(_kdWalMigrated||!window.KDW) return; _kdWalMigrated=true;
+  try{ const old=JSON.parse(localStorage.getItem(KD_SHOP_WALLET_KEY)||'{}');
+    const bal=Number(old.balance)||0;
+    if(bal>0&&!old.migratedAt){
+      const r=await window.KDW.adjust(kdWalletBiz(),bal,'ย้ายยอดกระเป๋าเก่าเข้ากระเป๋ากลาง (ระบบทำให้อัตโนมัติ)','migration');
+      if(r&&!r.__err){ old.migratedAt=Date.now(); old.balance=0; localStorage.setItem(KD_SHOP_WALLET_KEY,JSON.stringify(old)); }
+    }
+  }catch(e){}
+}
 const KD_TOPUP_QUICK=[500,1000,2000,5000];
 function SubscriptionSheet({ sub, setSub, onClose }){
   const { t, lang } = useT();
@@ -1547,12 +1559,41 @@ function SubscriptionSheet({ sub, setSub, onClose }){
   const [pick,setPick] = m2State(null);
   const [method,setMethod] = m2State('wallet');  // wallet | promptpay | card(auto · ยังไม่เปิด)
   const [okMsg,setOkMsg] = m2State(null);
-  const [wal,setWal] = m2State(kdShopWallet());
+  const [wal,setWal] = m2State(()=>window.KDW?window.KDW.get(kdWalletBiz()):{balance:0,ledger:[],pendingAmount:0});
   const [topAmt,setTopAmt] = m2State(1000);
+  const [topSlip,setTopSlip] = m2State(null);
+  const [busy,setBusy] = m2State(false);
   const [topMsg,setTopMsg] = m2State('');
   const [walLog,setWalLog] = m2State(false);
   const [plans,setPlans] = m2State(kdPlans());
+  /* บัญชีรับเงินของระบบ (ตั้งที่ Back Office) — ใช้ออก QR พร้อมเพย์ + ปุ่มคัดลอกเลขบัญชี */
+  const [sysAcct,setSysAcct] = m2State(()=>(window.KDW&&window.KDW.acctCached)?window.KDW.acctCached():null);
+  const [copied,setCopied] = m2State('');
+  React.useEffect(()=>{ if(window.KDW&&window.KDW.account) window.KDW.account().then(a=>a&&setSysAcct(a)).catch(()=>{}); },[]);
+  // ยอดที่ต้องโอน = ยอดเต็ม + เศษสตางค์อ้างอิง (ล็อกไว้ต่อจำนวนเงิน ไม่สุ่มใหม่ทุก render)
+  const payAmt = React.useMemo(()=>{ const a=Math.max(0,Math.round(Number(topAmt)||0));
+    return (a>0&&window.KDW&&window.KDW.payAmount)?window.KDW.payAmount(a):a; },[topAmt]);
+  // แถวตัวเลข (เบอร์/เลขบัญชี/ยอด) คัดลอกเฉพาะตัวเลข · ชื่อบัญชีคัดลอกทั้งข้อความ
+  const copyVal = (k,v)=>{ const s=String(v); const out=/^[\d\s.\-]+$/.test(s)?s.replace(/[^\d.]/g,''):s;
+    try{ navigator.clipboard.writeText(out); setCopied(k); setTimeout(()=>setCopied(''),1600); }catch(e){} };
+  const AcctRows = ({ amount })=>{ const pa=sysAcct||{};
+    if(!pa.promptpay && !pa.acctNo) return <div style={{ marginTop:12, background:'#FDEDEA', borderRadius:12, padding:'10px 12px', fontSize:12, color:'var(--accent)', lineHeight:1.55, textAlign:'left' }}>{TH?'ยังไม่ได้ตั้งบัญชีรับเงินของระบบ — ตั้งที่ Back Office → กระเป๋าเงิน → บัญชีรับเงินของระบบ':'System receiving account not set yet'}</div>;
+    const rows=[[pa.promptpay?(TH?'พร้อมเพย์':'PromptPay'):'',pa.promptpay],[pa.acctNo?(pa.bank||(TH?'เลขบัญชี':'Account')):'',pa.acctNo],[pa.acctName?(TH?'ชื่อบัญชี':'Name'):'',pa.acctName],[amount>0?(TH?'ยอดที่ต้องโอน':'Amount'):'',amount>0?money(amount):'']].filter(x=>x[0]&&x[1]);
+    if(!rows.length) return null;
+    return (<div style={{ marginTop:12, background:'#fff', borderRadius:13, padding:'12px 14px', textAlign:'left' }}>
+      <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-2)', marginBottom:6 }}>{TH?'โอนเข้าบัญชีระบบ':'Transfer to'}</div>
+      {rows.map(([k,v])=>(<div key={k} style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'space-between', padding:'6px 0' }}>
+        <span style={{ fontSize:12, color:'var(--ink-3)' }}>{k}</span>
+        <span style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <b className="num" style={{ fontSize:13.5 }}>{v}</b>
+          <button onClick={()=>copyVal(k,v)} style={{ border:'1.2px solid var(--hair-2)', background:'#fff', borderRadius:8, padding:'4px 9px', fontSize:11, fontWeight:700, color:'var(--brand-ink)', cursor:'pointer', fontFamily:'var(--font)' }}>{copied===k?(TH?'คัดลอกแล้ว':'Copied'):(TH?'คัดลอก':'Copy')}</button>
+        </span></div>))}
+    </div>); };
   React.useEffect(()=>{ kdLoadPackages().then(b=>{ if(b) setPlans(kdPlans()); }); },[]);
+  const wBiz = kdWalletBiz();
+  const pullWal = ()=>{ if(window.KDW) window.KDW.pull(wBiz).then(setWal); };
+  React.useEffect(()=>{ kdWalletMigrate().then(pullWal); const h=()=>{ if(window.KDW) setWal(window.KDW.get(wBiz)); };
+    window.addEventListener('kdw-change',h); return ()=>window.removeEventListener('kdw-change',h); },[]);
   const daysLeft = Math.max(0, Math.ceil((new Date(sub.expiry)-new Date())/86400000));
   const paid = plans.filter(p=>p.id!=='trial');
   const curPick = (pick && paid.some(p=>p.id===pick)) ? pick : (paid.find(p=>p.best)||paid[0]||{}).id;
@@ -1562,14 +1603,28 @@ function SubscriptionSheet({ sub, setSub, onClose }){
   React.useEffect(()=>{ if(!cardOn && method==='card') setMethod('promptpay'); },[cardOn]);
 
   const short = Math.max(0, (plan.price||0) - wal.balance);
-  const topup = ()=>{ const a=Math.max(0,Math.round(Number(topAmt)||0)); if(a<=0) return;
-    const w=kdShopWalletWrite(a,'topup',(TH?'เติมเงินกระเป๋าร้าน · พร้อมเพย์':'Wallet top-up · PromptPay')); setWal(w);
-    try{ kdSubmitPayRequest({ shopId:(typeof window!=='undefined'&&window.KD_SHOP)||'', shopName:sub.shopName||'', plan:'wallet-topup', months:0, amount:a, slip:null, note:TH?'เติมเงินกระเป๋าร้าน':'Wallet top-up' }); }catch(e){}
-    setTopMsg(TH?`เติมเงินแล้ว ${money(a)} · ยอดคงเหลือ ${money(w.balance)}`:`Topped up ${money(a)} · balance ${money(w.balance)}`); };
-  const renew = ()=>{
+  const pickTopSlip = (e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
+    kdSlipResize(f).then(d=>setTopSlip(d)).catch(()=>{}); };
+  // เติมเงิน = ยื่นคำขอ · ยอดขึ้นเมื่อระบบตรวจสลิปกับธนาคารผ่าน/ยอดเข้าบัญชี/แอดมินยืนยัน (กันเติมเงินฟรี)
+  const topup = async ()=>{ const a=Math.max(0,Math.round(Number(topAmt)||0)); if(a<=0) return;
+    if(!window.KDW){ setTopMsg(TH?'กระเป๋าเงินยังไม่พร้อม · โหลดหน้าใหม่':'Wallet not ready'); return; }
+    setBusy(true);
+    const res=await window.KDW.topupRequest(wBiz,payAmt||a,{slip:topSlip,who:sub.shopName||'ร้าน',method:'promptpay'});
+    setBusy(false);
+    if(!res.ok){ setTopMsg(res.error||(TH?'ส่งคำขอไม่สำเร็จ':'Failed')); return; }
+    setTopSlip(null); pullWal();
+    setTopMsg(res.status==='done'
+      ? (TH?`ตรวจยอดกับธนาคารผ่าน · เงินเข้ากระเป๋า ${money(a)}`:`Verified · ${money(a)} credited`)
+      : (TH?`ส่งคำขอเติมเงิน ${money(a)} แล้ว · รอตรวจยอด เข้ากระเป๋าอัตโนมัติ${res.ref?' (อ้างอิง '+res.ref+')':''}`:`Top-up request sent`)); };
+  const renew = async ()=>{
     if(method==='wallet'){
-      if(wal.balance < plan.price){ setTopMsg(TH?`ยอดกระเป๋าไม่พอ — ขาดอีก ${money(short)} กรุณาเติมเงินก่อน`:`Not enough balance — short ${money(short)}`); return; }
-      const w=kdShopWalletWrite(-plan.price,'renew',(TH?'ค่าบริการระบบ · ':'Subscription · ')+((plan[lang]||plan.th)||'')); setWal(w);
+      if(!window.KDW){ setTopMsg(TH?'กระเป๋าเงินยังไม่พร้อม':'Wallet not ready'); return; }
+      setBusy(true);
+      const res=await window.KDW.charge(wBiz,plan.price,{ who:sub.shopName||'ร้าน',
+        sub:(TH?'ค่าบริการระบบ · ':'Subscription · ')+((plan[lang]||plan.th)||''), type:'renew',
+        idem:'posrenew:'+curPick+':'+new Date(sub.expiry).toISOString().slice(0,10) });
+      setBusy(false); pullWal();
+      if(!res.ok){ setTopMsg(res.short>0?(TH?`ยอดกระเป๋าไม่พอ — ขาดอีก ${money(res.short)} กรุณาเติมเงินก่อน`:`Not enough balance — short ${money(res.short)}`):(res.error||'')); return; }
     }
     const base = new Date(sub.expiry) > new Date() ? new Date(sub.expiry) : new Date();
     base.setDate(base.getDate() + plan.days);
@@ -1669,7 +1724,8 @@ function SubscriptionSheet({ sub, setSub, onClose }){
         {method==='wallet' && <div className="kd-card" style={{ padding:16, marginBottom:8, background:'var(--brand-softer)', boxShadow:'none' }}>
           <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:10 }}>
             <div><div style={{ fontSize:12, color:'var(--ink-3)', fontWeight:600 }}>{TH?'ยอดคงเหลือในกระเป๋า':'Wallet balance'}</div>
-              <div className="num" style={{ fontSize:26, fontWeight:800, color: short>0?'var(--ink)':'var(--brand-ink)' }}>{money(wal.balance)}</div></div>
+              <div className="num" style={{ fontSize:26, fontWeight:800, color: short>0?'var(--ink)':'var(--brand-ink)' }}>{money(wal.balance)}</div>
+              {wal.pendingAmount>0?<div style={{ fontSize:11.5, fontWeight:700, color:'#8A6D0B', marginTop:2 }}>{TH?`รอตรวจยอด ${money(wal.pendingAmount)}`:`Pending ${money(wal.pendingAmount)}`}</div>:null}</div>
             <div style={{ textAlign:'right', fontSize:12.5, color: short>0?'var(--accent)':'var(--brand-ink)', fontWeight:700 }}>{short>0?(TH?`ขาดอีก ${money(short)}`:`Short ${money(short)}`):(TH?'พอสำหรับรอบนี้':'Enough for this cycle')}</div>
           </div>
           <div style={{ height:1, background:'var(--hair)', margin:'13px 0' }}/>
@@ -1678,25 +1734,29 @@ function SubscriptionSheet({ sub, setSub, onClose }){
             {KD_TOPUP_QUICK.map(a=>(<button key={a} onClick={()=>{setTopAmt(a);setTopMsg('');}} style={{ flex:'1 1 70px', padding:'10px 6px', borderRadius:11, border:'1.6px solid '+(Number(topAmt)===a?'var(--brand)':'var(--hair-2)'), background:Number(topAmt)===a?'var(--brand-soft)':'#fff', color:Number(topAmt)===a?'var(--brand-ink)':'var(--ink-2)', fontWeight:700, fontSize:13.5, cursor:'pointer', fontFamily:'var(--font)' }}>{money(a)}</button>))}
           </div>
           <input className="kd-input num" inputMode="numeric" value={topAmt} onChange={e=>{ setTopAmt(e.target.value.replace(/\D/g,'')); setTopMsg(''); }} placeholder={TH?'ระบุจำนวนเงิน':'Custom amount'}/>
-          <div style={{ textAlign:'center', marginTop:12 }}><QRBlock/>
-            <div className="num" style={{ fontWeight:700, marginTop:6 }}>{money(Number(topAmt)||0)}</div>
-            <div style={{ fontSize:12, color:'var(--ink-3)' }}>{TH?'สแกนพร้อมเพย์เพื่อเติมเงิน · Have a Good Day':'Scan PromptPay to top up'}</div></div>
-          <button onClick={topup} className="kd-btn kd-btn-block" style={{ marginTop:12, background:'#fff', border:'1.6px solid var(--brand)', color:'var(--brand-ink)', padding:13, fontWeight:700 }}>{TH?`ยืนยันเติมเงิน ${money(Number(topAmt)||0)}`:`Confirm top-up ${money(Number(topAmt)||0)}`}</button>
+          <div style={{ textAlign:'center', marginTop:12 }}>
+            {(sysAcct&&sysAcct.promptpay&&payAmt>0) ? <div style={{ display:'inline-block', padding:12, background:'#fff', borderRadius:16 }}><QRBlock payload={window.KDW.promptpayPayload(sysAcct.promptpay,payAmt)} size={186}/></div> : null}
+            <div className="num" style={{ fontWeight:700, marginTop:6 }}>{money(payAmt||Number(topAmt)||0)}</div>
+            <div style={{ fontSize:12, color:'var(--ink-3)', lineHeight:1.55 }}>{TH?'สแกนพร้อมเพย์เพื่อโอนเข้าบัญชีระบบ · ยอดถูกใส่มาให้แล้ว':'Scan PromptPay to top up'}</div>
+            <AcctRows amount={payAmt}/>
+            <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:6, lineHeight:1.55, textAlign:'left' }}>{TH?<>โอน <b>{money(payAmt)}</b> เป๊ะ — เศษสตางค์ท้ายคือเลขอ้างอิงของคำขอนี้ ระบบใช้จับคู่ยอดที่เข้าบัญชีให้อัตโนมัติ</>:'Transfer the exact amount — the cents are this request\u2019s reference'}</div></div>
+          <label style={{ display:'block', marginTop:11, padding:'12px 13px', borderRadius:12, border:'1.5px dashed var(--hair)', cursor:'pointer', background:'#fff' }}>
+            <input type="file" accept="image/*" onChange={pickTopSlip} style={{ display:'none' }}/>
+            <span style={{ fontSize:13, fontWeight:700, color:'var(--brand-ink)' }}>{topSlip?(TH?'✓ แนบสลิปแล้ว · แตะเพื่อเปลี่ยน':'✓ Slip attached'):(TH?'แนบสลิปโอนเงิน (ระบบตรวจยอดกับธนาคารให้ทันที)':'Attach transfer slip')}</span>
+            <span style={{ display:'block', fontSize:12, color:'var(--ink-3)', marginTop:3, lineHeight:1.5 }}>{TH?'ไม่แนบก็ได้ · ระบบจะจับยอดที่เข้าบัญชี หรือรอผู้ดูแลยืนยัน':'Optional'}</span>
+          </label>
+          {topSlip?<img src={topSlip} alt="slip" style={{ width:'100%', maxHeight:190, objectFit:'contain', marginTop:9, borderRadius:11, background:'#fff' }}/>:null}
+          <button onClick={topup} disabled={busy} className="kd-btn kd-btn-block" style={{ marginTop:12, background:'#fff', border:'1.6px solid var(--brand)', color:'var(--brand-ink)', padding:13, fontWeight:700, opacity:busy?.6:1 }}>{busy?(TH?'กำลังส่งคำขอ…':'Sending…'):(TH?`แจ้งเติมเงิน ${money(payAmt||Number(topAmt)||0)}`:`Request top-up ${money(payAmt||Number(topAmt)||0)}`)}</button>
           {topMsg && <div style={{ marginTop:10, fontSize:12.5, fontWeight:600, color:'var(--ink-2)', background:'#fff', borderRadius:11, padding:'10px 12px', lineHeight:1.5 }}>{topMsg}</div>}
-          <button onClick={()=>setWalLog(v=>!v)} style={{ border:'none', background:'none', color:'var(--brand-ink)', fontWeight:700, fontSize:12.5, cursor:'pointer', marginTop:10, padding:0 }}>{walLog?(TH?'ซ่อนเดินบัญชี':'Hide history'):(TH?'ดูเดินบัญชีกระเป๋า':'Wallet history')}</button>
-          {walLog && <div style={{ marginTop:8, display:'flex', flexDirection:'column', gap:6 }}>
-            {wal.ledger.length? [...wal.ledger].reverse().slice(0,20).map((l,i)=>(
-              <div key={i} style={{ display:'flex', gap:10, alignItems:'center', background:'#fff', borderRadius:10, padding:'9px 11px' }}>
-                <div style={{ flex:1, minWidth:0 }}><div style={{ fontSize:13, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{l.note}</div>
-                  <div style={{ fontSize:11, color:'var(--ink-3)' }}>{new Date(l.ts).toLocaleString(TH?'th-TH':'en-US',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div></div>
-                <div className="num" style={{ fontSize:13.5, fontWeight:800, color:l.amount>0?'var(--brand-ink)':'var(--ink)' }}>{l.amount>0?'+':''}{money(l.amount)}</div>
-              </div>)) : <div style={{ fontSize:12.5, color:'var(--ink-3)', padding:'8px 2px' }}>{TH?'ยังไม่มีรายการ':'No transactions yet'}</div>}
-          </div>}
+          <button onClick={()=>setWalLog(v=>!v)} style={{ border:'none', background:'none', color:'var(--brand-ink)', fontWeight:700, fontSize:12.5, cursor:'pointer', marginTop:10, padding:0 }}>{walLog?(TH?'ซ่อนประวัติการทำรายการ':'Hide history'):(TH?'ดูประวัติการทำรายการ':'Transaction history')}</button>
+          {walLog && window.KDWalletHistory && <div style={{ marginTop:10 }}><window.KDWalletHistory biz={wBiz} embedded/></div>}
         </div>}
 
         {method==='promptpay' && <div className="kd-card" style={{ padding:16, textAlign:'center', marginBottom:8, background:'var(--brand-softer)', boxShadow:'none' }}>
-          <QRBlock/><div className="num" style={{ fontWeight:700, marginTop:6 }}>{money(plan.price)}</div>
-          <div style={{ fontSize:12, color:'var(--ink-3)' }}>{TH?'พร้อมเพย์ · Have a Good Day':'PromptPay'}</div></div>}
+          {(sysAcct&&sysAcct.promptpay) ? <div style={{ display:'inline-block', padding:12, background:'#fff', borderRadius:16 }}><QRBlock payload={window.KDW.promptpayPayload(sysAcct.promptpay,plan.price)} size={186}/></div> : null}
+          <div className="num" style={{ fontWeight:700, marginTop:6 }}>{money(plan.price)}</div>
+          <div style={{ fontSize:12, color:'var(--ink-3)' }}>{TH?'สแกนพร้อมเพย์จ่ายค่าบริการระบบ':'PromptPay'}</div>
+          <AcctRows amount={plan.price}/></div>}
       </div>
       <div style={{ padding:'12px 20px 0' }}>
         <button onClick={renew} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:15, opacity:(method==='wallet'&&short>0)?.55:1 }}>
@@ -1850,6 +1910,8 @@ function PaySettingsSheet({ pay, setPay, onClose }){
   const previewItem={ cat:'drink', tone:'#fff' };
   const qrCardRef = React.useRef(null);
   const canShare = typeof navigator!=='undefined' && !!navigator.share;
+  const [cp,setCp] = m2State('');
+  const cpVal = (k,v)=>{ try{ navigator.clipboard.writeText(String(v).replace(/[^\d.-]/g,'')); setCp(k); setTimeout(()=>setCp(''),1600); }catch(e){} };
   const shareQR = async ()=>{
     const TH = lang==='th'; const cap=(f.shopName||'')+(f.promptpay?(' · '+(TH?'พร้อมเพย์ ':'PromptPay ')+f.promptpay):'');
     try{
@@ -1879,10 +1941,19 @@ function PaySettingsSheet({ pay, setPay, onClose }){
         <div className="kd-card" style={{ padding:16, textAlign:'center', marginBottom:14, background:'var(--brand-softer)', boxShadow:'none' }}>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--brand-ink)', marginBottom:8 }}>{lang==='th'?'ตัวอย่าง QR ที่ลูกค้าจะเห็น':'Customer QR preview'}</div>
           <div ref={qrCardRef} style={{ display:'inline-block', padding:12, background:'#fff', borderRadius:16, boxShadow:'var(--shadow)' }}>
-            <QRBlock src={f.qrImg}/>
+            <QRBlock src={f.qrImg} payload={(!f.qrImg && f.promptpay && window.KDW)?window.KDW.promptpayPayload(f.promptpay,0):null}/>
             <div style={{ fontWeight:700, marginTop:6, fontSize:13 }}>{f.shopName||'ร้านของฉัน'}</div>
             <div className="num" style={{ fontSize:12, color:'var(--ink-3)' }}>{f.promptpay}</div>
           </div>
+          {/* คัดลอกเลขพร้อมเพย์/เลขบัญชีของร้าน — ลูกค้าที่สแกนไม่ได้จะพิมพ์เอง */}
+          {[[lang==='th'?'พร้อมเพย์':'PromptPay',f.promptpay],[f.acct?(f.bank||(lang==='th'?'เลขบัญชี':'Account')):'',f.acct]].filter(x=>x[0]&&x[1]).map(([k,v])=>(
+            <div key={k} style={{ display:'flex', alignItems:'center', gap:10, justifyContent:'space-between', background:'#fff', borderRadius:11, padding:'9px 12px', marginTop:9, textAlign:'left' }}>
+              <span style={{ fontSize:12, color:'var(--ink-3)' }}>{k}</span>
+              <span style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <b className="num" style={{ fontSize:13.5 }}>{v}</b>
+                <button onClick={()=>cpVal(k,v)} style={{ border:'1.2px solid var(--hair-2)', background:'#fff', borderRadius:8, padding:'4px 9px', fontSize:11, fontWeight:700, color:'var(--brand-ink)', cursor:'pointer', fontFamily:'var(--font)' }}>{cp===k?(lang==='th'?'คัดลอกแล้ว':'Copied'):(lang==='th'?'คัดลอก':'Copy')}</button>
+              </span>
+            </div>))}
           {canShare && <div style={{ marginTop:12 }}>
             <button onClick={shareQR} className="kd-btn kd-btn-primary" style={{ padding:'10px 18px', fontWeight:700 }}>↗ {lang==='th'?'แชร์ QR ร้าน':'Share shop QR'}</button>
           </div>}

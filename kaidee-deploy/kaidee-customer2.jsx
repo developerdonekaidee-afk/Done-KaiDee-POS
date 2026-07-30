@@ -66,6 +66,7 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
   const isGuest = !lu;
   const [custName,setCustName] = c2State(()=>{ try{ return localStorage.getItem('kd_guest_name')||''; }catch(e){ return ''; } });
   const [confirmPre,setConfirmPre] = c2State(false);
+  const [formErr,setFormErr] = c2State('');   // FX-003: เตือนในหน้า (alert เด้งไม่ได้บน LINE/PWA)
   const [pin,setPin] = c2State(null);
   const [mapOpen,setMapOpen] = c2State(false);
   const [phone,setPhone] = c2State(()=>{ try{ return localStorage.getItem('kd_guest_phone')||''; }catch(e){ return ''; } });
@@ -106,13 +107,15 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
 
   const submit = ()=>{
     if(blocked) return;
-    if(isGuest && !custName.trim()){ alert(lang==='th'?'กรุณากรอกชื่อผู้สั่ง':'Please enter your name'); return; }
-    if(isGuest && phone.trim().replace(/\D/g,'').length<9){ alert(lang==='th'?'กรุณากรอกเบอร์โทรให้ถูกต้อง':'Please enter a valid phone'); return; }
+    setFormErr('');
+    const bad=(m)=>{ setFormErr(m); try{ const el=document.getElementById('kd-form-err'); if(el&&el.focus) el.focus({preventScroll:true}); }catch(e){} };
+    if(isGuest && !custName.trim()){ bad(lang==='th'?'กรุณากรอกชื่อผู้สั่ง':'Please enter your name'); return; }
+    if(isGuest && phone.trim().replace(/\D/g,'').length<9){ bad(lang==='th'?'กรุณากรอกเบอร์โทรให้ถูกต้อง':'Please enter a valid phone'); return; }
     if(ful==='delivery'){
-      if(!addr.trim()){ alert(lang==='th'?'กรุณากรอกที่อยู่จัดส่ง':'Please enter delivery address'); return; }
-      if(!pin){ alert(lang==='th'?'กรุณาปักหมุดตำแหน่งจัดส่งบนแผนที่':'Please pin the delivery location'); return; }
+      if(!addr.trim()){ bad(lang==='th'?'กรุณากรอกที่อยู่จัดส่ง':'Please enter delivery address'); return; }
+      if(!pin){ bad(lang==='th'?'กรุณาปักหมุดตำแหน่งจัดส่งบนแผนที่':'Please pin the delivery location'); return; }
     }
-    if(forcePre && !isPre){ alert(lang==='th'?'ร้านปิดอยู่ — กรุณาเลือกเวลารับแบบสั่งจองล่วงหน้า':'Shop is closed — pick a pre-order time'); return; }
+    if(forcePre && !isPre){ bad(lang==='th'?'ร้านปิดอยู่ — กรุณาเลือกเวลารับแบบสั่งจองล่วงหน้า':'Shop is closed — pick a pre-order time'); return; }
     // ร้านปิด (pre-order) หรือมีเงื่อนไขร้าน → เด้ง popup แจ้งก่อนสั่ง
     if((forcePre || (isPre && preNote.trim()))){ setConfirmPre(true); return; }
     doPlace();
@@ -210,6 +213,7 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
           ? <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-2)', marginBottom:3 }}><span>{lang==='th'?(deliveryCfg(shop).mode==='distance'?`ค่าส่ง · ${dist} กม.`:'ค่าส่ง'):`Delivery${deliveryCfg(shop).mode==='distance'?' · '+dist+' km':''}`}</span><span className="num">{money(billFee)}</span></div>
           : <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-2)', marginBottom:3 }}><span>{lang==='th'?'ค่าส่ง':'Delivery'}</span><span style={{ color:'var(--brand-ink)', fontWeight:700 }}>{lang==='th'?'ร้านออกให้ (ฟรี)':'Free'}</span></div>)}
         <div style={{ display:'flex', justifyContent:'space-between', fontWeight:700, fontSize:17, marginBottom:10 }}><span>{t('total')}</span><span className="num">{money(total)}</span></div>
+        {formErr && <div id="kd-form-err" tabIndex={-1} role="alert" style={{ background:'var(--danger-soft,#FDECEC)', color:'var(--danger,#C0392B)', borderRadius:12, padding:'11px 13px', fontSize:13.5, fontWeight:700, lineHeight:1.5, marginBottom:10 }}>{formErr}</div>}
         <button onClick={place} disabled={blocked} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:16, opacity:blocked?0.5:1 }}>
           {blocked?(lang==='th'?'ร้านปิดรับออเดอร์ชั่วคราว':'Shop closed'):((forcePre?(lang==='th'?'ยืนยันสั่งจองล่วงหน้า':'Confirm pre-order'):(ful==='dinein'?(lang==='th'?'ส่งออเดอร์ · จ่ายที่ร้าน':'Send order · pay at store'):(isPre?(lang==='th'?'ยืนยันจองล่วงหน้า':'Confirm pre-order'):(lang==='th'?'สั่งเลย':'Place order'))))+' · '+money(total))}</button>
       </div>

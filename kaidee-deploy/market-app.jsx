@@ -620,8 +620,8 @@ function SubscribeView({data,setData}){
   const ref='SUB'+market.id.toUpperCase().slice(-3)+new Date().getFullYear().toString().slice(2)+(new Date().getMonth()+1).toString().padStart(2,'0');
   const toggle=(id)=>setAddons(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
   const active=sub.paidUntil&&new Date(sub.paidUntil)>=new Date();
-  const doPay=()=>{ if(method==='wallet'){ if(!KDW){ alert('กระเป๋าเงินยังไม่พร้อม (kd-wallet.jsx)'); return; }
-      const res=KDW.charge(bizId,total,{who:market.name,sub:'ค่าบริการระบบตลาด '+cur.name+(yr?' (รายปี)':' (รายเดือน)'),ref,type:'fee'});
+  const doPay=async()=>{ if(method==='wallet'){ if(!KDW){ alert('กระเป๋าเงินยังไม่พร้อม (kd-wallet.jsx)'); return; }
+      const res=await KDW.charge(bizId,total,{who:market.name,sub:'ค่าบริการระบบตลาด '+cur.name+(yr?' (รายปี)':' (รายเดือน)'),ref,type:'fee',idem:'mkplan:'+ref});
       if(!res.ok){ setWTick(x=>x+1); alert(res.short>0?('ยอดกระเป๋าไม่พอ · ขาดอีก '+KDW.fmt(res.short)+' → เติมเงินก่อน'):res.error); return; } setWTick(x=>x+1); }
     const until=addMonths(P0+'-01',yr?12:1); setData(d=>{ const m=d.markets.find(x=>x.id===market.id); m.sub={plan,addons,cycle,paidUntil:until,paidAt:todayISO(),ref,amount:total,method:method==='wallet'?'wallet':'promptpay'}; return {...d}; }); setPay(false); };
   return (<div className="fade">

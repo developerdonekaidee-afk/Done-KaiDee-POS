@@ -113,7 +113,11 @@ function KaiDeeApp(){
       const _noParam=!['go','shop','role','sys','liff.state','table','kds','board','pay','order','ref'].some(k=>qp(k)!=null);
       if(!(_noParam||(qp('go')==='signup'))) return;
       if(qp('shop')||qp('role')||qp('sys')||qp('liff.state')) return;
-      if(_fresh) return;   // เพิ่งสมัครเสร็จ = เข้าแอปตรง · ร้านที่มีอยู่แล้วให้กด "เข้าใช้งานต่อ" ในหน้าสมัคร
+      if(_fresh) return;   // เพิ่งสมัครเสร็จ = เข้าแอปตรง
+      // ⭐ FX-001: เครื่องนี้มีร้านอยู่แล้ว = เจ้าของร้านกลับมาใช้งาน → เข้าแอปตรง ไม่เด้งหน้าสมัคร
+      try{ const st=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}');
+        if(st && st.shop && (st.shop.shopId || st.shop.name)) return; }catch(e){}
+      try{ if(localStorage.getItem('kd_shop')) return; }catch(e){}
       location.replace('Signup Chooser.html');
     }catch(e){} })();
     if(qp('go')==='signup' && !qp('shop') && !qp('role')) return 'crm';

@@ -503,10 +503,10 @@ function OwnerPlan({d,setData,toast}){
   const WP=window.KDWalletPanel; const KDW=window.KDW;
   const bizId=KDW?KDW.biz('fitness',(d.gym&&d.gym.id)||'main'):'';
   const curT=fitTierOf(cur); const dueAmt=curT&&curT.price>0?priceOf(curT):0;
-  const choose=(tid)=>{ const t=fitTierOf(tid); const amt=priceOf(t);
+  const choose=async(tid)=>{ const t=fitTierOf(tid); const amt=priceOf(t);
     if(t.price>0){
       if(!KDW){ toast('กระเป๋าเงินยังไม่พร้อม · โหลดหน้าใหม่อีกครั้ง'); return; }
-      const res=KDW.charge(bizId,amt,{who:(d.gym&&d.gym.name)||'ยิม (ฟิตเนส)',sub:'ค่าบริการฟิตเนส '+t.th+' '+B(t.price)+'/เดือน'+(cycle==='yr'?' (รายปี)':''),type:'fee'});
+      const res=await KDW.charge(bizId,amt,{who:(d.gym&&d.gym.name)||'ยิม (ฟิตเนส)',sub:'ค่าบริการฟิตเนส '+t.th+' '+B(t.price)+'/เดือน'+(cycle==='yr'?' (รายปี)':''),type:'fee',idem:'fitplan:'+tid+':'+cycle+':'+new Date().toISOString().slice(0,7)});
       if(!res.ok){ toast(res.short>0?('ยอดกระเป๋าไม่พอ · ขาดอีก '+B(res.short)+' → เติมเงินก่อน'):res.error); setWTick(x=>x+1); return; }
       setWTick(x=>x+1);
     }
@@ -951,12 +951,12 @@ function OwnerMore({go,d,setData,toast}){
   const [ao,setAo]=useState(null);
   const AD=(window.FIT&&window.FIT.ADDONS)||{};
   const hasAd=(k)=>!!(window.FIT&&window.FIT.fitHasAddon&&window.FIT.fitHasAddon(d,k));
-  const setAddon=(k,on)=>{ const a=AD[k]||{name:k,price:0};
+  const setAddon=async(k,on)=>{ const a=AD[k]||{name:k,price:0};
     if(on&&a.price>0){ const KDW=window.KDW;
       if(!KDW){ if(toast)toast('กระเป๋าเงินยังไม่พร้อม · โหลดหน้าใหม่อีกครั้ง'); return; }
       const bizId=KDW.biz('fitness',(d.gym&&d.gym.id)||'main');
       if(!window.confirm('เปิดใช้ add-on “'+a.name+'” ฿'+a.price+'/เดือน ?\nหักจากกระเป๋าเงินร้าน (ยอดคงเหลือ '+KDW.fmt(KDW.balance(bizId))+')'))return;
-      const res=KDW.charge(bizId,a.price,{who:(d.gym&&d.gym.name)||'ยิม (ฟิตเนส)',sub:'add-on ฟิตเนส '+a.name+' ฿'+a.price+'/เดือน',type:'fee'});
+      const res=await KDW.charge(bizId,a.price,{who:(d.gym&&d.gym.name)||'ยิม (ฟิตเนส)',sub:'add-on ฟิตเนส '+a.name+' ฿'+a.price+'/เดือน',type:'fee',idem:'fitaddon:'+k+':'+new Date().toISOString().slice(0,7)});
       if(!res.ok){ if(toast)toast(res.short>0?('ยอดกระเป๋าไม่พอ · ขาดอีก '+KDW.fmt(res.short)+' → เติมเงินที่เมนูแพ็กเกจ'):res.error); return; } }
     else if(!on){ if(!window.confirm('ปิด add-on “'+a.name+'” ?\nจอ/ฟีเจอร์นี้จะใช้ไม่ได้จนเปิดใหม่ (ไม่คืนเงินรอบที่ชำระแล้ว)'))return; }
     if(setData)setData(dd=>{ dd.addons={...(dd.addons||{}),[k]:on}; return {...dd}; });
