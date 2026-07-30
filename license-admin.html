@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KaiDee POS — จัดการสิทธิ์ร้าน (License Admin)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--brand:#1E9E6E;--brand-ink:#0A6E60;--ink:#16382A;--ink2:#4a5b53;--ink3:#82968d;--bg:#F1F5F3;--card:#fff;--line:#E3E8E6;--amber:#B26A00;--amberbg:#FBEAD7;--red:#DB5C4E}
+  body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--ink);padding:24px;max-width:1000px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sub{color:var(--ink2);font-size:13.5px;margin-bottom:20px}
+  .card{background:var(--card);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 8px 24px -18px rgba(20,50,40,.35)}
+  .card h2{font-size:16px;font-weight:700;margin-bottom:12px}
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin:0 2px 5px}
+  input,select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;background:#fff}
+  input:focus,select:focus{outline:none;border-color:var(--brand)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:140px}
+  button{border:none;cursor:pointer;font-family:inherit;font-weight:700;border-radius:10px;padding:10px 16px;font-size:13.5px}
+  .b-pri{background:var(--brand);color:#fff}
+  .b-ghost{background:var(--bg);color:var(--ink2)}
+  .b-amber{background:var(--amber);color:#fff}
+  .b-sm{padding:7px 12px;font-size:12.5px}
+  table{width:100%;border-collapse:collapse;margin-top:6px}
+  th{text-align:left;font-size:12px;color:var(--ink2);padding:8px 10px;border-bottom:2px solid var(--line)}
+  td{padding:10px;border-bottom:1px solid var(--line);font-size:13.5px}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
+  .pill-due{background:var(--amberbg);color:var(--amber)}
+  .pill-ok{background:#E3F5EF;color:var(--brand-ink)}
+  .num{font-family:'IBM Plex Mono',monospace}
+  .muted{color:var(--ink3);font-size:12.5px}
+  .msg{padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-top:10px}
+  .msg-ok{background:#E3F5EF;color:var(--brand-ink)}
+  .msg-err{background:#FCECE8;color:var(--red)}
+  a{color:var(--brand)}
+</style>
+</head>
+<body>
+<h1>จัดการสิทธิ์ร้าน · อนุมัติสลิป</h1>
+<div class="sub">เชื่อมกับ Cloudflare Worker (license-worker) — เก็บวันหมดอายุที่เซิร์ฟเวอร์ กันลูกค้าแก้เครื่องตัวเอง</div>
+
+<details class="card" style="margin-bottom:16px">
+  <summary style="font-size:16px;font-weight:700;cursor:pointer;list-style:none">📖 คู่มือการต่อ License (กดเพื่อดู)</summary>
+  <div style="margin-top:12px;font-size:13.5px;line-height:1.75;color:var(--ink2)">
+    <div style="font-weight:700;color:var(--ink);margin-bottom:4px">ขั้นตอนที่ 1 · เชื่อมต่อครั้งแรก (ทำครั้งเดียว)</div>
+    <div>1. ใส่ <b>Worker URL</b> (เช่น <span class="num">https://kaidee-license.xxx.workers.dev</span>) และ <b>Admin Token</b> ในหัวข้อ "1 · การเชื่อมต่อ"</div>
+    <div>2. กด <b>บันทึก &amp; เชื่อม</b> — ระบบจะจำไว้ ครั้งต่อไปไม่ต้องกรอกอีก</div>
+
+    <div style="font-weight:700;color:var(--ink);margin:14px 0 4px">ขั้นตอนที่ 2 · อนุมัติคำขอต่ออายุ (สลิปโอน)</div>
+    <div>1. หัวข้อ "2 · คำขอต่ออายุ" จะแสดงร้านที่ส่งสลิปมา · กด <b>↻ โหลดคำขอ</b> เพื่อดึงล่าสุด</div>
+    <div>2. ตรวจสลิป (กด "ดูสลิป") แล้วกด <b>อนุมัติ</b> — วันหมดอายุจะถูกบวกให้อัตโนมัติที่เซิร์ฟเวอร์</div>
+    <div style="color:var(--amber)">※ ถ้ายืนยันจากหน้า "คำขอชำระ" ระบบจะต่อ License ให้ที่นี่อัตโนมัติด้วย (เมื่อเชื่อม Worker แล้ว)</div>
+
+    <div style="font-weight:700;color:var(--ink);margin:14px 0 4px">ขั้นตอนที่ 3 · แก้สิทธิ์ร้านด้วยมือ (กรณีพิเศษ)</div>
+    <div>1. ใส่ <b>Shop ID</b> (เช่น <span class="num">S1234</span>) · กด "ดูสถานะร้านนี้" เพื่อเช็กก่อน</div>
+    <div>2. ตั้ง <b>แพ็กเกจ / สถานะ / วันหมดอายุ</b> หรือ <b>ต่ออายุ +วัน</b> · จำกัดเครื่อง (maxDevices) · Grace เน็ตหลุด</div>
+    <div>3. กด <b>บันทึกการแก้</b> · ปุ่ม "รีเซ็ตเครื่องทั้งหมด" ใช้เมื่อร้านย้าย/เปลี่ยนเครื่องแล้วเต็มโควตา</div>
+
+    <div style="margin-top:14px;padding:10px 12px;background:var(--amberbg);border-radius:10px;color:var(--amber);font-size:12.5px">
+      <b>ไม่มี Worker URL?</b> หน้านี้ยังใช้ไม่ได้จนกว่าจะ deploy license-worker แล้วนำ URL + Admin Token มากรอก · การอนุมัติคำขอชำระในหน้า "คำขอชำระ" ยังทำงานได้ปกติ (ต่ออายุในระบบร้าน) แค่จะไม่ซิงค์ไป License จนกว่าจะเชื่อม
+    </div>
+  </div>
+</details>
+
+<div class="card">
+  <h2>1 · การเชื่อมต่อ</h2>
+  <div class="row">
+    <div style="flex:2"><label>Worker URL</label><input id="ep" placeholder="https://kaidee-license.xxx.workers.dev" /></div>
+    <div><label>Admin Token</label><input id="tok" type="password" placeholder="ADMIN_TOKEN" /></div>
+    <div style="flex:0 0 auto;display:flex;align-items:flex-end"><button class="b-pri" onclick="saveConn()">บันทึก &amp; เชื่อม</button></div>
+  </div>
+  <div id="connMsg"></div>
+</div>
+
+<div class="card">
+  <h2>2 · คำขอต่ออายุ (รออนุมัติ) <span id="pendCount" class="muted"></span></h2>
+  <button class="b-ghost b-sm" onclick="loadPending()">↻ โหลดคำขอ</button>
+  <table id="pendTbl"><thead><tr><th>ร้าน</th><th>แพ็กเกจ</th><th>ยอด</th><th>สลิป</th><th>วันที่</th><th></th></tr></thead><tbody></tbody></table>
+  <div id="pendMsg" class="muted" style="margin-top:8px"></div>
+</div>
+
+<div class="card">
+  <h2>3 · แก้สิทธิ์ร้าน (แก้มือ)</h2>
+  <div class="row">
+    <div><label>Shop ID</label><input id="sid" placeholder="S1234" /></div>
+    <div><label>แพ็กเกจ</label><select id="splan"><option value="">(ไม่เปลี่ยน)</option><option value="trial">ทดลองใช้</option><option value="monthly">รายเดือน</option><option value="yearly">รายปี</option></select></div>
+    <div><label>สถานะ</label><select id="sstatus"><option value="">(ไม่เปลี่ยน)</option><option value="active">active</option><option value="suspended">ระงับ</option></select></div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <div><label>วันหมดอายุ (ตั้งตรง)</label><input id="sexp" type="date" /></div>
+    <div><label>ต่ออายุ +วัน</label><input id="sadd" type="number" placeholder="เช่น 30" /></div>
+    <div><label>จำกัดเครื่อง (maxDevices)</label><input id="smax" type="number" placeholder="5" /></div>
+    <div><label>Grace เน็ตหลุด (วัน)</label><input id="sgrace" type="number" placeholder="5" /></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+    <button class="b-pri" onclick="applySet()">บันทึกการแก้</button>
+    <button class="b-ghost" onclick="loadShop()">ดูสถานะร้านนี้</button>
+    <button class="b-ghost" onclick="resetDevices()">รีเซ็ตเครื่องทั้งหมด</button>
+  </div>
+  <div id="setMsg"></div>
+  <div id="shopInfo" class="muted" style="margin-top:10px"></div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const LS = 'kd_license_admin_v1';
+  function loadConn(){ try{ const c=JSON.parse(localStorage.getItem(LS)||'{}'); $('ep').value=c.ep||''; $('tok').value=c.tok||''; }catch(e){} }
+  function saveConn(){ localStorage.setItem(LS, JSON.stringify({ ep:$('ep').value.trim().replace(/\/$/,''), tok:$('tok').value })); msg('connMsg','บันทึกแล้ว','ok'); loadPending(); }
+  function conn(){ return { ep:$('ep').value.trim().replace(/\/$/,''), tok:$('tok').value }; }
+  function msg(el,text,kind){ const e=$(el); e.innerHTML='<div class="msg msg-'+(kind==='ok'?'ok':'err')+'">'+text+'</div>'; if(kind==='ok') setTimeout(()=>e.innerHTML='',3000); }
+  const M=n=>'฿'+Math.round(Number(n)||0).toLocaleString('en-US');
+  const dd=iso=>{ try{ return new Date(iso).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit'}); }catch(e){ return iso||'-'; } };
+
+  async function api(path, method, body){
+    const c=conn(); if(!c.ep){ throw new Error('ยังไม่ได้ใส่ Worker URL'); }
+    const r=await fetch(c.ep+path,{ method:method||'GET', headers:{ 'content-type':'application/json','x-admin-token':c.tok }, body: body?JSON.stringify(body):undefined });
+    const j=await r.json(); if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j;
+  }
+
+  async function loadPending(){
+    try{
+      const j=await api('/admin/pending','GET');
+      const rows=(j.pending||[]);
+      $('pendCount').textContent='· '+rows.length+' รายการ';
+      $('pendTbl').querySelector('tbody').innerHTML = rows.length? rows.map(r=>
+        '<tr><td class="num">'+r.shopId+'</td><td>'+(r.plan||'-')+' · '+(r.months||1)+' ด.</td><td class="num">'+M(r.amount)+'</td>'
+        +'<td>'+(r.slipUrl?'<a href="'+r.slipUrl+'" target="_blank">ดูสลิป</a>':'<span class="muted">—</span>')+'</td>'
+        +'<td class="muted">'+dd(r.ts)+'</td>'
+        +'<td><button class="b-pri b-sm" onclick="approve(\''+r.shopId+'\',\''+r.id+'\')">อนุมัติ</button></td></tr>'
+      ).join(''):'<tr><td colspan="6" class="muted" style="text-align:center;padding:16px">ไม่มีคำขอรออนุมัติ</td></tr>';
+      $('pendMsg').textContent='';
+    }catch(e){ $('pendMsg').innerHTML='<span style="color:var(--red)">'+e.message+'</span>'; }
+  }
+  async function approve(shopId,reqId){
+    try{ const j=await api('/admin/approve','POST',{ shopId, reqId }); msg('pendMsg','อนุมัติแล้ว · '+shopId+' หมดอายุ '+dd(j.status.expiry),'ok'); loadPending(); }
+    catch(e){ msg('pendMsg',e.message,'err'); }
+  }
+  async function applySet(){
+    const sid=$('sid').value.trim(); if(!sid){ msg('setMsg','ใส่ Shop ID ก่อน','err'); return; }
+    const b={ shopId:sid };
+    if($('splan').value) b.plan=$('splan').value;
+    if($('sstatus').value) b.status=$('sstatus').value;
+    if($('sexp').value) b.expiry=new Date($('sexp').value+'T00:00:00').toISOString();
+    if($('sadd').value) b.addDays=Number($('sadd').value);
+    if($('smax').value) b.maxDevices=Number($('smax').value);
+    if($('sgrace').value) b.graceDays=Number($('sgrace').value);
+    try{
+      if(b.addDays){ const j=await api('/admin/approve','POST',{ shopId:sid, addDays:b.addDays, plan:b.plan }); }
+      const j=await api('/admin/set','POST',b);
+      msg('setMsg','บันทึกแล้ว · หมดอายุ '+dd(j.status.expiry)+' · เหลือ '+j.status.daysLeft+' วัน','ok'); loadShop();
+    }catch(e){ msg('setMsg',e.message,'err'); }
+  }
+  async function resetDevices(){
+    const sid=$('sid').value.trim(); if(!sid){ msg('setMsg','ใส่ Shop ID ก่อน','err'); return; }
+    try{ await api('/admin/set','POST',{ shopId:sid, resetDevices:true }); msg('setMsg','รีเซ็ตเครื่องแล้ว','ok'); }catch(e){ msg('setMsg',e.message,'err'); }
+  }
+  async function loadShop(){
+    const sid=$('sid').value.trim(); if(!sid){ msg('setMsg','ใส่ Shop ID ก่อน','err'); return; }
+    try{ const s=await api('/shop/'+encodeURIComponent(sid)+'/status','GET');
+      $('shopInfo').innerHTML='แพ็กเกจ <b>'+s.plan+'</b> · สถานะ <b>'+s.status+'</b> · หมดอายุ <b>'+dd(s.expiry)+'</b> · เหลือ <b>'+s.daysLeft+'</b> วัน · maxDevices '+s.maxDevices+' · grace '+s.graceDays+' วัน';
+    }catch(e){ $('shopInfo').innerHTML='<span style="color:var(--red)">'+e.message+'</span>'; }
+  }
+  loadConn(); if(conn().ep) loadPending();
+</script>
+</body>
+</html>

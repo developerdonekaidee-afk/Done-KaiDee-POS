@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สั่งเอง จ่ายเอง — Fitness Kiosk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<!-- ⚠️ ไม่โหลด gate.js โดยตั้งใจ — เป็นตู้ตั้งหน้าร้านให้ลูกค้าจ่ายเอง (KFC-style) -->
+<style>
+  :root{
+    --brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;
+    --green:#12945E;--green-d:#0C6E46;--red:#D8452F;--gold:#E8992F;
+    --ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--card:#fff;--hair:#E9EEEC;--hair-2:#DCE4E1;--bg:#F4F7F5;
+    --font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{font-family:var(--font);background:#0A1F1C;color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden;}
+  button{font-family:var(--font);cursor:pointer;border:none;background:none;color:inherit;}
+  .num{font-variant-numeric:tabular-nums;}.mono{font-family:var(--mono);}
+  #root{height:100vh;}
+  .kiosk{height:100vh;display:flex;flex-direction:column;background:radial-gradient(120% 80% at 50% 0%,#0F3B33 0%,#0A1F1C 60%);}
+  .topbar{flex:0 0 auto;padding:22px 30px 18px;display:flex;align-items:center;justify-content:space-between;color:#fff;}
+  .tb-gym{display:flex;align-items:center;gap:12px;min-width:0;}
+  .tb-gym .em{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto;}
+  .tb-gym .nm{font-size:19px;font-weight:700;line-height:1.15;}
+  .tb-gym .sub{font-size:12.5px;opacity:.7;font-weight:600;margin-top:1px;}
+  .tb-clock{text-align:right;font-family:var(--mono);}
+  .tb-clock .t{font-size:24px;font-weight:600;color:#fff;}
+  .tb-clock .d{font-size:12px;opacity:.65;color:#fff;margin-top:2px;font-family:var(--font);font-weight:600;}
+  /* shop layout */
+  .shop{flex:1;min-height:0;display:flex;gap:16px;padding:0 18px 18px;}
+  .catcol{flex:1;min-width:0;background:var(--bg);border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;}
+  .tabs{flex:0 0 auto;display:flex;gap:8px;padding:16px 18px 12px;overflow-x:auto;}
+  .tabs button{flex:0 0 auto;padding:10px 18px;border-radius:999px;font-size:15px;font-weight:700;background:#fff;color:var(--ink-2);border:1.5px solid var(--hair-2);}
+  .tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+  .grid{flex:1;overflow-y:auto;padding:4px 18px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;align-content:start;}
+  .prod{background:#fff;border:1.5px solid var(--hair);border-radius:16px;padding:15px 14px;text-align:left;display:flex;flex-direction:column;gap:5px;transition:transform .08s;}
+  .prod:active{transform:scale(.97);}
+  .prod .pn{font-size:15px;font-weight:700;line-height:1.25;}
+  .prod .pc{font-size:11.5px;color:var(--ink-3);font-weight:600;}
+  .prod .pp{margin-top:6px;font-size:18px;font-weight:800;color:var(--brand-ink);}
+  .prod.out{opacity:.45;}
+  .prod .badge{align-self:flex-start;font-size:10.5px;font-weight:700;background:var(--gold);color:#fff;border-radius:6px;padding:1px 7px;}
+  /* cart */
+  .cart{flex:0 0 340px;background:#fff;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;}
+  .cart h2{padding:18px 20px 12px;font-size:18px;font-weight:800;border-bottom:1px solid var(--hair);}
+  .clines{flex:1;overflow-y:auto;padding:8px 16px;}
+  .cempty{padding:60px 20px;text-align:center;color:var(--ink-3);font-size:14px;font-weight:600;}
+  .cline{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--hair);}
+  .cline .cb{flex:1;min-width:0;}
+  .cline .cnm{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cline .cpr{font-size:12px;color:var(--ink-3);font-weight:600;}
+  .qty{display:flex;align-items:center;gap:0;background:var(--bg);border-radius:10px;overflow:hidden;flex:0 0 auto;}
+  .qty button{width:34px;height:34px;font-size:19px;font-weight:700;color:var(--brand-ink);}
+  .qty .q{min-width:26px;text-align:center;font-weight:800;font-size:15px;}
+  .csum{flex:0 0 auto;padding:16px 20px calc(18px + env(safe-area-inset-bottom));border-top:1.5px solid var(--hair);}
+  .csum .tot{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .csum .tot .l{font-size:15px;font-weight:700;color:var(--ink-2);}
+  .csum .tot .v{font-size:30px;font-weight:800;color:var(--ink);}
+  .btn{width:100%;padding:16px;border-radius:14px;font-size:17px;font-weight:800;background:var(--brand);color:#fff;}
+  .btn:disabled{opacity:.4;}
+  .btn.gh{background:var(--bg);color:var(--ink-2);font-size:14px;padding:11px;margin-top:8px;}
+  /* pay / success overlays */
+  .ov{position:fixed;inset:0;z-index:20;background:rgba(6,20,17,.72);display:flex;align-items:center;justify-content:center;padding:20px;animation:fade .25s both;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet{width:100%;max-width:420px;background:#fff;border-radius:24px;padding:28px 26px;text-align:center;animation:pop .3s cubic-bezier(.2,.9,.3,1) both;max-height:92vh;overflow-y:auto;}
+  @keyframes pop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:none}}
+  .sheet h3{font-size:21px;font-weight:800;}
+  .sheet .sub{font-size:13.5px;color:var(--ink-3);font-weight:600;margin-top:4px;}
+  .qr{width:210px;height:210px;margin:18px auto;background:#fff;border:1px solid var(--hair);border-radius:14px;padding:10px;}
+  .qr svg{width:100%;height:100%;}
+  .payamt{font-size:32px;font-weight:800;color:var(--brand-ink);margin:6px 0 2px;}
+  .okwrap{width:110px;height:110px;border-radius:50%;background:var(--brand-soft);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:64px;margin:6px auto 14px;}
+  @media(max-width:760px){ .shop{flex-direction:column;gap:0;padding:0 10px;} .cart{flex:0 0 auto;max-height:44vh;border-radius:0;} .catcol{border-radius:18px 18px 0 0;} }
+  @media(max-height:640px){ .prod{min-height:90px;} .topbar{padding-top:14px;} }
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="market-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="fitness-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState, useEffect } = React;
+(function(){
+const F=window.FIT; const { B, thDate } = F; const qrSVG=window.MK.qrSVG;
+const qs=new URLSearchParams(location.search);
+
+function Clock(){
+  const [t,setT]=useState(Date.now());
+  useEffect(()=>{ const id=setInterval(()=>setT(Date.now()),1000); return ()=>clearInterval(id); },[]);
+  const dt=new Date(t);
+  return (<div className="tb-clock"><div className="t">{String(dt.getHours()).padStart(2,'0')}:{String(dt.getMinutes()).padStart(2,'0')}</div><div className="d">{thDate(dt.toISOString().slice(0,10))}</div></div>);
+}
+
+function Kiosk(){
+  const [data,setData]=useState(()=>F.load());
+  const [cat,setCat]=useState('all');
+  const [cart,setCart]=useState([]);   // {key,kind,id,name,price,qty,max}
+  const [stage,setStage]=useState('shop'); // shop | pay | done
+  const gymName=qs.get('name')||data.gym.name;
+
+  const products=(data.products||[]);
+  const cats=['all',...Array.from(new Set(products.map(p=>p.cat)))];
+  // day pass เท่านั้นสำหรับตู้ (แพ็กสมาชิกต้องผูกคน → ทำที่เคาน์เตอร์)
+  const dayPasses=(data.packages||[]).filter(p=>p.kind==='daypass');
+  const catItems = cat==='pass'
+    ? dayPasses.map(p=>({kind:'pass',id:p.id,name:p.name,cat:'บัตรเข้าใช้',price:p.price,stock:999}))
+    : products.filter(p=>cat==='all'||p.cat===cat).map(p=>({kind:'product',id:p.id,name:p.name,cat:p.cat,price:p.price,stock:p.stock}));
+
+  const inCart=(kind,id)=>cart.find(l=>l.kind===kind&&l.id===id);
+  const add=(it)=>{ if(it.stock!==undefined&&it.stock!==999){ const cur=inCart(it.kind,it.id); if(cur&&cur.qty>=it.stock)return; }
+    setCart(c=>{ const l=c.find(x=>x.kind===it.kind&&x.id===it.id); if(l) return c.map(x=>x===l?{...x,qty:x.qty+1}:x);
+      return [...c,{key:it.kind+it.id,kind:it.kind,id:it.id,name:it.name,price:it.price,qty:1,max:it.stock}]; }); };
+  const chg=(key,d)=>setCart(c=>c.map(l=>l.key===key?{...l,qty:Math.max(0,l.qty+d)}:l).filter(l=>l.qty>0));
+  const total=cart.reduce((s,l)=>s+l.price*l.qty,0);
+  const count=cart.reduce((s,l)=>s+l.qty,0);
+
+  const confirmPaid=()=>{
+    const now=Date.now();
+    setData(dd=>{ const nd={...dd}; nd.products=[...(nd.products||[])]; nd.renewals=[...(nd.renewals||[])];
+      cart.forEach(l=>{
+        if(l.kind==='product'){ const pi=nd.products.findIndex(p=>p.id===l.id); if(pi>=0){ const p={...nd.products[pi]}; if(p.stock<999)p.stock=Math.max(0,p.stock-l.qty); p.sold=(p.sold||0)+l.qty; nd.products[pi]=p; } }
+        nd.renewals.push({ id:(l.kind==='pass'?'kp-':'ks-')+now+Math.random().toString(36).slice(2,6),
+          memberId:'', productId:l.kind==='product'?l.id:undefined, packageId:l.kind==='pass'?l.id:undefined,
+          name:l.name, qty:l.qty, amount:l.price*l.qty, via:'kiosk', kind:'shop', at:now, verified:false });
+      });
+      F.save(nd); return nd; });
+    setStage('done');
+  };
+  const reset=()=>{ setCart([]); setCat('all'); setStage('shop'); setData(F.load()); };
+
+  return (<div className="kiosk">
+    <div className="topbar">
+      <div className="tb-gym"><div className="em">🛒</div><div><div className="nm">{gymName}</div><div className="sub">สั่งเอง · จ่ายเอง</div></div></div>
+      <Clock/>
+    </div>
+
+    <div className="shop">
+      <div className="catcol">
+        <div className="tabs">
+          <button className={cat==='all'?'on':''} onClick={()=>setCat('all')}>ทั้งหมด</button>
+          {dayPasses.length>0&&<button className={cat==='pass'?'on':''} onClick={()=>setCat('pass')}>🎟️ บัตรเข้าใช้</button>}
+          {cats.filter(c=>c!=='all').map(c=><button key={c} className={cat===c?'on':''} onClick={()=>setCat(c)}>{c}</button>)}
+        </div>
+        <div className="grid">
+          {catItems.map(it=>{ const out=it.stock===0; const cur=inCart(it.kind,it.id);
+            return (<button key={it.kind+it.id} className={'prod'+(out?' out':'')} disabled={out} onClick={()=>add(it)}>
+              {it.stock!==999&&it.stock!==undefined&&it.stock<=5&&!out&&<span className="badge">เหลือ {it.stock}</span>}
+              <div className="pn">{it.name}</div>
+              <div className="pc">{it.cat}{cur?' · ในตะกร้า '+cur.qty:''}</div>
+              <div className="pp">{out?'หมด':B(it.price)}</div>
+            </button>); })}
+        </div>
+      </div>
+
+      <div className="cart">
+        <h2>ตะกร้า{count>0?' · '+count+' รายการ':''}</h2>
+        <div className="clines">
+          {cart.length===0
+            ? <div className="cempty">แตะเลือกสินค้าทางซ้าย<br/>เพื่อเริ่มสั่ง</div>
+            : cart.map(l=>(<div className="cline" key={l.key}>
+                <div className="cb"><div className="cnm">{l.name}</div><div className="cpr">{B(l.price)} × {l.qty} = {B(l.price*l.qty)}</div></div>
+                <div className="qty"><button onClick={()=>chg(l.key,-1)}>−</button><span className="q num">{l.qty}</span><button onClick={()=>chg(l.key,1)} disabled={l.max&&l.max!==999&&l.qty>=l.max}>+</button></div>
+              </div>))}
+        </div>
+        <div className="csum">
+          <div className="tot"><span className="l">รวมทั้งหมด</span><span className="v num">{B(total)}</span></div>
+          <button className="btn" disabled={!cart.length} onClick={()=>setStage('pay')}>ชำระเงิน · {B(total)}</button>
+          {cart.length>0&&<button className="btn gh" onClick={()=>setCart([])}>ล้างตะกร้า</button>}
+        </div>
+      </div>
+    </div>
+
+    {stage==='pay'&&<div className="ov" onClick={()=>setStage('shop')}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h3>สแกนจ่ายด้วยพร้อมเพย์</h3>
+        <div className="sub">{gymName} · {data.gym.promptpay||''}</div>
+        <div className="qr" dangerouslySetInnerHTML={{__html:qrSVG('kiosk'+total+Date.now())}}/>
+        <div className="payamt num">{B(total)}</div>
+        <div className="sub">เปิดแอปธนาคาร → สแกน QR → โอนตามยอด</div>
+        <button className="btn" style={{marginTop:20}} onClick={confirmPaid}>✓ ฉันชำระเงินแล้ว</button>
+        <button className="btn gh" onClick={()=>setStage('shop')}>ย้อนกลับ</button>
+        <div className="sub" style={{marginTop:12,fontSize:12}}>พนักงานจะยืนยันยอดโอนอีกครั้งในระบบ (จับยอดพร้อมเพย์)</div>
+      </div>
+    </div>}
+
+    {stage==='done'&&<div className="ov">
+      <div className="sheet">
+        <div className="okwrap">✓</div>
+        <h3>รับออเดอร์แล้ว!</h3>
+        <div className="sub">ยอด {B(total)} · ส่งเข้าระบบร้านเรียบร้อย</div>
+        <div className="sub" style={{marginTop:8,lineHeight:1.6}}>รับสินค้า/บัตรที่เคาน์เตอร์ได้เลย<br/>ขอบคุณที่ใช้บริการ 💪</div>
+        <button className="btn" style={{marginTop:22}} onClick={reset}>สั่งรายการใหม่</button>
+      </div>
+    </div>}
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Kiosk/>);
+})();
+</script>
+</body>
+</html>

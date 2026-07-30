@@ -1,0 +1,29 @@
+name = "platform"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# ── D1 database ──
+# 1) npx wrangler d1 create platform   → คัดลอก database_id ที่ได้มาใส่ตรงนี้
+[[d1_databases]]
+binding = "DB"
+database_name = "platform"
+database_id = "PUT-YOUR-D1-DATABASE-ID-HERE"
+
+# ── Durable Object (realtime WebSocket) — ไม่ผูกก็ deploy ได้ แต่ /ws จะคืน 501 (client fallback poll) ──
+[[durable_objects.bindings]]
+name = "BIZ_HUB"
+class_name = "BizHub"
+
+# ใช้ new_sqlite_classes รองรับ Free plan (BizHub ไม่ใช้ storage แต่ migration ต้องประกาศ)
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["BizHub"]
+
+# ── ตัวแปร / secret (ตั้งเพิ่มได้ · ไม่ตั้งก็ทำงาน) ──
+# [vars]
+# ADMIN_PASS = "platform2026"     # รหัสแอดมิน (default platform2026) — แนะนำตั้งเป็น secret แทน
+#
+# ตั้ง secret (ปลอดภัยกว่า vars):
+#   npx wrangler secret put ADMIN_SECRET   # กุญแจเซ็น token (สุ่มยาว ๆ)
+#   npx wrangler secret put ADMIN_PASS     # รหัสเข้า Back Office
+#   npx wrangler secret put LINE_TOKEN     # (ถ้าจะยิง LINE push)

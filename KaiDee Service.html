@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KaiDee Service — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  :root{
+    --brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;
+    --accent:#2E6FB0;--accent-soft:#E6EFF9;--gold:#E8992F;--gold-soft:#FDF0E2;
+    --danger:#E0533D;--danger-soft:#FCEEEA;
+    --ink:#1B2420;--ink-2:#57635C;--ink-3:#8A948E;--bg:#F5F7F5;--card:#FFFFFF;
+    --hair:#EAEFEA;--hair-2:#DDE5DF;
+    --shadow:0 1px 2px rgba(20,40,30,.05), 0 6px 20px rgba(20,40,30,.06);
+    --r:18px;--font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--font);background:#E6EAE7;color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .phone{width:390px;height:820px;max-height:94vh;background:var(--bg);border-radius:38px;box-shadow:0 30px 70px rgba(20,40,30,.28);overflow:hidden;position:relative;display:flex;flex-direction:column;border:9px solid #10201b;}
+  .scr{flex:1;overflow-y:auto;overflow-x:hidden;}
+  .scr::-webkit-scrollbar{display:none;}
+  .hd{padding:20px 18px 12px;background:var(--brand);color:#fff;position:sticky;top:0;z-index:5;}
+  .hd h1{margin:0;font-size:19px;font-weight:700;}
+  .hd p{margin:3px 0 0;font-size:12.5px;opacity:.9;}
+  .body{padding:14px 16px 90px;}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px;margin-bottom:12px;}
+  .row{display:flex;align-items:center;gap:10px;}
+  .btn{border:none;font-family:var(--font);font-weight:600;font-size:14px;border-radius:12px;padding:12px 16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+  .btn-p{background:var(--brand);color:#fff;}
+  .btn-o{background:var(--bg);color:var(--ink-2);}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .lbl{font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:6px;letter-spacing:.02em;}
+  .chip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-block;}
+  .av{width:42px;height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;flex-shrink:0;}
+  .num{font-variant-numeric:tabular-nums;}
+  .tabbar{display:flex;background:#fff;border-top:1px solid var(--hair);position:absolute;bottom:0;left:0;right:0;padding:8px 6px 14px;z-index:6;}
+  .tab{flex:1;background:none;border:none;font-family:var(--font);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;font-size:10.5px;font-weight:600;color:var(--ink-3);}
+  .tab.on{color:var(--brand);}
+  .tab .ic{font-size:20px;line-height:1;}
+  .seg{display:flex;background:var(--bg);border-radius:12px;padding:3px;gap:3px;}
+  .seg button{flex:1;border:none;background:none;font-family:var(--font);font-weight:600;font-size:12.5px;padding:8px;border-radius:9px;cursor:pointer;color:var(--ink-2);}
+  .seg button.on{background:#fff;color:var(--brand-ink);box-shadow:var(--shadow);}
+  .slot{padding:9px 6px;border-radius:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--hair);background:#fff;color:var(--ink);}
+  .slot.busy{background:var(--bg);color:var(--ink-3);border-color:var(--bg);cursor:not-allowed;text-decoration:line-through;}
+  .slot.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+  .sheet-bg{position:absolute;inset:0;background:rgba(10,20,16,.4);z-index:20;display:flex;align-items:flex-end;}
+  .sheet{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:18px 18px 26px;max-height:85%;overflow-y:auto;}
+  .inp{width:100%;border:1.5px solid var(--hair-2);border-radius:12px;padding:11px 13px;font-family:var(--font);font-size:15px;color:var(--ink);}
+  .divh{height:1px;background:var(--hair);margin:12px 0;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+const money = n => '฿' + (Math.round(n)).toLocaleString();
+const DAYS = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+const TODAY_DOW = 6; // สมมติวันเสาร์
+const COLORS = ['#0E9C88','#2E6FB0','#E8992F','#8E5BD0'];
+const PAYS = [['cash','เงินสด','💵'],['promptpay','พร้อมเพย์','📱']];
+const payName = k => (PAYS.find(p=>p[0]===k)||[])[1]||k;
+
+// ── mock data ──
+const BIZ = {
+  massage: { label:'ร้านนวด', term:'หมอนวด', svc:[['นวดแผนไทย',300,60],['นวดน้ำมัน',450,90],['นวดเท้า',250,45]] },
+  haircut: { label:'ร้านตัดผม', term:'ช่าง', svc:[['ตัดผมชาย',150,45],['สระ+ไดร์',200,30],['ทำสีผม',800,90]] },
+  carwash: { label:'ล้างรถ', term:'พนักงาน', svc:[['ล้างสีดูดฝุ่น',150,40],['เคลือบสี',900,120],['ล้างเครื่องยนต์',300,45]] },
+  nails:   { label:'ร้านเล็บ', term:'ช่างเล็บ', svc:[['ทาสีเจล',350,60],['ต่อเล็บ PVC',700,120],['สปามือ',250,45]] },
+  other:   { label:'อื่นๆ', term:'พนักงาน', svc:[['บริการ 1',200,30],['บริการ 2',400,60],['บริการ 3',600,90]] },
+};
+const mkSvc = arr => arr.map((s,i)=>({ id:'s'+(i+1), name:s[0], price:s[1], mins:s[2] }));
+let SERVICES = mkSvc(BIZ.haircut.svc);
+const STAFF0 = [
+  { id:'a', name:'เอก', color:COLORS[0], payType:'perhead', rate:80,  cycle:'daily',   off:[2] },
+  { id:'b', name:'บี',  color:COLORS[1], payType:'percent', rate:40,  cycle:'weekly',  off:[1] },
+  { id:'c', name:'ซี',  color:COLORS[2], payType:'perhead', rate:100, cycle:'monthly', off:[] },
+];
+// booking/queue seed (start = ชั่วโมงเริ่ม)
+const BK0 = [
+  { id:'k1', staff:'a', svc:'s1', cust:'คุณตั้ม', start:10, status:'done',  paid:true,  pay:'cash' },
+  { id:'k2', staff:'a', svc:'s3', cust:'คุณแนน', start:11, status:'done',  paid:true,  pay:'promptpay' },
+  { id:'k3', staff:'b', svc:'s3', cust:'คุณโบว์', start:13, status:'booked', paid:false },
+  { id:'k4', staff:'c', svc:'s2', cust:'Walk-in', start:10, status:'done',  paid:true,  pay:'cash' },
+];
+const OPEN=10, CLOSE=20;
+const payLabel = s => s.payType==='perhead' ? `ต่อหัว ${money(s.rate)}` : `คอม ${s.rate}%`;
+const cycleLabel = { daily:'รายวัน', weekly:'รายสัปดาห์', monthly:'รายเดือน' };
+const svcById = id => SERVICES.find(s=>s.id===id);
+const wage = (bk, staff) => { const sv=svcById(bk.svc); return staff.payType==='perhead' ? staff.rate : sv.price*staff.rate/100; };
+
+function App(){
+  const [tab,setTab] = useState('queue');
+  const [staff] = useState(STAFF0);
+  const [bookings,setBookings] = useState(BK0);
+  const [paid,setPaid] = useState({}); // payout done log: staffId -> amount
+  const [reg,setReg] = useState({ open:false, closedToday:false, float:0 });
+  const [deposit,setDeposit] = useState({ on:true, type:'percent', val:20 });
+  const [term,setTerm] = useState('ช่าง');
+  const [sub,setSub] = useState('haircut');
+  const applyBiz = (k)=>{ SERVICES = mkSvc(BIZ[k].svc); setSub(k); setTerm(BIZ[k].term); };
+  const [billMode,setBillMode] = useState('admin');
+  const [role,setRole] = useState('owner');
+  const [slipReq,setSlipReq] = useState(true);
+  const tabs = role==='staff'
+    ? [['queue','📋','งานวันนี้'],['book','📱','จองคิว']]
+    : [['queue','📋','งานวันนี้'],['book','📱','จองคิว'],['report','📊','รายงาน'],['staff','👥','ทีมงาน'],['pay','💰','ค่าแรง']];
+  const RoleSwitch = ()=>(
+    <div className="seg" style={{marginTop:10}}>
+      <button className={role==='owner'?'on':''} onClick={()=>setRole('owner')}>เจ้าของร้าน</button>
+      <button className={role==='staff'?'on':''} onClick={()=>{setRole('staff');setTab('queue');}}>{term} (ลิงก์แชร์)</button>
+    </div>
+  );
+
+  const addBooking = (b)=> setBookings(prev=>[...prev, { id:'k'+Date.now(), status:'booked', paid:false, ...b }]);
+  const markDone = (id,pay,slip)=> setBookings(prev=>prev.map(b=>b.id===id?{...b,status:'done',paid:true,pay,slip}:b));
+  const doPayout = (st, amt)=> setPaid(prev=>({...prev, [st.id]:(prev[st.id]||0)+amt}));
+  const voidBooking = (id,info)=> setBookings(prev=>prev.map(b=>b.id===id?{...b,voided:true,voidReason:info.reason,voider:info.voider}:b));
+
+  if(!reg.open){
+    return <div className="phone"><div className="scr"><div className="hd"><h1>ครัวขายดี · บริการ</h1><p>{role==='staff'?term+' · ลิงก์แชร์':'มุมมองเจ้าของร้าน'}</p><RoleSwitch/></div>
+      <div className="body">{role==='staff'
+        ? <div className="card" style={{textAlign:'center',padding:'30px 18px'}}><div style={{fontSize:44}}>⏳</div><div style={{fontSize:17,fontWeight:700,margin:'8px 0 4px'}}>ยังไม่เปิดร้าน</div><div style={{fontSize:13.5,color:'var(--ink-3)',lineHeight:1.55}}>ต้องให้บัญชีร้าน (เจ้าของ) เปิดร้านก่อน — {term}เปิด/ปิดร้านเองไม่ได้</div></div>
+        : reg.closedToday
+        ? <ClosedView onReopen={()=>{ if(window.prompt('ใส่รหัส Office เพื่อเปิดวันใหม่ (สาธิต: 1234)')==='1234'){ setReg({open:true,closedToday:false,float:reg.float}); } else alert('รหัสไม่ถูกต้อง'); }}/>
+        : <OpenShopView onOpen={(f)=>setReg({open:true,closedToday:false,float:f})}/>}</div>
+    </div></div>;
+  }
+
+  return (
+    <div className="phone">
+      <div className="scr">
+        <div className="hd">
+          <h1>{tab==='book'?'จองคิว (ลูกค้า)':'ครัวขายดี · บริการ'}</h1>
+          <p>{tab==='book'?'เลือกบริการและเวลา':(role==='staff'?term+' · ลิงก์แชร์':'มุมมองเจ้าของร้าน · เสาร์ 12 ก.ค.')}</p>
+          <RoleSwitch/>
+        </div>
+        <div className="body">
+          {tab==='queue' && <QueueView staff={staff} bookings={bookings} onDone={markDone} onVoid={voidBooking} billMode={billMode} term={term} slipReq={slipReq} role={role}/>}
+          {tab==='book'  && <BookView staff={staff} bookings={bookings} onBook={addBooking} deposit={deposit} term={term}/>}
+          {tab==='staff' && <StaffView staff={staff} deposit={deposit} setDeposit={setDeposit} term={term} setTerm={setTerm} sub={sub} applyBiz={applyBiz} billMode={billMode} setBillMode={setBillMode} slipReq={slipReq} setSlipReq={setSlipReq}/>}
+          {tab==='report'&& <ReportView staff={staff} bookings={bookings} paid={paid} float={reg.float} term={term} onCloseDay={()=>{ if(window.confirm('สรุปยอดและปิดวัน? — หลังปิดจะเปิดร้านใหม่ในวันเดิมไม่ได้')) setReg(r=>({...r,open:false,closedToday:true})); }}/>}
+          {tab==='pay'   && <PayView staff={staff} bookings={bookings} paid={paid} onPayout={doPayout}/>}
+        </div>
+      </div>
+      <div className="tabbar">
+        {tabs.map(([k,ic,l])=>(
+          <button key={k} className={'tab'+(tab===k?' on':'')} onClick={()=>setTab(k)}><span className="ic">{ic}</span>{l}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 1. คิววันนี้ (admin) ──
+function QueueView({ staff, bookings, onDone, onVoid, billMode, term, slipReq, role }){
+  const [payBk,setPayBk] = useState(null);
+  const [voidBk,setVoidBk] = useState(null);
+  const voider = role==='staff' ? term : 'เจ้าของ';
+  return (<>
+    <div className="card" style={{background:'var(--brand-softer)'}}>
+      <div style={{fontSize:12.5,color:'var(--ink-2)',lineHeight:1.5}}>ภาพรวมคิววันนี้ต่อช่าง — เขียว=ว่าง เทา=มีคิว/หยุด · กด <b>เก็บเงิน</b> เมื่อทำเสร็จ (บิลผูกกับช่างอัตโนมัติ)</div>
+      <div style={{fontSize:11.5,color:'var(--brand-ink)',marginTop:6,fontWeight:600}}>{billMode==='staff'?`โหมด: ${term}กดรับเงิน/จบบิลเองจากมือถือ (หลายคนพร้อมกัน)`:'โหมด: แอดมินคนเดียวลงคิว + เก็บเงินทุกบิล'}</div>
+    </div>
+    {staff.map(st=>{
+      const off = st.off.includes(TODAY_DOW);
+      const mine = bookings.filter(b=>b.staff===st.id);
+      const busyHrs = new Set(); mine.forEach(b=>{ const sv=svcById(b.svc); for(let h=b.start;h<b.start+Math.ceil(sv.mins/60);h++) busyHrs.add(h); });
+      return (
+        <div className="card" key={st.id}>
+          <div className="row" style={{marginBottom:10}}>
+            <div className="av" style={{background:st.color}}>{st.name.slice(0,1)}</div>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,fontSize:15}}>{st.name}</div>
+              <div style={{fontSize:12,color:'var(--ink-3)'}}>{payLabel(st)} · {cycleLabel[st.cycle]}</div>
+            </div>
+            {off ? <span className="chip" style={{background:'var(--gold-soft)',color:'var(--gold)'}}>วันหยุด</span>
+                 : <span className="chip" style={{background:'var(--brand-soft)',color:'var(--brand-ink)'}}>{mine.filter(b=>b.status!=='done').length} คิวรอ</span>}
+          </div>
+          {off ? <div style={{fontSize:12.5,color:'var(--ink-3)',padding:'4px 2px'}}>ช่างหยุดวันนี้ — ลูกค้าจองช่างคนนี้ไม่ได้</div>
+          : mine.length===0 ? <div style={{fontSize:12.5,color:'var(--ink-3)',padding:'4px 2px'}}>ยังไม่มีคิว · ว่างทั้งวัน</div>
+          : mine.map(b=>{ const sv=svcById(b.svc); return (
+            <div className="row" key={b.id} style={{padding:'8px 0',borderTop:'1px solid var(--hair)'}}>
+              <div style={{width:52,fontWeight:700,fontSize:13}} className="num">{String(b.start).padStart(2,'0')}:00</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13.5,fontWeight:600}}>{sv.name} · {b.cust}</div>
+                <div style={{fontSize:11.5,color:'var(--ink-3)'}}>{sv.mins} นาที · {money(sv.price)}{b.voided && <span style={{color:'var(--danger)'}}> · ยกเลิกโดย {b.voider}</span>}</div>
+              </div>
+              {b.voided ? <span className="chip" style={{background:'var(--danger-soft)',color:'var(--danger)'}}>ยกเลิก</span>
+                : b.status==='done' ? <div style={{textAlign:'right'}}><span className="chip" style={{background:'var(--brand-soft)',color:'var(--brand-ink)'}}>เก็บแล้ว</span><div onClick={()=>setVoidBk(b)} style={{fontSize:11,color:'var(--danger)',marginTop:4,cursor:'pointer'}}>ยกเลิกบิล</div></div>
+                : <button className="btn btn-p" style={{padding:'8px 12px',fontSize:12.5}} onClick={()=>setPayBk(b)}>เก็บเงิน</button>}
+            </div>
+          );})}
+        </div>
+      );
+    })}
+    {payBk && <PaySheet bk={payBk} slipReq={slipReq} onClose={()=>setPayBk(null)} onConfirm={(pay,slip)=>{onDone(payBk.id,pay,slip);setPayBk(null);}}/>}
+    {voidBk && <VoidSheet bk={voidBk} voider={voider} onClose={()=>setVoidBk(null)} onConfirm={(reason)=>{onVoid(voidBk.id,{reason,voider});setVoidBk(null);}}/>}
+  </>);
+}
+
+// ── 2. จองคิว (customer) ──
+function BookView({ staff, bookings, onBook, deposit, term }){
+  const [svc,setSvc] = useState(null);
+  const [stId,setStId] = useState('any');
+  const [slot,setSlot] = useState(null);
+  const [done,setDone] = useState(null);
+  const [depSheet,setDepSheet] = useState(false);
+
+  const sv = svc && svcById(svc);
+  const dep = (deposit.on && sv) ? (deposit.type==='percent'? Math.round(sv.price*deposit.val/100) : deposit.val) : 0;
+  const span = sv ? Math.ceil(sv.mins/60) : 1;
+  const cand = stId==='any' ? staff.filter(s=>!s.off.includes(TODAY_DOW)) : staff.filter(s=>s.id===stId);
+  const isFree = (st,h)=>{ if(st.off.includes(TODAY_DOW)) return false; return !bookings.some(b=>{ if(b.staff!==st.id) return false; const bs=svcById(b.svc); const bspan=Math.ceil(bs.mins/60); return h < b.start+bspan && h+span > b.start; }); };
+  const slotFree = (h)=> cand.some(st=>isFree(st,h) && h+span<=CLOSE);
+  const pickStaffFor = (h)=> stId==='any' ? (cand.find(st=>isFree(st,h))||null) : cand[0];
+
+  const confirm = ()=>{ const st=pickStaffFor(slot); if(!st) return; onBook({ staff:st.id, svc, cust:'คุณลูกค้า', start:slot, deposit:dep }); setDepSheet(false); setDone({ st, h:slot, dep }); };
+  const submit = ()=>{ if(dep>0) setDepSheet(true); else confirm(); };
+
+  if(done){ const sv2=svcById(svc); return (
+    <div className="card" style={{textAlign:'center',padding:'28px 18px'}}>
+      <div style={{fontSize:44}}>✅</div>
+      <div style={{fontSize:18,fontWeight:700,margin:'8px 0 4px'}}>จองคิวสำเร็จ</div>
+      <div style={{fontSize:14,color:'var(--ink-2)',lineHeight:1.6}}>{sv2.name}<br/>{done.st.name} · เวลา {String(done.h).padStart(2,'0')}:00 น.</div>
+      <div style={{fontSize:12.5,color:'var(--ink-3)',margin:'12px 0 18px'}}>ระบบส่งการยืนยันผ่าน LINE · เตือนอีกครั้งก่อนถึงคิว{done.dep>0?` · จ่ายมัดจำแล้ว ${money(done.dep)}`:''}</div>
+      <button className="btn btn-o btn-block" onClick={()=>{setDone(null);setSvc(null);setSlot(null);setStId('any');}}>จองคิวอื่น</button>
+    </div>
+  );}
+
+  return (<>
+    <div className="lbl">1 · เลือกบริการ</div>
+    <div className="card" style={{padding:8}}>
+      {SERVICES.map(s=>(
+        <div className="row" key={s.id} onClick={()=>{setSvc(s.id);setSlot(null);}} style={{padding:'10px 8px',borderRadius:12,cursor:'pointer',background:svc===s.id?'var(--brand-soft)':'transparent'}}>
+          <div style={{flex:1}}><div style={{fontWeight:600,fontSize:14.5}}>{s.name}</div><div style={{fontSize:11.5,color:'var(--ink-3)'}}>{s.mins} นาที</div></div>
+          <div className="num" style={{fontWeight:700}}>{money(s.price)}</div>
+          {svc===s.id && <span style={{color:'var(--brand)',fontWeight:700,marginLeft:6}}>✓</span>}
+        </div>
+      ))}
+    </div>
+    {svc && <>
+      <div className="lbl">2 · เลือก{term}</div>
+      <div className="seg" style={{marginBottom:12,flexWrap:'wrap'}}>
+        <button className={stId==='any'?'on':''} onClick={()=>{setStId('any');setSlot(null);}} style={{flex:'1 0 30%'}}>ใครก็ได้</button>
+        {staff.map(st=><button key={st.id} className={stId===st.id?'on':''} disabled={st.off.includes(TODAY_DOW)} onClick={()=>{setStId(st.id);setSlot(null);}} style={{flex:'1 0 30%',opacity:st.off.includes(TODAY_DOW)?.4:1}}>{st.name}{st.off.includes(TODAY_DOW)?' (หยุด)':''}</button>)}
+      </div>
+      <div className="lbl">3 · เลือกเวลา (ว่าง)</div>
+      <div className="card">
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}}>
+          {Array.from({length:CLOSE-OPEN},(_,i)=>OPEN+i).map(h=>{ const free=slotFree(h); return (
+            <div key={h} className={'slot'+(!free?' busy':'')+(slot===h?' on':'')} onClick={()=>free&&setSlot(h)}>{String(h).padStart(2,'0')}:00</div>
+          );})}
+        </div>
+      </div>
+      <button className="btn btn-p btn-block" disabled={slot==null} onClick={submit} style={{padding:15,marginTop:4}}>
+        {slot==null?'เลือกเวลาเพื่อจอง':(dep>0?`จ่ายมัดจำ ${money(dep)} แล้วจอง`:`ยืนยันจอง ${String(slot).padStart(2,'0')}:00 · ${money(sv.price)}`)}
+      </button>
+    </>}
+    {depSheet && sv && <div className="sheet-bg" onClick={()=>setDepSheet(false)}><div className="sheet" onClick={e=>e.stopPropagation()}>
+      <div style={{fontSize:18,fontWeight:700,marginBottom:2}}>จ่ายมัดจำ</div>
+      <div style={{fontSize:13,color:'var(--ink-3)',marginBottom:14}}>{sv.name} · {String(slot).padStart(2,'0')}:00 น.</div>
+      <div style={{textAlign:'center',background:'var(--gold-soft)',borderRadius:14,padding:16,marginBottom:8}}>
+        <div style={{fontSize:12,color:'var(--ink-3)'}}>มัดจำ ({deposit.type==='percent'?deposit.val+'%':'คงที่'})</div>
+        <div className="num" style={{fontSize:32,fontWeight:700,color:'var(--gold)'}}>{money(dep)}</div>
+      </div>
+      <div style={{fontSize:12.5,color:'var(--ink-3)',textAlign:'center',marginBottom:16}}>ยอดคงเหลือ {money(sv.price-dep)} จ่ายที่ร้านหลังรับบริการ</div>
+      <button className="btn btn-p btn-block" style={{padding:15}} onClick={confirm}>จ่ายมัดจำ & ยืนยันจอง</button>
+    </div></div>}
+  </>);
+}
+
+// ── 3. ทะเบียนช่าง ──
+function StaffView({ staff, deposit, setDeposit, term, setTerm, sub, applyBiz, billMode, setBillMode, slipReq, setSlipReq }){
+  return (<>
+    <div className="card" style={{background:'var(--brand-softer)'}}>
+      <div style={{fontSize:12.5,color:'var(--ink-2)',lineHeight:1.5}}>ตั้งค่าช่างแต่ละคน: โครงค่าตอบแทน (ต่อหัว/คอมมิชชั่น), รอบจ่าย, วันหยุดประจำ — ค่าเหล่านี้ล้อไปคำนวณคิวว่าง + ค่าแรงอัตโนมัติ</div>
+    </div>
+    <div className="card">
+      <div style={{fontWeight:700,fontSize:15,marginBottom:10}}>ประเภทบริการ — เลือกแล้วเมนู/คำเรียก/รายการล้อตาม</div>
+      <div className="seg" style={{flexWrap:'wrap',marginBottom:12}}>
+        {Object.keys(BIZ).map(k=>(<button key={k} className={sub===k?'on':''} onClick={()=>applyBiz(k)} style={{flex:'1 0 30%'}}>{BIZ[k].label}</button>))}
+      </div>
+      <div className="lbl">คำเรียกทีมงาน (ปรับเองได้)</div>
+      <div className="seg" style={{flexWrap:'wrap'}}>
+        {['ช่าง','พนักงาน','หมอนวด','ช่างเล็บ','ผู้ให้บริการ'].map(t=>(<button key={t} className={term===t?'on':''} onClick={()=>setTerm(t)} style={{flex:'1 0 45%'}}>{t}</button>))}
+      </div>
+      <div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:8}}>“อื่นๆ” → รายการบริการดึงจากที่ร้านกรอกตอนสมัคร (rich menu)</div>
+    </div>
+    <div className="card">
+      <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>รายการบริการ ({BIZ[sub].label})</div>
+      {SERVICES.map(s=>(
+        <div className="row" key={s.id} style={{justifyContent:'space-between',padding:'7px 0',borderTop:'1px solid var(--hair)'}}>
+          <span style={{fontSize:13.5}}>{s.name} <span style={{color:'var(--ink-3)'}}>· {s.mins} นาที</span></span>
+          <span className="num" style={{fontWeight:600}}>{money(s.price)}</span>
+        </div>
+      ))}
+    </div>
+    <div className="card">
+      <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>ตั้งค่าการจองคิว</div>
+      <div className="row" style={{justifyContent:'space-between',marginBottom:deposit.on?12:0}}>
+        <span style={{fontSize:13.5}}>เก็บมัดจำตอนจอง</span>
+        <div className="seg" style={{width:140}}>
+          <button className={!deposit.on?'on':''} onClick={()=>setDeposit(d=>({...d,on:false}))}>ไม่เก็บ</button>
+          <button className={deposit.on?'on':''} onClick={()=>setDeposit(d=>({...d,on:true}))}>เก็บ</button>
+        </div>
+      </div>
+      {deposit.on && <>
+        <div className="seg" style={{marginBottom:10}}>
+          <button className={deposit.type==='percent'?'on':''} onClick={()=>setDeposit(d=>({...d,type:'percent',val:20}))}>% ของยอด</button>
+          <button className={deposit.type==='fixed'?'on':''} onClick={()=>setDeposit(d=>({...d,type:'fixed',val:100}))}>บาทคงที่</button>
+        </div>
+        <div className="row" style={{gap:8}}>
+          <input className="inp num" type="number" value={deposit.val} onChange={e=>setDeposit(d=>({...d,val:Number(e.target.value)||0}))}/>
+          <span style={{fontSize:14,color:'var(--ink-2)',fontWeight:600}}>{deposit.type==='percent'?'%':'บาท'}</span>
+        </div>
+        <div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:8}}>ลูกค้าจ่ายมัดจำตอนจอง ส่วนที่เหลือจ่ายที่ร้าน</div>
+      </>}
+    </div>
+    <div className="card">
+      <div style={{fontWeight:700,fontSize:15,marginBottom:10}}>โหมดเก็บเงิน / จบบิล</div>
+      <div className="seg" style={{flexWrap:'wrap'}}>
+        <button className={billMode==='admin'?'on':''} onClick={()=>setBillMode('admin')} style={{flex:'1 0 45%'}}>แอดมินเก็บรวม</button>
+        <button className={billMode==='staff'?'on':''} onClick={()=>setBillMode('staff')} style={{flex:'1 0 45%'}}>{term}จบบิลเอง</button>
+      </div>
+      <div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:8,lineHeight:1.5}}>{billMode==='admin'?('แอดมินคนเดียวลงคิว + กดเก็บเงินทุกบิล (บิลยังผูกกับ'+term+'ที่ทำ)'):(term+'แต่ละคนล็อกอินมือถือตัวเอง กดรับเงิน/จบบิลของตัวเอง — หลายคนจบบิลพร้อมกันได้')}</div>
+    </div>
+    <div className="card">
+      <div className="row" style={{justifyContent:'space-between'}}>
+        <div><div style={{fontWeight:700,fontSize:15}}>บังคับแนบสลิปตอนรับเงินโอน</div><div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:2}}>พร้อมเพย์ต้องถ่ายสลิปก่อนจบบิล (ปิด=ข้ามได้)</div></div>
+        <div className="seg" style={{width:130}}>
+          <button className={!slipReq?'on':''} onClick={()=>setSlipReq(false)}>ปิด</button>
+          <button className={slipReq?'on':''} onClick={()=>setSlipReq(true)}>เปิด</button>
+        </div>
+      </div>
+    </div>
+    {staff.map(st=>(
+      <div className="card" key={st.id}>
+        <div className="row" style={{marginBottom:12}}>
+          <div className="av" style={{background:st.color}}>{st.name.replace('ช่าง','')}</div>
+          <div style={{flex:1}}><div style={{fontWeight:700,fontSize:16}}>{st.name}</div><div style={{fontSize:12,color:'var(--ink-3)'}}>ล็อกอินมือถือของตัวเอง · ลงบิลเองได้</div></div>
+        </div>
+        {[['ค่าตอบแทน',payLabel(st)],['รอบจ่ายค่าแรง',cycleLabel[st.cycle]],['วันหยุดประจำ', st.off.length?st.off.map(d=>DAYS[d]).join(', '):'ไม่มี']].map(([l,v])=>(
+          <div className="row" key={l} style={{justifyContent:'space-between',padding:'7px 0',borderTop:'1px solid var(--hair)'}}>
+            <span style={{fontSize:13,color:'var(--ink-2)'}}>{l}</span><span style={{fontSize:13.5,fontWeight:600}}>{v}</span>
+          </div>
+        ))}
+      </div>
+    ))}
+    <button className="btn btn-o btn-block" style={{padding:14}}>+ เพิ่ม{term}</button>
+  </>);
+}
+
+// ── 4. สรุป + จ่ายค่าแรง ──
+function PayView({ staff, bookings, paid, onPayout }){
+  return (<>
+    <div className="card" style={{background:'var(--brand-softer)'}}>
+      <div style={{fontSize:12.5,color:'var(--ink-2)',lineHeight:1.5}}>ยอดต่อช่าง + ค่าแรงค้างจ่าย (คิดจากบิลที่ทำเสร็จ) — จบวันกด <b>จ่ายค่าแรง</b> = บันทึกเป็น “เงินออก” หมวดค่าแรงทันที · รอบรายสัปดาห์/เดือนสะสมไว้ก่อนได้</div>
+    </div>
+    {staff.map(st=>{
+      const mine = bookings.filter(b=>b.staff===st.id && b.status==='done' && b.paid && !b.voided);
+      const rev = mine.reduce((a,b)=>a+svcById(b.svc).price,0);
+      const accrued = mine.reduce((a,b)=>a+wage(b,st),0);
+      const already = paid[st.id]||0;
+      const due = Math.max(0, accrued-already);
+      return (
+        <div className="card" key={st.id}>
+          <div className="row" style={{marginBottom:10}}>
+            <div className="av" style={{background:st.color,width:36,height:36,fontSize:14}}>{st.name.slice(0,1)}</div>
+            <div style={{flex:1,fontWeight:700,fontSize:15}}>{st.name}</div>
+            <span className="chip" style={{background:'var(--bg)',color:'var(--ink-2)'}}>{cycleLabel[st.cycle]}</span>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,textAlign:'center'}}>
+            {[['คิวเสร็จ',mine.length+' คิว'],['ยอดขาย',money(rev)],['ค่าแรงได้',money(accrued)]].map(([l,v])=>(
+              <div key={l} style={{background:'var(--bg)',borderRadius:12,padding:'9px 4px'}}>
+                <div style={{fontSize:10.5,color:'var(--ink-3)'}}>{l}</div>
+                <div className="num" style={{fontWeight:700,fontSize:14,marginTop:2}}>{v}</div>
+              </div>
+            ))}
+          </div>
+          <div className="divh"></div>
+          <div className="row" style={{justifyContent:'space-between'}}>
+            <div><div style={{fontSize:11.5,color:'var(--ink-3)'}}>ค้างจ่าย</div><div className="num" style={{fontWeight:700,fontSize:17,color:due>0?'var(--danger)':'var(--brand-ink)'}}>{money(due)}</div></div>
+            <button className="btn btn-p" disabled={due<=0} onClick={()=>onPayout(st,due)} style={{padding:'11px 18px'}}>{due>0?'จ่ายค่าแรง':'จ่ายครบแล้ว'}</button>
+          </div>
+          {already>0 && <div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:8}}>✓ จ่ายไปแล้ว {money(already)} (บันทึกเป็นเงินออก · หมวดค่าแรงช่าง)</div>}
+        </div>
+      );
+    })}
+  </>);
+}
+
+// ── PaySheet (เลือกวิธีจ่าย เหมือน POS) ──
+function PaySheet({ bk, onClose, onConfirm, slipReq }){
+  const sv = svcById(bk.svc);
+  const [pay,setPay] = useState('cash');
+  const [slip,setSlip] = useState(null);
+  const needSlip = pay!=='cash' && slipReq!==false;
+  return (
+    <div className="sheet-bg" onClick={onClose}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:18,fontWeight:700,marginBottom:2}}>เก็บเงิน</div>
+        <div style={{fontSize:13,color:'var(--ink-3)',marginBottom:14}}>{sv.name} · {bk.cust}</div>
+        <div style={{textAlign:'center',background:'var(--brand-softer)',borderRadius:14,padding:'16px',marginBottom:16}}>
+          <div style={{fontSize:12,color:'var(--ink-3)'}}>ยอดที่ต้องชำระ</div>
+          <div className="num" style={{fontSize:34,fontWeight:700,color:'var(--brand-ink)'}}>{money(sv.price)}</div>
+        </div>
+        <div className="lbl">วิธีชำระ</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:18}}>
+          {PAYS.map(([k,l,ic])=>(
+            <button key={k} onClick={()=>setPay(k)} className="slot" style={{padding:'14px 4px',display:'flex',flexDirection:'column',gap:5,background:pay===k?'var(--brand)':'#fff',color:pay===k?'#fff':'var(--ink)',borderColor:pay===k?'var(--brand)':'var(--hair)'}}>
+              <span style={{fontSize:22}}>{ic}</span><span style={{fontSize:12.5}}>{l}</span>
+            </button>
+          ))}
+        </div>
+        {needSlip && <div style={{marginBottom:16}}>
+          <div className="lbl">แนบสลิปโอน (จำเป็น)</div>
+          {!slip ? <label className="btn btn-o btn-block" style={{padding:13,cursor:'pointer'}}>📷 เปิดกล้อง / แนบสลิป
+            <input type="file" accept="image/*" capture="environment" style={{display:'none'}} onChange={e=>{ const f=e.target.files&&e.target.files[0]; if(f) setSlip(URL.createObjectURL(f)); }}/>
+          </label>
+          : <div style={{position:'relative'}}><img src={slip} alt="slip" style={{width:'100%',borderRadius:12,maxHeight:200,objectFit:'cover',display:'block'}}/><button onClick={()=>setSlip(null)} style={{position:'absolute',top:8,right:8,border:'none',background:'rgba(0,0,0,.6)',color:'#fff',width:30,height:30,borderRadius:999,cursor:'pointer',fontSize:14}}>✕</button></div>}
+        </div>}
+        <button className="btn btn-p btn-block" style={{padding:15}} disabled={needSlip && !slip} onClick={()=>onConfirm(pay,slip)}>{needSlip && !slip ? 'แนบสลิปก่อน' : `ยืนยันรับเงิน · ${payName(pay)}`}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── VoidSheet (ยกเลิกบิล + บันทึกผู้ยกเลิก) ──
+const VOID_REASONS = [['reorder','ลูกค้ายกเลิก'],['wrong','คีย์ผิด/ซ้ำบิล'],['waste','ของเสีย/เคลม']];
+function VoidSheet({ bk, voider, onClose, onConfirm }){
+  const sv = svcById(bk.svc);
+  const [r,setR] = useState('reorder');
+  return (
+    <div className="sheet-bg" onClick={onClose}><div className="sheet" onClick={e=>e.stopPropagation()}>
+      <div style={{fontSize:18,fontWeight:700,marginBottom:2}}>ยกเลิกบิล</div>
+      <div style={{fontSize:13,color:'var(--ink-3)',marginBottom:14}}>{sv.name} · {bk.cust} · {money(sv.price)}</div>
+      <div className="lbl">เหตุผล</div>
+      <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:14}}>
+        {VOID_REASONS.map(([k,l])=>(<button key={k} onClick={()=>setR(k)} className="btn" style={{justifyContent:'flex-start',padding:'11px 14px',background:r===k?'var(--brand-soft)':'var(--bg)',color:r===k?'var(--brand-ink)':'var(--ink-2)'}}>{l}</button>))}
+      </div>
+      <div style={{fontSize:12,color:'var(--ink-3)',marginBottom:14,lineHeight:1.5}}>ผู้ยกเลิก: <b>{voider}</b> · ยอดของผู้ให้บริการจะถูกหักคืนอัตโนมัติ (เก็บทั้งคนทำบิลเดิม + ผู้ยกเลิก)</div>
+      <button className="btn btn-block" style={{padding:15,background:'var(--danger)',color:'#fff'}} onClick={()=>onConfirm((VOID_REASONS.find(x=>x[0]===r)||[])[1])}>ยืนยันยกเลิกบิล</button>
+    </div></div>
+  );
+}
+
+// ── รายงานสรุป (เจ้าของร้าน) ──
+function ReportView({ staff, bookings, paid, float, term, onCloseDay }){
+  const done = bookings.filter(b=>b.status==='done'&&b.paid&&!b.voided);
+  const rev = done.reduce((a,b)=>a+svcById(b.svc).price,0);
+  const byPay = {}; done.forEach(b=>{ byPay[b.pay]=(byPay[b.pay]||0)+svcById(b.svc).price; });
+  const bySvc = {}; done.forEach(b=>{ bySvc[b.svc]=(bySvc[b.svc]||0)+1; });
+  const wagesPaid = Object.values(paid).reduce((a,v)=>a+v,0);
+  const wagesAccrued = staff.reduce((a,st)=>a+done.filter(b=>b.staff===st.id).reduce((x,b)=>x+wage(b,st),0),0);
+  const net = rev - wagesAccrued;
+  const kpi = [['ยอดขายรวม',money(rev),'var(--brand-ink)'],['บิลเสร็จ',done.length+' บิล','var(--ink)'],['ค่าแรงช่าง',money(wagesAccrued),'var(--gold)'],['เหลือร้าน (สุทธิ)',money(net),'var(--accent)']];
+  return (<>
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:4}}>
+      {kpi.map(([l,v,c])=>(
+        <div className="card" key={l} style={{margin:0,textAlign:'center',padding:'16px 8px'}}>
+          <div style={{fontSize:11.5,color:'var(--ink-3)'}}>{l}</div>
+          <div className="num" style={{fontWeight:700,fontSize:22,color:c,marginTop:3}}>{v}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{height:12}}></div>
+    <div className="card">
+      <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>แยกตามวิธีชำระ</div>
+      {PAYS.map(([k,l,ic])=>(
+        <div className="row" key={k} style={{justifyContent:'space-between',padding:'7px 0',borderTop:'1px solid var(--hair)'}}>
+          <span style={{fontSize:13.5}}>{ic} {l}</span><span className="num" style={{fontWeight:600}}>{money(byPay[k]||0)}</span>
+        </div>
+      ))}
+    </div>
+    <div className="card">
+      <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>ยอดราย{term}</div>
+      {staff.map(st=>{ const mine=done.filter(b=>b.staff===st.id); const r=mine.reduce((a,b)=>a+svcById(b.svc).price,0); return (
+        <div className="row" key={st.id} style={{padding:'7px 0',borderTop:'1px solid var(--hair)'}}>
+          <div className="av" style={{background:st.color,width:30,height:30,fontSize:12}}>{st.name.slice(0,1)}</div>
+          <div style={{flex:1,fontSize:13.5,fontWeight:600}}>{st.name}<span style={{color:'var(--ink-3)',fontWeight:400}}> · {mine.length} คิว</span></div>
+          <span className="num" style={{fontWeight:600}}>{money(r)}</span>
+        </div>
+      );})}
+    </div>
+    <div className="card">
+      <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>บริการขายดี</div>
+      {Object.keys(bySvc).sort((a,b)=>bySvc[b]-bySvc[a]).map(id=>(
+        <div className="row" key={id} style={{justifyContent:'space-between',padding:'7px 0',borderTop:'1px solid var(--hair)'}}>
+          <span style={{fontSize:13.5}}>{svcById(id).name}</span><span className="num" style={{fontWeight:600}}>{bySvc[id]} ครั้ง</span>
+        </div>
+      ))}
+    </div>
+    <div className="card" style={{background:'var(--gold-soft)'}}>
+      <div className="row" style={{justifyContent:'space-between'}}>
+        <span style={{fontSize:13,color:'var(--ink-2)'}}>จ่ายค่าแรงไปแล้ว (เงินออก)</span>
+        <span className="num" style={{fontWeight:700,color:'var(--gold)'}}>{money(wagesPaid)}</span>
+      </div>
+    </div>
+    <button className="btn btn-block" style={{padding:15,background:'var(--ink)',color:'#fff',marginTop:2}} onClick={onCloseDay}>🧾 ปิดวัน / สรุปยอด</button>
+  </>);
+}
+
+// ── เปิดร้าน / ปิดวันแล้ว (ล้อ POS) ──
+function OpenShopView({ onOpen }){
+  const [f,setF] = useState('');
+  return (
+    <div className="card" style={{textAlign:'center',padding:'26px 18px'}}>
+      <div style={{width:64,height:64,borderRadius:999,background:'var(--brand-soft)',color:'var(--brand)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px',fontSize:30}}>🏪</div>
+      <div style={{fontSize:17,fontWeight:700,marginBottom:4}}>ร้านยังไม่เปิด</div>
+      <div style={{fontSize:13.5,color:'var(--ink-3)',marginBottom:18,lineHeight:1.5}}>ใส่เงินทอนตั้งต้นในลิ้นชัก แล้วกดเปิดร้าน</div>
+      <div className="lbl" style={{textAlign:'left'}}>เงินทอนตั้งต้น</div>
+      <input className="inp num" style={{textAlign:'center',fontSize:22,fontWeight:700,marginBottom:16}} type="number" value={f} onChange={e=>setF(e.target.value)} placeholder="0"/>
+      <button className="btn btn-p btn-block" style={{padding:15}} onClick={()=>onOpen(Number(f)||0)}>เปิดร้าน</button>
+    </div>
+  );
+}
+function ClosedView({ onReopen }){
+  return (
+    <div className="card" style={{textAlign:'center',padding:'26px 18px'}}>
+      <div style={{width:64,height:64,borderRadius:999,background:'var(--brand-soft)',color:'var(--brand)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px',fontSize:30}}>🧾</div>
+      <div style={{fontSize:17,fontWeight:700,marginBottom:4}}>วันนี้ปิดวันแล้ว</div>
+      <div style={{fontSize:13.5,color:'var(--ink-3)',marginBottom:6,lineHeight:1.55}}>ปิดวันของวันนี้เรียบร้อยแล้ว เปิดร้านใหม่ในวันเดิมไม่ได้</div>
+      <div style={{fontSize:12.5,color:'var(--ink-3)',marginBottom:18,lineHeight:1.55}}>ถ้าเผลอปิด ต้องใช้รหัส Office เท่านั้น</div>
+      <button className="btn btn-o btn-block" style={{padding:14}} onClick={onReopen}>เปิดวันนี้ใหม่ (รหัส Office)</button>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

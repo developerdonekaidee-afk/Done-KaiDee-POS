@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>กระเป๋าแพลตฟอร์ม — KaiDee Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;--gold:#E8992F;--gold-soft:#FBF0DC;--danger:#E0533D;--danger-soft:#FBEAE6;--blue:#2F72E8;--blue-soft:#E6EEFB;--purple:#7C5CE0;--purple-soft:#EEE9FB;--hair:#D8E0DD;--hair-2:#E9EEEC;--font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#E7ECEA;color:var(--ink);-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}.mono{font-family:var(--mono)}
+button{font-family:var(--font);cursor:pointer}
+.toolbar{position:sticky;top:0;z-index:30;background:#0E2A2A;color:#dbeee7;padding:12px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.toolbar .tt{font-weight:700;color:#fff;margin-right:auto;display:flex;align-items:center;gap:10px;font-size:15.5px}
+.toolbar .tt .lg{width:28px;height:28px;background:#fff;border-radius:7px;padding:3px;object-fit:contain}
+.toolbar .tt small{display:block;font-size:11px;font-weight:500;color:#8fc7bb;letter-spacing:.02em}
+.tb{border:none;border-radius:9px;padding:9px 15px;font-size:13px;font-weight:700}
+.pri{background:var(--brand);color:#fff}.gh{background:rgba(255,255,255,.1);color:#dbeee7}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 22px 70px}
+.guard{background:var(--gold-soft);border:1px solid #F0D69B;color:#8A5D12;border-radius:13px;padding:13px 17px;font-size:13px;line-height:1.6;display:flex;gap:11px;margin-bottom:22px}
+.guard .gi{font-size:20px;flex:0 0 auto;line-height:1.2}
+.guard b{color:#6E4A0E}
+/* balance hero */
+.hero{background:linear-gradient(145deg,#0E5C4A,#0E9C88);border-radius:18px;padding:24px 26px;color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:16px}
+.hero .lbl{font-size:13px;color:#bfe8de;font-weight:600}
+.hero .bal{font-size:44px;font-weight:700;letter-spacing:-.01em;margin-top:4px;line-height:1}
+.hero .sub{font-size:12.5px;color:#a8ddd0;margin-top:9px}
+.hero .wd{background:#fff;color:var(--brand-ink);border-radius:11px;padding:12px 22px;font-weight:700;font-size:14px}
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.kpi{background:#fff;border:1px solid var(--hair-2);border-radius:14px;padding:15px 16px}
+.kpi .k{font-size:12px;color:var(--ink-3);font-weight:600}
+.kpi .v{font-size:23px;font-weight:700;margin-top:5px;letter-spacing:-.01em}
+.kpi .d{font-size:11.5px;margin-top:4px;font-weight:600}
+.up{color:var(--brand)}.muted{color:var(--ink-3)}
+.sec-h{font-size:12px;font-weight:700;color:var(--brand-ink);text-transform:uppercase;letter-spacing:.06em;margin:26px 0 12px}
+/* revenue streams */
+.streams{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stream{background:#fff;border:1px solid var(--hair-2);border-radius:14px;padding:16px 18px}
+.stream .top{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.stream .ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto}
+.stream .nm{font-weight:700;font-size:14.5px}.stream .nm small{display:block;font-size:11.5px;color:var(--ink-3);font-weight:500;margin-top:1px}
+.stream .amt{margin-left:auto;text-align:right}
+.stream .amt .n{font-weight:700;font-size:17px}.stream .amt .p{font-size:11px;color:var(--ink-3);font-weight:600}
+.bar{height:8px;background:var(--hair-2);border-radius:100px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:100px}
+.stream .foot{font-size:11.5px;color:var(--ink-2);margin-top:10px;line-height:1.5}
+/* ledger */
+.card{background:#fff;border:1px solid var(--hair-2);border-radius:14px;overflow:hidden}
+.seg{display:inline-flex;background:#EEF1F0;border-radius:9px;padding:3px;gap:2px;margin-bottom:14px}
+.seg button{border:none;background:none;padding:7px 14px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.seg button.on{background:#fff;color:var(--brand-ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;background:#F4F7F6;color:var(--ink-2);font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:10px 15px;position:sticky;top:0}
+td{padding:11px 15px;border-top:1px solid var(--hair-2);vertical-align:middle}
+tr:hover td{background:#FbFdfc}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+.amt-in{color:var(--brand);font-weight:700}.amt-out{color:var(--danger);font-weight:700}
+.tag-nm{font-weight:600}.tag-sub{font-size:11px;color:var(--ink-3)}
+@media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.streams{grid-template-columns:1fr}}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="platform-api.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState, useMemo } = React;
+const B=(n)=>'฿'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+const LS='kd_platform_wallet_v1';
+
+// ── seed mock ledger (append-only) — เฉพาะรายได้ของแพลตฟอร์ม ──
+function seed(){
+  const today=new Date(); const d=(back)=>{const x=new Date(today);x.setDate(x.getDate()-back);return x.toISOString().slice(0,10);};
+  return { balance:0, ledger:[
+    {id:'t01',date:d(0),type:'saas',who:'ร้านเจ๊แดง (ตลาดสี่มุมเมือง)',sub:'ค่าบริการ ฿299/เดือน',amt:299,method:'PromptPay'},
+    {id:'t02',date:d(0),type:'sponsor',who:'ไทยเบฟ ดิสทริบิวชั่น',sub:'แพคสปอนเซอร์ Premium 30 วัน',amt:5000,method:'โอน'},
+    {id:'t03',date:d(1),type:'fee',who:'ร้านก๋วยเตี๋ยวป้านิด',sub:'ค่าธรรมเนียมออเดอร์ออนไลน์ (3%)',amt:186,method:'หักยอด'},
+    {id:'t04',date:d(1),type:'saas',who:'ยิม Iron House',sub:'ค่าบริการฟิตเนส ฿990/เดือน',amt:990,method:'บัตร'},
+    {id:'t05',date:d(2),type:'sponsor',who:'CP ค้าส่ง',sub:'แพคสปอนเซอร์ Standard 30 วัน',amt:1500,method:'โอน'},
+    {id:'t06',date:d(2),type:'addon',who:'ร้านเสื้อผ้ามือสอง JJ',sub:'แอดออน ขายของออนไลน์',amt:99,method:'PromptPay'},
+    {id:'t07',date:d(3),type:'fee',who:'ร้านผลไม้ลุงชัย',sub:'ค่าธรรมเนียมออเดอร์ออนไลน์ (3%)',amt:74,method:'หักยอด'},
+    {id:'t08',date:d(4),type:'saas',who:'ร้านหมูปิ้งเจ้าเก่า',sub:'ค่าบริการ ฿99/เดือน',amt:99,method:'PromptPay'},
+    {id:'t09',date:d(5),type:'withdraw',who:'ถอนเข้าบัญชี กสิกรไทย ***2481',sub:'โอนออกยอดสะสม',amt:-6000,method:'ถอน'},
+    {id:'t10',date:d(6),type:'sponsor',who:'Lalamove (พาร์ทเนอร์ส่ง)',sub:'ค่าพื้นที่โปรโมทในแอป',amt:3000,method:'โอน'},
+    {id:'t11',date:d(7),type:'saas',who:'ร้านชานมไข่มุก Bubble',sub:'ค่าบริการ ฿299/เดือน',amt:299,method:'บัตร'},
+    {id:'t12',date:d(8),type:'addon',who:'ร้านของชำป้าสมร',sub:'แอดออน จองออเดอร์ล่วงหน้า',amt:99,method:'PromptPay'},
+  ]};
+}
+function load(){ try{ const s=JSON.parse(localStorage.getItem(LS)); if(s&&s.ledger) return s; }catch(e){} const s=seed(); try{localStorage.setItem(LS,JSON.stringify(s));}catch(e){} return s; }
+
+const STREAMS={
+  saas:{nm:'ค่าบริการรายเดือน',sub:'SaaS ร้าน/ยิม/ตลาด',ic:'🏪',c:'var(--brand)',cs:'var(--brand-soft)',foot:'ฐานรายได้ประจำ — Free / ฿99 / ฿299 · เดือนแรกฟรี'},
+  sponsor:{nm:'แพคสปอนเซอร์',sub:'แบรนด์/ซัพลงโฆษณา',ic:'📣',c:'var(--purple)',cs:'var(--purple-soft)',foot:'พื้นที่ขาย+โปรโมทในแอป · ยิ่งมีคนในระบบมาก ยิ่งมีค่า'},
+  fee:{nm:'ค่าธรรมเนียม/GP',sub:'หักจากยอดออนไลน์',ic:'💳',c:'var(--blue)',cs:'var(--blue-soft)',foot:'% จากออเดอร์ออนไลน์ที่จับผ่านระบบ (ไม่ใช่ค่าสินค้า)'},
+  addon:{nm:'แอดออนเสริม',sub:'ขายออนไลน์/จองออเดอร์',ic:'🧩',c:'var(--gold)',cs:'var(--gold-soft)',foot:'ปลดล็อกฟีเจอร์เสริมต่อร้าน'},
+};
+
+function App(){
+  const [st,setSt]=useState(load);
+  const [filter,setFilter]=useState('all');
+  React.useEffect(()=>{ if(!window.PLAT_API) return;
+    const sync=window.PLAT_API.attach({ biz:'platform', type:'platform', key:'wallet',
+      read:()=>load(), write:(b)=>{try{if(b)localStorage.setItem(LS,JSON.stringify(b))}catch(e){}}, onRemote:(b)=>b&&setSt(b), stamp:(b)=>(b&&b.updatedAt)||0 });
+    window.__platWalletSync=sync; return ()=>{ try{sync.stop();}catch(e){} window.__platWalletSync=null; };
+  },[]);
+  const income=useMemo(()=>st.ledger.filter(t=>t.amt>0),[st]);
+  const totalIn=income.reduce((s,t)=>s+t.amt,0);
+  const withdrawn=st.ledger.filter(t=>t.amt<0).reduce((s,t)=>s+Math.abs(t.amt),0);
+  const balance=st.ledger.reduce((s,t)=>s+t.amt,0);
+  const byStream=useMemo(()=>{ const m={saas:0,sponsor:0,fee:0,addon:0}; income.forEach(t=>{ if(m[t.type]!=null)m[t.type]+=t.amt; }); return m; },[income]);
+  const streamMax=Math.max(1,...Object.values(byStream));
+  const tenants=new Set(income.filter(t=>t.type==='saas'||t.type==='addon').map(t=>t.who)).size;
+  const rows=filter==='all'?st.ledger:st.ledger.filter(t=> filter==='withdraw'?t.amt<0:t.type===filter);
+
+  const withdraw=()=>{
+    if(balance<=0){ alert('ยอดคงเหลือไม่พอถอน'); return; }
+    if(!confirm('ถอนยอดคงเหลือ '+B(balance)+' เข้าบัญชีธนาคารที่ผูกไว้?')) return;
+    const t={id:'t'+Date.now(),date:new Date().toISOString().slice(0,10),type:'withdraw',who:'ถอนเข้าบัญชี กสิกรไทย ***2481',sub:'โอนออกยอดสะสม',amt:-balance,method:'ถอน'};
+    const ns={...st,ledger:[t,...st.ledger],updatedAt:Date.now()}; setSt(ns); try{localStorage.setItem(LS,JSON.stringify(ns));}catch(e){} if(window.__platWalletSync)window.__platWalletSync.push();
+  };
+
+  const FILTERS=[['all','ทั้งหมด'],['saas','ค่าบริการ'],['sponsor','สปอนเซอร์'],['fee','ค่าธรรมเนียม'],['addon','แอดออน'],['withdraw','ถอนออก']];
+
+  return (<>
+    <div className="toolbar">
+      <div className="tt"><img className="lg" src="assets/kaidee-logo.png" alt=""/><div>กระเป๋าแพลตฟอร์ม<small>รายได้ของผู้ดำเนินการ · KaiDee Platform</small></div></div>
+      <button className="tb gh" onClick={()=>{ if(confirm('รีเซ็ตข้อมูลสาธิต?')){ const s={...seed(),updatedAt:Date.now()}; setSt(s); try{localStorage.setItem(LS,JSON.stringify(s));}catch(e){} if(window.__platWalletSync)window.__platWalletSync.push(); } }}>รีเซ็ตเดโม</button>
+      <button className="tb pri" onClick={withdraw}>ถอนเงินเข้าบัญชี</button>
+    </div>
+    <div className="wrap">
+      <div className="guard"><span className="gi">🛡️</span><div><b>กระเป๋านี้เก็บเฉพาะ “รายได้ของเรา”</b> — ค่าบริการรายเดือน · ค่าแพคสปอนเซอร์ · ค่าธรรมเนียม · แอดออน เท่านั้น · <b>ค่าสินค้าและค่าส่งวิ่งตรงหาสปอนเซอร์/ไรเดอร์</b> ไม่ผ่านกระเป๋านี้ — กันไม่ให้เข้าเกณฑ์เงินอิเล็กทรอนิกส์ (e-money) ของ ธปท.</div></div>
+
+      <div className="hero">
+        <div><div className="lbl">ยอดคงเหลือถอนได้</div><div className="bal num">{B(balance)}</div><div className="sub">รับเข้าสะสม {B(totalIn)} · ถอนไปแล้ว {B(withdrawn)}</div></div>
+        <button className="wd" onClick={withdraw}>ถอนเข้าบัญชี →</button>
+      </div>
+
+      <div className="kpis">
+        <div className="kpi"><div className="k">รายได้เข้าเดือนนี้</div><div className="v num">{B(totalIn)}</div><div className="d up">▲ รับจริงเข้าระบบ</div></div>
+        <div className="kpi"><div className="k">ค่าบริการรายเดือน</div><div className="v num">{B(byStream.saas)}</div><div className="d muted">recurring</div></div>
+        <div className="kpi"><div className="k">สปอนเซอร์ + แอดออน</div><div className="v num">{B(byStream.sponsor+byStream.addon)}</div><div className="d up">▲ รายได้ต่อยอด</div></div>
+        <div className="kpi"><div className="k">ร้าน/สมาชิกจ่ายอยู่</div><div className="v num">{tenants}</div><div className="d muted">active tenants</div></div>
+      </div>
+
+      <div className="sec-h">รายได้แยกตามช่องทาง</div>
+      <div className="streams">
+        {Object.keys(STREAMS).map(k=>{ const s=STREAMS[k]; const v=byStream[k];
+          return (<div className="stream" key={k}>
+            <div className="top">
+              <div className="ic" style={{background:s.cs,color:s.c}}>{s.ic}</div>
+              <div className="nm">{s.nm}<small>{s.sub}</small></div>
+              <div className="amt"><div className="n num" style={{color:s.c}}>{B(v)}</div><div className="p">{totalIn?Math.round(v/totalIn*100):0}%</div></div>
+            </div>
+            <div className="bar"><i style={{width:(v/streamMax*100)+'%',background:s.c}}/></div>
+            <div className="foot">{s.foot}</div>
+          </div>);
+        })}
+      </div>
+
+      <div className="sec-h">เดินบัญชี (ยอดโอนเข้าจริง)</div>
+      <div className="seg">{FILTERS.map(([k,l])=><button key={k} className={filter===k?'on':''} onClick={()=>setFilter(k)}>{l}</button>)}</div>
+      <div className="card">
+        <table>
+          <thead><tr><th>วันที่</th><th>รายการ</th><th>ช่องทาง</th><th style={{textAlign:'right'}}>จำนวน</th></tr></thead>
+          <tbody>
+            {rows.map(t=>{ const s=STREAMS[t.type]; const out=t.amt<0;
+              return (<tr key={t.id}>
+                <td className="mono" style={{color:'var(--ink-3)',whiteSpace:'nowrap'}}>{t.date.slice(5)}</td>
+                <td><div className="tag-nm">{t.who}</div><div className="tag-sub">{t.sub}</div></td>
+                <td>{out?<span className="pill" style={{background:'var(--danger-soft)',color:'var(--danger)'}}>ถอนออก</span>:<span className="pill" style={{background:s?s.cs:'var(--hair-2)',color:s?s.c:'var(--ink-2)'}}>{s?s.ic:''} {s?s.nm:t.type}</span>}</td>
+                <td style={{textAlign:'right'}} className={'num '+(out?'amt-out':'amt-in')}>{out?'−'+B(Math.abs(t.amt)):'+'+B(t.amt)}</td>
+              </tr>);
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p style={{fontSize:12,color:'var(--ink-3)',marginTop:14,lineHeight:1.6}}>เดโม client-only (localStorage) · ระบบจริงยอดเหล่านี้วิ่งเข้าจาก worker เมื่อร้านจ่ายค่าบริการ/ซื้อแพคสปอนเซอร์/หักค่าธรรมเนียม · ถอนออกผูกบัญชีธนาคารของผู้ดำเนินการ</p>
+    </div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E5C4A"/><text x="50" y="46" font-size="34" text-anchor="middle">👛</text><text x="50" y="74" font-size="12" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">Platform</text></svg>
+</template>
+</body>
+</html>

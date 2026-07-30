@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UAT — แผนทดสอบระบบ KaiDee Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="doc-page.js"></script>
+<style>
+:root{--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--brand:#0E7C4E;--brand-2:#12945C;--soft:#E9F5EE;--soft-2:#F4FAF6;--gold:#F4900C;--gold-soft:#FEF1E2;--red:#C0392B;--red-soft:#FDECEA;--blue:#2563b8;--line:#dde5e0;--line-2:#eef2f0}
+*{box-sizing:border-box}
+doc-page{--doc-font:"IBM Plex Sans Thai",system-ui,sans-serif}
+body{margin:0;color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.6;font-size:10.8pt}
+h1,h2,h3,h4{line-height:1.25;margin:0;text-wrap:balance}
+p{margin:0 0 9px;text-wrap:pretty}
+a{color:var(--brand)}a:hover{color:var(--brand-2)}
+.mono{font-family:"IBM Plex Mono",monospace}
+code.inl{font-family:"IBM Plex Mono",monospace;font-size:8.8pt;background:var(--soft);color:var(--brand);padding:1px 6px;border-radius:5px}
+
+/* cover */
+.cover{margin:-4px 0 26px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:9.5pt;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);background:var(--soft);padding:7px 14px;border-radius:100px}
+.cover h1{font-size:31pt;font-weight:700;letter-spacing:-.02em;margin:18px 0 8px}
+.cover .sub{font-size:13pt;color:var(--ink-2);font-weight:500;max-width:54ch}
+.cover-meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:2px solid var(--ink)}
+.cover-meta div{font-size:9.5pt}
+.cover-meta b{display:block;font-size:8.5pt;color:var(--ink-3);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+
+.lead-box{background:var(--soft-2);border-left:3px solid var(--brand);padding:13px 17px;border-radius:0 10px 10px 0;margin:13px 0;color:var(--ink-2);font-size:10.3pt}
+.lead-box b{color:var(--ink)}
+.warn-box{background:var(--gold-soft);border-left:3px solid var(--gold);padding:13px 17px;border-radius:0 10px 10px 0;margin:13px 0;color:#7a5212;font-size:10.3pt}
+.warn-box b{color:#5a3c0a}
+
+/* section heading */
+.sec{margin:26px 0 12px;break-after:avoid}
+.sec .n{font-family:"IBM Plex Mono",monospace;font-size:10pt;color:var(--brand);font-weight:500}
+.sec h2{font-size:18pt;font-weight:700;letter-spacing:-.01em;margin-top:2px}
+.sec .lead{color:var(--ink-2);font-size:10.5pt;margin-top:4px}
+h3{font-size:12pt;font-weight:700;margin:16px 0 7px;break-after:avoid}
+
+/* how-to steps */
+.steps{counter-reset:s;margin:11px 0}
+.step{display:flex;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line-2);break-inside:avoid}
+.step:last-child{border-bottom:none}
+.step .num{counter-increment:s;flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:9.5pt;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step .num::before{content:counter(s)}
+.step .tx b{font-size:10.3pt}
+.step .tx p{font-size:9.6pt;color:var(--ink-2);margin:2px 0 0}
+
+/* module test blocks */
+.mod{border:1px solid var(--line);border-radius:13px;margin:14px 0;overflow:hidden;break-inside:avoid}
+.mod .hd{display:flex;align-items:center;gap:11px;padding:11px 15px;background:var(--soft-2);border-bottom:1px solid var(--line-2)}
+.mod .hd .em{font-size:17pt}
+.mod .hd h3{margin:0;font-size:12.5pt}
+.mod .hd .file{font-size:8.3pt;color:var(--ink-3);margin-top:1px;font-family:"IBM Plex Mono",monospace}
+.mod .hd .role{margin-left:auto;font-size:8pt;font-weight:600;padding:3px 9px;border-radius:100px;background:var(--soft);color:var(--brand);white-space:nowrap}
+tbody tr{break-inside:avoid}
+table.tc{width:100%;border-collapse:collapse;font-size:9.5pt}
+table.tc th,table.tc td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line-2);vertical-align:top}
+table.tc th{background:#fff;font-size:8pt;font-weight:700;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase}
+table.tc td.id{font-family:"IBM Plex Mono",monospace;font-size:8.5pt;color:var(--brand-2);white-space:nowrap;width:38px}
+table.tc td.exp{color:var(--ink-2);font-size:9.2pt}
+table.tc td.res{width:104px;text-align:center;white-space:nowrap}
+.box{display:inline-block;width:13px;height:13px;border:1.5px solid var(--ink-3);border-radius:3px;vertical-align:-2px}
+.box.p{border-color:var(--brand)}
+.box.f{border-color:var(--red)}
+.res .lbl{font-size:7.5pt;color:var(--ink-3);margin:0 5px 0 3px}
+/* fillable form controls (edit on screen, print keeps values) */
+input[type=checkbox]{width:14px;height:14px;accent-color:var(--brand);margin:0;vertical-align:-2px;cursor:pointer;-webkit-appearance:auto;appearance:auto;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.ck{display:inline-flex;align-items:center;gap:3px;font-size:7.5pt;color:var(--ink-3);cursor:pointer;user-select:none}
+.ck+.ck{margin-left:9px}
+.ck.f input{accent-color:var(--red)}
+input.fill{border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:9.4pt;color:var(--ink);padding:2px 3px;width:100%;background:transparent}
+input.fill:focus{outline:none;border-bottom-color:var(--brand)}
+input.meta{border:none;border-bottom:1px solid var(--ink-3);font-family:inherit;font-size:9.5pt;color:var(--ink);padding:1px 2px;background:transparent;min-width:130px}
+input.meta:focus{outline:none;border-bottom-color:var(--brand)}
+input.mini{width:52px;min-width:0;text-align:center}
+.hint{font-size:8.5pt;color:var(--ink-3);font-style:italic}
+@media print{input.fill,input.meta{border-bottom-color:#bbb}}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 2px;font-size:9pt;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* report template */
+.tmpl{background:#12211a;color:#c8e6d5;border-radius:11px;padding:15px 17px;font-family:"IBM Plex Mono",monospace;font-size:9pt;line-height:1.7;margin:11px 0;break-inside:avoid;white-space:pre-wrap}
+.tmpl .lb{color:#7fd1a3;font-weight:500}
+.tmpl .cm{color:#6f9c82}
+
+.prio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:11px 0}
+.prio .p{border:1px solid var(--line);border-radius:10px;padding:11px 13px;break-inside:avoid}
+.prio .p b{display:block;font-size:10pt;margin-bottom:3px}
+.prio .p.hi b{color:var(--red)}
+.prio .p.md b{color:var(--gold)}
+.prio .p.lo b{color:var(--brand)}
+.prio .p span{font-size:9pt;color:var(--ink-2)}
+
+.foothd{display:flex;justify-content:space-between;font-size:8pt;color:var(--ink-3);padding-top:6px;border-top:1px solid var(--line-2)}
+.note{font-size:8.8pt;color:var(--ink-3);margin-top:5px}
+ul.tick{list-style:none;padding:0;margin:8px 0}
+ul.tick li{position:relative;padding:3px 0 3px 22px;font-size:10pt}
+ul.tick li::before{content:"✓";position:absolute;left:0;color:var(--brand);font-weight:700}
+.toc{columns:2;column-gap:34px;margin:10px 0;font-size:10pt}
+.toc div{padding:3px 0;break-inside:avoid;color:var(--ink-2)}
+.toc b{color:var(--brand-2);font-family:"IBM Plex Mono",monospace;font-size:9pt;margin-right:8px}
+</style>
+</head>
+<body>
+<doc-page>
+<div slot="footer" class="foothd"><span>UAT Test Plan — KaiDee Platform</span><span>ลับเฉพาะ · ใช้ภายในทีมทดสอบ</span></div>
+
+<!-- COVER -->
+<div class="cover">
+<span class="kicker">✅ แผนทดสอบการยอมรับระบบ (UAT)</span>
+<h1>UAT Test Plan</h1>
+<div class="sub">แผนทดสอบระบบ KaiDee Platform ทั้งหมด — แบ่งเป็นโมดูล มีช่องติ๊กผ่าน/ไม่ผ่าน และวิธีแจ้งแก้ทีละข้อ</div>
+<div class="cover-meta">
+<div><b>ขอบเขต</b>POS · ตลาด · ฟิตเนส · Labor Win · สปอนเซอร์</div>
+<div><b>ผู้ทดสอบ</b><input class="meta" type="text"></div>
+<div><b>รอบทดสอบ</b><input class="meta" type="text" style="min-width:80px"></div>
+<div><b>วันที่</b><input class="meta" type="text" placeholder="__ / __ / 2569" style="min-width:110px"></div>
+</div>
+</div>
+
+<div class="lead-box"><b>เอกสารนี้ใช้ยังไง:</b> พิมพ์ออกมา (หรือเปิดบนจอ) แล้วไล่เทสทีละโมดูลตามตาราง — แต่ละข้อมีสิ่งที่ต้องทำ + ผลที่ควรได้ ติ๊ก ✓ ถ้าผ่าน / ✗ ถ้าไม่ผ่าน แล้วจดหมายเลขข้อที่ไม่ผ่าน (เช่น B-03) กลับมาบอกผมเป็นรายการ เดี๋ยวผมแก้ให้ทีละข้อ</div>
+
+<!-- HOW TO -->
+<div class="sec"><div class="n">00</div><h2>วิธีทดสอบ & แจ้งแก้ (อ่านก่อนเริ่ม)</h2><div class="lead">ระบบใหญ่ — เทสทีละโมดูลจนจบ อย่ากระโดด แล้วสรุปแจ้งผมรอบเดียวเป็นชุด</div></div>
+
+<div class="steps">
+<div class="step"><div class="num"></div><div class="tx"><b>เตรียมเครื่องทดสอบ</b><p>เปิดบนมือถือจริง 1 เครื่อง + คอม 1 เครื่อง (บางหน้าเป็นจอคอม เช่น Back Office) · ใช้ Chrome/Safari ล่าสุด · ครั้งแรกจะถามรหัสเข้า (user <code class="inl">one</code> / รหัส <code class="inl">thetiff</code>)</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>เทสไล่ตามโมดูล A→J</b><p>ทำทีละตาราง ครบทุกข้อในโมดูลก่อนค่อยไปโมดูลถัดไป · ข้อที่ทำตามแล้ว "ผลที่ควรได้" ตรง = ติ๊กผ่าน</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>จดเฉพาะข้อที่ไม่ผ่าน</b><p>เขียนหมายเลขข้อ + สิ่งที่เกิดขึ้นจริง (เช่น "C-04 กดปุ่มแล้วไม่มีอะไรเกิดขึ้น") ในช่องหมายเหตุท้ายโมดูล</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>แจ้งผมเป็นรายการเดียว</b><p>ใช้แบบฟอร์มแจ้งในหน้าสุดท้าย — ส่งมาทีเดียวหลายข้อได้ ผมจะแก้ให้ทีละข้อแล้วบอกว่าแก้อะไรไปบ้าง</p></div></div>
+</div>
+
+<div class="legend">
+<span><span class="box p"></span> ✓ ผ่าน (ทำงานถูกต้อง)</span>
+<span><span class="box f"></span> ✗ ไม่ผ่าน (จดหมายเลขข้อ)</span>
+<span><span class="box"></span> เว้นว่าง = ยังไม่ได้เทส / ข้าม</span>
+</div>
+<p class="hint">ทุกช่อง ✅ และช่องพิมพ์ในเอกสารนี้ กรอก/ติ๊กได้จริงบนจอ — กรอกเสร็จแล้วสั่งพิมพ์เป็น PDF ค่าที่กรอกจะติดไปในไฟล์</p>
+
+<div class="warn-box"><b>ข้อควรรู้ก่อนเทส:</b> ระบบตอนนี้เก็บข้อมูลไว้ในเครื่อง (client-only / localStorage) — ข้อมูลที่คีย์จะอยู่แค่เครื่องนั้น ยังไม่ sync ข้ามเครื่อง (backend worker/D1 เป็นงานเฟสถัดไป) · เทสทุกอย่างในเครื่องเดียวจบก่อน · ถ้าอยากล้างข้อมูลเริ่มใหม่ ใช้ปุ่มรีเซ็ต/ลบร้านในแอป</div>
+
+<!-- TOC -->
+<div class="sec"><div class="n">01</div><h2>โมดูลที่ต้องทดสอบ</h2><div class="lead">10 โมดูลหลัก — ติ๊กเมื่อเทสจบทั้งโมดูล</div></div>
+<div class="toc">
+<div><b>A</b> สมัคร &amp; เข้าใช้ระบบ (Signup + Gate)</div>
+<div><b>B</b> KaiDee POS — หน้าขาย</div>
+<div><b>C</b> KaiDee POS — รับเงิน &amp; จับยอดพร้อมเพย์</div>
+<div><b>D</b> KaiDee Back Office</div>
+<div><b>E</b> Market OS — บริหารตลาด</div>
+<div><b>F</b> ฟิตเนส (POS · เช็คอิน · Kiosk · สมัคร)</div>
+<div><b>G</b> Labor Win — วินแรงงาน</div>
+<div><b>H</b> สปอนเซอร์ &amp; กระเป๋าแพลตฟอร์ม</div>
+<div><b>I</b> Platform Control (คุมเปิด/ปิดเมนู)</div>
+<div><b>J</b> เดโมพรีเซนต์ (หน้ารวม Demos)</div>
+</div>
+
+<!-- A -->
+<div class="mod">
+<div class="hd"><span class="em">🔐</span><div><h3>A · สมัคร &amp; เข้าใช้ระบบ</h3><div class="file">Shop Signup.html · Vendor Signup.html · gate.js</div></div><span class="role">เจ้าของร้าน</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">A-01</td><td>เปิดหน้าแรกครั้งแรก → <span class="exp">ถามรหัสเข้า (one/thetiff) · ใส่ถูกแล้วเข้าได้ · รีเฟรชแล้วไม่ถามซ้ำ</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">A-02</td><td>สมัครร้านใหม่ → เลือกประเภทธุรกิจก่อน (อาหาร/คาเฟ่/ฟิตเนส/Labor Win/อื่นๆ) → <span class="exp">กรอกข้อมูล → เข้าแอปตามประเภทที่เลือก</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">A-03</td><td>สมัครด้วยเบอร์เดิมซ้ำ → <span class="exp">ระบบเตือนเบอร์ซ้ำ ไม่ให้สมัครทับ</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">A-04</td><td>ลบร้าน (ใส่รหัสยืนยัน + ติ๊กยอมรับ) → <span class="exp">ล้างข้อมูลร้าน เริ่มสมัครใหม่ได้</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">A-05</td><td>เปิดหน้าเช็คอิน/Kiosk/เดโม → <span class="exp">ไม่ถามรหัส (เปิดโล่งตามตั้งใจ)</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ A (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น A-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- B -->
+<div class="mod">
+<div class="hd"><span class="em">🧾</span><div><h3>B · KaiDee POS — หน้าขาย</h3><div class="file">KaiDee POS.html</div></div><span class="role">พนักงานขาย</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">B-01</td><td>แตะเมนูใส่ตะกร้า + ปรับจำนวน → <span class="exp">ตะกร้าอัปเดตยอดถูก · ตัวเลือก/หมายเหตุแนบได้</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">B-02</td><td>เลือกประเภทออเดอร์ (ทานที่ร้าน/กลับบ้าน) + ใส่เลขโต๊ะ → <span class="exp">ปุ่มคิดเงินโผล่เสมอ กดถึง ไม่โดน tabbar ทับ</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">B-03</td><td>คิดเงินสด → <span class="exp">คำนวณเงินทอน · บันทึกบิล · ตัดสต๊อก (ถ้ามี)</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">B-04</td><td>เลือกสมาชิก/เพิ่มสมาชิกใหม่ (ชื่อ+เบอร์+วันเกิด) → <span class="exp">ผูกบิลกับสมาชิก · เบอร์ซ้ำเตือน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">B-05</td><td>พิมพ์ใบเสร็จ (58/80mm) → <span class="exp">ใบเสร็จออกถูกขนาด มีรายการ/VAT/ยอดรวม</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">B-06</td><td>ลูกค้าสั่งเอง (mobile order/QR) → <span class="exp">ออเดอร์เข้าคิวร้าน · แจ้งเตือน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ B (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น B-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- C -->
+<div class="mod">
+<div class="hd"><span class="em">💰</span><div><h3>C · KaiDee POS — รับเงิน &amp; จับยอดพร้อมเพย์</h3><div class="file">KaiDee POS.html · ตั้งค่าร้าน + สรุปวัน</div></div><span class="role">เจ้าของ</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">C-01</td><td>ตั้งค่า "วิธีจับยอดพร้อมเพย์" 3 แบบ (แนบสลิป/วางข้อความ/บอท LINE) → <span class="exp">เปิด/ปิดได้อิสระ · หน้าสรุปวันโชว์เฉพาะที่เปิด</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">C-02</td><td>รับชำระพร้อมเพย์ → โชว์ QR → กดยืนยัน/แนบสลิป → <span class="exp">บิลขึ้นรอตรวจในสรุปวัน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">C-03</td><td>วางข้อความแจ้งเตือนธนาคาร → <span class="exp">ระบบ parse ยอด + จับคู่บิลที่ยังไม่ยืนยันอัตโนมัติ</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">C-04</td><td>ตั้งโหมดแจ้งเตือนเงินเข้า 3 แบบ (เงียบ/เด้ง/เด้ง+เสียง) + กดทดสอบ → <span class="exp">toast เด้ง · โหมดเสียงมีกริ๊ง+พูด "รับเงินเรียบร้อยค่ะ"</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">C-05</td><td>ปิดวัน ทั้งที่มีบิลพร้อมเพย์ค้างตรวจ → <span class="exp">เตือน/บล็อกตามที่ตั้งค่าไว้</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">C-06</td><td>ดูสรุปยอดวัน (เงินสด/พร้อมเพย์ยืนยัน/รอยืนยัน) → <span class="exp">ตัวเลขตรงกับบิลที่ขายจริง</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ C (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น C-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- D -->
+<div class="mod">
+<div class="hd"><span class="em">📊</span><div><h3>D · KaiDee Back Office</h3><div class="file">KaiDee Back Office.html (จอคอม)</div></div><span class="role">เจ้าของ/บัญชี</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">D-01</td><td>เปิดหน้าภาพรวม → <span class="exp">KPI ยอดขาย · 5 อันดับเมนูขายดี · กราฟ แสดงจากข้อมูลจริง</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">D-02</td><td>จัดการเมนู/หมวด/สต๊อก + sort ขายดี → <span class="exp">เพิ่ม/แก้/ลบได้ · ซิงค์กับหน้าขาย</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">D-03</td><td>ใบเสนอราคา (เลือก preset แพ็ก + ส่วนลด + VAT + หัก ณ ที่จ่าย) → <span class="exp">คำนวณถูก · พิมพ์/PDF ได้ · บันทึกสถานะ</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">D-04</td><td>กระเป๋าเงินร้าน (โหมด A/B + GP%) → <span class="exp">ดึงยอดดิจิทัล verified · KPI · ledger · ถอน/แจ้งโอน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">D-05</td><td>ผูกกลุ่ม LINE จับยอด (LinePairModal) → <span class="exp">แสดงขั้นตอนผูก · สร้างโค้ดจับคู่</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">D-06</td><td>หน้าการลบร้าน (Deletion Log) → <span class="exp">แสดงรายการยินยอมลบ + KPI</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ D (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น D-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- E -->
+<div class="mod">
+<div class="hd"><span class="em">🏢</span><div><h3>E · Market OS — บริหารตลาด</h3><div class="file">Market Backoffice.html · Market Mobile.html</div></div><span class="role">เจ้าของตลาด</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">E-01</td><td>จัดการแผง — สลับ "รายการโซน / ผังจริงปักหมุด" → <span class="exp">อัปโหลดรูปผัง · ลากหมุด · สีตามสถานะ (ว่าง/ล็อก/มีร้าน)</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">E-02</td><td>รับสมัคร/จองแผงในไลน์ (Vendor Signup) → <span class="exp">กรอกข้อมูลก่อน → เห็นผังโซน → เลือกแผง → 4 ทางจอง · lead เข้า inbox เจ้าของ</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">E-03</td><td>จองรายวัน (ปฏิทิน) → <span class="exp">เลือกวัน · walk-in · เก็บเงินรายวัน · เช็คอิน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">E-04</td><td>ส่งใบแจ้งหนี้ + ทวง LINE → <span class="exp">ออกบิล · สถานะจ่าย/ค้าง · ปุ่มทวง</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">E-05</td><td>กระเป๋าเงินตลาด (payMode: promptpay/wallet/both) → <span class="exp">เติมเงิน · หักบิลอัตโนมัติ · ผูกเลข VA รายร้าน · ledger</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">E-06</td><td>นำส่ง/โอนเงินร้าน (Settlement) → <span class="exp">คำนวณ ยอด−GP−น้ำ/ไฟ · workflow ตรวจ→อนุมัติ→โอน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">E-07</td><td>Market Mobile (มือถือ) → <span class="exp">KPI occupancy/เก็บได้/ค้าง · list คำขอ+จอง · ยอดเข้าล่าสุด</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ E (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น E-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- F -->
+<div class="mod">
+<div class="hd"><span class="em">🏋️</span><div><h3>F · ฟิตเนส</h3><div class="file">Fitness POS · Checkin · Kiosk · Join · NFC Card</div></div><span class="role">เจ้าของ/พนักงาน/สมาชิก</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">F-01</td><td>ขายแพ็ก/สินค้า/PT + เลือกสมาชิก → <span class="exp">checkout · ต่ออายุจริง · ตัดสต๊อก · จับ "ขายโดย X"</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">F-02</td><td>สร้างเมนู/แพ็ก/Voucher (3 ชนิด) + ขายออกโค้ด + ใช้โค้ดหักตอน checkout → <span class="exp">ส่วนลดถูก · เข้ารายงาน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">F-03</td><td>ระบบพนักงาน + permission matrix (16 สิทธิ์) + PIN → <span class="exp">ซ่อนแท็บ/การ์ดตามสิทธิ์ · escalation PIN</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">F-04</td><td>เช็คอินหน้าประตู (Fitness Checkin — NFC/QR) → <span class="exp">เขียว=เข้าได้ · แดง=หมดอายุ+ต่อ · auto กลับ idle</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">F-05</td><td>ตารางคลาส (โหมดโปสเตอร์รูป/ลิสต์) — เจ้าของแก้ · สมาชิกจอง → <span class="exp">grid time×day · แนบรูป · จองแล้วขึ้นป้าย</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">F-06</td><td>Kiosk ตู้สั่งเอง (Fitness Kiosk) → <span class="exp">เลือกสินค้า/Day Pass · QR · เข้าจับยอด</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">F-07</td><td>สมัครสมาชิกเอง (Fitness Join — ลิงก์/QR) → <span class="exp">เขียน member selfJoin · เบอร์ซ้ำเตือน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">F-08</td><td>เปิด/ปิดวัน → <span class="exp">ปิดวันแล้วล็อกหน้าขาย/เช็คอิน · สรุปยอดวัน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ F (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น F-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- G -->
+<div class="mod">
+<div class="hd"><span class="em">🎽</span><div><h3>G · Labor Win — วินแรงงาน</h3><div class="file">vertical ในแอป + Labor Win Prototype.html</div></div><span class="role">ร้าน/แรงงาน/หัวหน้าวิน</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">G-01</td><td>สมัครเลือก vertical Labor Win 🎽 → <span class="exp">ล็อกเหลือ 4 เมนู (เรียกงาน/รายรับรายจ่าย/ทะเบียนแรงงาน/หน้าที่เพิ่ม)</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">G-02</td><td>เดโม prototype — แม่ค้าเลือกงาน/วิน/เรียก → <span class="exp">เดินครบ 9 ขั้น · ปุ่มไฮไลต์ · ←/→ ทำงาน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">G-03</td><td>เดโม — แรงงานได้การ์ด (ไทย+พม่า) กดรับ → <span class="exp">การ์ด 2 ภาษา · ปุ่มเขียว/แดง</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">G-04</td><td>เดโม — หัวหน้าวินเห็นคิว + ค่าคิวเพิ่ม + ถอน → <span class="exp">ยอด ฿840→฿852 · ปุ่มถอน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ G (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น G-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- H -->
+<div class="mod">
+<div class="hd"><span class="em">📣</span><div><h3>H · สปอนเซอร์ &amp; กระเป๋าแพลตฟอร์ม</h3><div class="file">Sponsor Packages · Platform Wallet · Sponsor Shop/Rider Prototype</div></div><span class="role">สปอนเซอร์/ผู้ดำเนินการ</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">H-01</td><td>Sponsor Packages — เลือกทีเออร์ (Starter/Growth/Premium) + toggle รายเดือน/รายปี → <span class="exp">ราคาปรับถูก · ปีจ่าย 10 เดือน</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">H-02</td><td>ซื้อแพ็กสปอนเซอร์ → <span class="exp">เขียนยอดเข้ากระเป๋าแพลตฟอร์ม (type sponsor) · ลิงก์ไป Platform Wallet</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">H-03</td><td>Platform Wallet — ดูยอด/ถอน/4 KPI/รายได้แยก 4 ช่องทาง → <span class="exp">ledger append-only · filter · ตัวเลขตรง</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">H-04</td><td>เดโม Sponsor Shop (7 ขั้น) → <span class="exp">เห็นร้าน→สั่ง→เลือกส่ง→จ่ายแยก 3 ทาง→ติดตาม</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">H-05</td><td>เดโม Rider (7 ขั้น) → <span class="exp">สมัคร→อนุมัติ→รับงาน→ร้านเลือกไรเดอร์คนโปรด→ติดตาม</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ H (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น H-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- I -->
+<div class="mod">
+<div class="hd"><span class="em">🎛️</span><div><h3>I · Platform Control</h3><div class="file">Platform Control.html</div></div><span class="role">ผู้ดูแลระบบ</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">I-01</td><td>ปิดเมนูย่อยของโมดูล (ขาย/ตลาด/ฟิตเนส) → <span class="exp">แท็บนั้นหายในแอปที่เกี่ยวข้องจริง</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">I-02</td><td>ลองปิดเมนูแกน → <span class="exp">ล็อก ปิดไม่ได้</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">I-03</td><td>เปิดกลับ → <span class="exp">แท็บกลับมาแสดง · config เก็บถาวร (รีเฟรชไม่หาย)</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ I (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น I-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- J -->
+<div class="mod">
+<div class="hd"><span class="em">🎬</span><div><h3>J · เดโมพรีเซนต์ (หน้ารวม)</h3><div class="file">Demos.html</div></div><span class="role">คนนำเสนอ</span></div>
+<table class="tc"><thead><tr><th>#</th><th>สิ่งที่ต้องทำ + ผลที่ควรได้</th><th>ผล</th></tr></thead><tbody>
+<tr><td class="id">J-01</td><td>เปิด Demos.html → <span class="exp">การ์ดทุกตัวแสดง · hover ยกการ์ด</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+<tr><td class="id">J-02</td><td>กดทุกการ์ด → <span class="exp">เปิดเดโม/แอป/เอกสารนั้นได้จริง ไม่ลิงก์เสีย</span></td><td class="res"><label class="ck"><input type="checkbox"> ผ่าน</label><label class="ck f"><input type="checkbox"> ไม่</label></td></tr>
+</tbody></table>
+</div>
+<p class="note" style="display:flex;gap:8px;align-items:baseline">หมายเหตุ J (ข้อที่ไม่ผ่าน): <input class="fill" type="text" placeholder="เช่น J-03 กดแล้วไม่มีอะไรเกิดขึ้น"></p>
+
+<!-- REPORT -->
+<div class="sec"><div class="n">02</div><h2>วิธีแจ้งผมให้แก้ (ส่งทีเดียวเป็นชุด)</h2><div class="lead">คัดลอกแบบฟอร์มนี้ พิมพ์รายการข้อที่ไม่ผ่านส่งมา ผมแก้ให้ทีละข้อ</div></div>
+<p>แจ้งเป็นข้อ ๆ ตามรูปแบบนี้ — ยิ่งบอกละเอียด (หมายเลขข้อ + เกิดอะไรจริง + อยากให้เป็นยังไง) ผมยิ่งแก้ตรงจุด ไม่ต้องเดา:</p>
+<div class="tmpl"><span class="cm"># แจ้งแก้ UAT รอบที่ ___ วันที่ ___</span>
+
+<span class="lb">[C-04]</span> ปัญหา: กดปุ่มทดสอบเสียงแล้วไม่มีเสียง
+        อยากให้: มีเสียงกริ๊งเหมือนที่เขียนไว้
+        ความสำคัญ: กลาง
+
+<span class="lb">[E-05]</span> ปัญหา: หักบิลอัตโนมัติแล้วยอดกระเป๋าไม่ลด
+        อยากให้: ยอดลดตามบิลที่หัก
+        ความสำคัญ: สูง (ตัวเลขเงินผิด)
+
+<span class="lb">[ปรับเพิ่ม]</span> อยากได้ปุ่มค้นหาสมาชิกด้วยชื่อในหน้าขาย
+             (ไม่ใช่บั๊ก — ฟีเจอร์ใหม่)</div>
+
+<h3>ระดับความสำคัญ — ช่วยผมจัดลำดับแก้</h3>
+<div class="prio">
+<div class="p hi"><b>สูง</b><span>ตัวเลขเงินผิด · กดแล้วพัง · เข้าไม่ได้ · ข้อมูลหาย → แก้ก่อน</span></div>
+<div class="p md"><b>กลาง</b><span>ใช้งานได้แต่ไม่สะดวก · แสดงผลเพี้ยน · คำผิด → แก้รอบถัดไป</span></div>
+<div class="p lo"><b>ต่ำ / เพิ่ม</b><span>ความสวยงาม · ฟีเจอร์อยากได้เพิ่ม → ทยอยทำ</span></div>
+</div>
+
+<div class="lead-box"><b>เคล็ดลับให้เทสเร็ว:</b> เทสทีละบทบาท (เจ้าของ → พนักงาน → ลูกค้า/สมาชิก) จะเห็นภาพรวมไว · โมดูลไหนยังไม่ได้ใช้จริงก็ข้ามได้ (ติ๊กช่องว่าง) · ที่สำคัญสุดคือ B, C, E, F (เงินเข้า-ออก) — เทสให้ครบก่อน เพราะกระทบเงินจริง</div>
+
+<h3>สรุปผลรอบนี้</h3>
+<ul class="tick">
+<li>โมดูลที่เทสจบ: A <input type="checkbox"> &nbsp;B <input type="checkbox"> &nbsp;C <input type="checkbox"> &nbsp;D <input type="checkbox"> &nbsp;E <input type="checkbox"> &nbsp;F <input type="checkbox"> &nbsp;G <input type="checkbox"> &nbsp;H <input type="checkbox"> &nbsp;I <input type="checkbox"> &nbsp;J <input type="checkbox"></li>
+<li>จำนวนข้อไม่ผ่าน (สูง): <input class="fill mini" type="text">  ·  (กลาง): <input class="fill mini" type="text">  ·  (ต่ำ/เพิ่ม): <input class="fill mini" type="text"></li>
+<li>พร้อมใช้งานจริงหรือยัง:  <label class="ck" style="font-size:10pt;color:var(--ink)"><input type="checkbox"> ยัง แก้ก่อน</label> &nbsp; <label class="ck" style="font-size:10pt;color:var(--ink)"><input type="checkbox"> พร้อมบางโมดูล</label> &nbsp; <label class="ck" style="font-size:10pt;color:var(--ink)"><input type="checkbox"> พร้อมทั้งหมด</label></li>
+</ul>
+
+<p class="note">เอกสารนี้เป็น checklist สำหรับทดสอบภายใน — ปรับเพิ่ม/ลดข้อได้ตามที่ใช้จริง บอกผมได้ถ้าอยากได้ตารางเทสของโมดูลใดละเอียดกว่านี้</p>
+
+</doc-page>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E7C4E"/><text x="50" y="46" font-size="30" text-anchor="middle" fill="#fff">✅</text><text x="50" y="72" font-size="15" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">UAT</text></svg>
+</template>
+</body>
+</html>

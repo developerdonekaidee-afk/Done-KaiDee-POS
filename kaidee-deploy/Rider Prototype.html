@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ไรเดอร์ — เดโมกดจริง (สมัคร · รับงาน · ไรเดอร์คนโปรด)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E9F5EE;--blue:#1a56db;--blue-soft:#e5edfb;--gold:#F4900C;--gold-soft:#FEF1E2;--red:#C0392B;--green:#1DB954;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#dde5e0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(140% 100% at 50% 0%,#f6f9f7,#e4ebe7);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+.top{padding:18px 20px 10px;text-align:center}
+.top .kick{display:inline-flex;gap:7px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);padding:6px 13px;border-radius:100px}
+.top h1{font-size:22px;font-weight:800;margin:9px 0 2px}
+.top p{margin:0;color:var(--ink-2);font-size:13.5px}
+.guide{max-width:820px;margin:8px auto 0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 22px rgba(20,60,40,.07)}
+.guide .badge{flex:0 0 auto;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--blue-soft)}
+.guide .g-tx{flex:1;min-width:0;text-align:left}
+.guide .g-step{font-size:11.5px;font-weight:700;color:var(--blue);letter-spacing:.06em;text-transform:uppercase}
+.guide .g-tip{font-size:15px;font-weight:600;margin-top:2px;line-height:1.4;text-wrap:pretty}
+.g-nav{flex:0 0 auto;display:flex;gap:8px}
+.gbtn{border:none;cursor:pointer;font-family:inherit;font-weight:700;border-radius:11px;padding:11px 16px;font-size:14px}
+.gbtn.prev{background:#fff;border:1.5px solid var(--line);color:var(--ink-2)}
+.gbtn.next{background:var(--brand);color:#fff}
+.gbtn:disabled{opacity:.4;cursor:default}
+.prog{max-width:820px;margin:10px auto 0;height:5px;background:#dbe4df;border-radius:100px;overflow:hidden}
+.prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .35s}
+.stage{flex:1;display:flex;gap:34px;justify-content:center;align-items:center;padding:20px 18px 30px;flex-wrap:wrap}
+.phone{width:320px;height:650px;background:#0f1720;border-radius:42px;padding:12px;box-shadow:0 26px 60px rgba(14,124,78,.22)}
+.screen{width:100%;height:100%;background:#F3F6F4;border-radius:31px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.hd{color:#fff;padding:18px 17px 15px;background:var(--blue)}
+.hd .s1{font-size:13.5px;opacity:.85}.hd .s2{font-size:21px;font-weight:800;margin-top:1px}
+.body{padding:14px;display:flex;flex-direction:column;gap:11px;flex:1;overflow:auto}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.card{background:#fff;border-radius:13px;padding:13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.rowc{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fld{background:#fff;border-radius:11px;padding:10px 12px;font-size:14px;border:1.5px solid var(--line)}
+.fld b{color:var(--ink)}.fld .v{color:var(--ink-3);font-size:12.5px;margin-top:2px}
+.btn{border:none;cursor:pointer;font-family:inherit;border-radius:13px;padding:14px;text-align:center;font-size:16px;font-weight:800;width:100%;color:#fff;background:var(--brand)}
+.btn.blue{background:var(--blue)}
+.tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}.tag.on{background:var(--brand-soft);color:var(--brand)}.tag.fav{background:var(--gold-soft);color:var(--gold)}
+.rider{display:flex;gap:11px;align-items:center;background:#fff;border-radius:13px;padding:11px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05);cursor:pointer}
+.rider .av{width:42px;height:42px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
+.rider .nm{font-size:14px;font-weight:700}.rider .mt{font-size:12px;color:var(--ink-3)}
+.jobcard{background:linear-gradient(135deg,#123a7a,#1a56db);color:#fff;border-radius:15px;padding:15px}
+.jobcard .r{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
+.status{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;text-align:center;padding:18px}
+.status .big{font-size:50px}.status .t{font-size:19px;font-weight:800}.status .s{font-size:14px;color:var(--ink-2);line-height:1.5}
+.pulse{animation:pl 1.2s ease-in-out infinite;border-radius:13px}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(26,86,219,.5)}70%{box-shadow:0 0 0 12px rgba(26,86,219,0)}100%{box-shadow:0 0 0 0 rgba(26,86,219,0)}}
+.hint{position:absolute;z-index:9;background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:6px 11px;border-radius:9px;white-space:nowrap;pointer-events:none;transform:translate(-50%,-140%);left:50%;animation:bob 1.1s ease-in-out infinite}
+.hint::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+@keyframes bob{0%,100%{transform:translate(-50%,-140%)}50%{transform:translate(-50%,-160%)}}
+.side{max-width:310px;text-align:left;display:none}
+@media(min-width:960px){.side{display:block}}
+.side h3{font-size:16px;margin:0 0 6px}.side p{font-size:13.5px;color:var(--ink-2);line-height:1.55;margin:0}
+.side .f{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+.side .fi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.foot{text-align:center;font-size:12px;color:var(--ink-3);padding:0 20px 18px}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div class="top">
+<span class="kick">🛵 ระบบไรเดอร์ · เดโมกดจริง</span>
+<h1>ไรเดอร์ในระบบ — สมัครเอง · รับงานส่งของตลาด · ไรเดอร์คนโปรด</h1>
+<p>กดปุ่มที่ <b>ไฮไลต์</b> หรือ “ถัดไป” เพื่อดูทีละขั้น · แรงงาน/คนไทยรับจ็อบสมัครเองได้ (หัวหน้าวินไม่เห็นระบบนี้)</p>
+</div>
+<div class="guide">
+<div class="badge" id="g-badge">🛵</div>
+<div class="g-tx"><div class="g-step" id="g-step">ขั้นที่ 1 / 7</div><div class="g-tip" id="g-tip">—</div></div>
+<div class="g-nav"><button class="gbtn prev" id="g-prev">← ก่อนหน้า</button><button class="gbtn next" id="g-next">ถัดไป →</button></div>
+</div>
+<div class="prog"><i id="prog"></i></div>
+<div class="stage">
+  <div class="phone"><div class="screen" id="scr"></div></div>
+  <div class="side" id="side"></div>
+</div>
+<div class="foot">เดโมสำหรับนำเสนอ — สมัครไรเดอร์เอง (แรงงาน/คนไทยรับจ็อบ) → รับงานส่งของ → ร้านตลาดสั่งวัตถุดิบออนไลน์เลือกไรเดอร์คนโปรดแบบ Grab</div>
+<script>
+var STEPS=[
+ {badge:'📣',tip:'หน้า “สมัครเป็นไรเดอร์” — เปิดให้คนทั่วไป/แรงงานที่รับจ็อบส่งของ กดสมัครเอง (แตะ “สมัครเป็นไรเดอร์”)',focus:'#apply-btn',hint:'แตะสมัคร',
+  side:{h:'เปิดรับสมัครไรเดอร์เอง',p:'แรงงาน + คนไทยที่รับจ็อบส่งของ เห็นประกาศแล้วสมัครเข้ามาเองในแอป — หัวหน้าวินไม่เห็น/ไม่เกี่ยวกับระบบนี้',f:['📣 ประกาศรับไรเดอร์ในแอป','🙋 สมัครเองไม่ต้องผ่านวิน','🇹🇭 คนไทยรับจ็อบก็สมัครได้']}},
+ {badge:'📝',tip:'กรอกข้อมูลสมัคร — ชื่อ · รถ/ทะเบียน · บัตร ปชช./ใบขับขี่ · พื้นที่วิ่ง (แตะ “ส่งใบสมัคร”)',focus:'#submit-btn',hint:'กดส่งใบสมัคร',
+  side:{h:'ทะเบียนไรเดอร์',p:'เก็บข้อมูลตัวตน + รถ + เอกสาร เข้าทะเบียนไรเดอร์ของแพลตฟอร์ม',f:['🪪 ยืนยันตัวตน + ใบขับขี่','🛵 ทะเบียนรถ','📍 พื้นที่ให้บริการ']}},
+ {badge:'✅',tip:'อนุมัติแล้ว — ไรเดอร์เปิดสถานะ “พร้อมรับงาน” เพื่อรอรับออเดอร์',focus:'#online-btn',hint:'เปิดรับงาน',
+  side:{h:'อนุมัติ + ออนไลน์',p:'ผ่านการตรวจ = เข้าทะเบียนไรเดอร์ พร้อมรับงานส่งของในตลาด/ละแวก',f:['✅ อนุมัติเข้าทะเบียน','🟢 กดออนไลน์รับงาน','⭐ สะสมเรตติ้ง']}},
+ {badge:'🔔',tip:'มีงานเข้า! ร้านส้มตำสั่งวัตถุดิบจากร้านค้าส่งในตลาด — ไรเดอร์กด “รับงาน”',focus:'#accept-btn',hint:'กดรับงาน',
+  side:{h:'รับงานส่งของ',p:'ออเดอร์จากร้านออนไลน์ตลาด — ไปรับของที่ร้านค้าส่ง ส่งให้ร้านที่สั่ง',f:['🔔 งานเด้งเข้า','💵 เห็นค่าส่งก่อนรับ','🗺️ เส้นทางรับ→ส่ง']}},
+ {badge:'🛒',tip:'มุมร้านที่สั่ง — ร้านส้มตำสั่งวัตถุดิบออนไลน์ผ่านหน้าร้านตลาด เลือกไรเดอร์ได้ (แตะ “ไรเดอร์คนโปรด”)',focus:'#fav-btn',hint:'เลือกคนโปรด',
+  side:{h:'ร้านตลาดสั่งของออนไลน์',p:'ร้านอาหารในตลาดสั่งวัตถุดิบจากร้านค้าส่ง ผ่านหน้าร้านออนไลน์ตลาด แล้วให้ไรเดอร์ส่ง',f:['🛒 สั่งวัตถุดิบออนไลน์','⭐ เลือกไรเดอร์คนโปรด (แบบ Grab)','🔁 เจ้าประจำเรียกซ้ำง่าย']}},
+ {badge:'📍',tip:'ติดตามการส่ง — ไรเดอร์รับของที่ร้านค้าส่ง → กำลังส่ง → ถึงร้านส้มตำ',focus:null,
+  side:{h:'ติดตามเรียลไทม์',p:'ทั้งร้านที่สั่งและร้านค้าส่งเห็นสถานะ — เหมือนสั่ง Grab',f:['🛵 รับของแล้ว','📍 กำลังส่ง','✅ ส่งถึง + เก็บเงิน/เก็บปลายทาง']}},
+ {badge:'♻️',tip:'ครบวงจร — ไรเดอร์เรารับงานส่งของในระบบ · ร้านตลาดสั่งวัตถุดิบออนไลน์ · เลือกไรเดอร์คนโปรด · เชื่อม Lalamove นอกพื้นที่ได้ — กด “เริ่มใหม่”',focus:null,done:true,
+  side:{h:'ไรเดอร์ = ฟันเฟืองระบบ',p:'ทะเบียนไรเดอร์ใช้ได้ทั้งส่งของสปอนเซอร์ · ส่งวัตถุดิบร้านตลาด · เดลิเวอรีอาหาร',f:['🛵 ทะเบียนไรเดอร์กลาง','⭐ คนโปรด/เรตติ้ง แบบ Grab','🔗 เชื่อม Lalamove นอกพื้นที่']}}
+];
+var step=0;
+function head(s1,s2,bg){ return '<div class="hd"'+(bg?' style="background:'+bg+'"':'')+'><div class="s1">'+s1+'</div><div class="s2">'+s2+'</div></div>'; }
+function screenHTML(){
+  if(step===0) return head('KaiDee · หารายได้เสริม','งานไรเดอร์')+
+    '<div class="body"><div class="status" style="flex:0;padding:8px 0"><div class="big">🛵</div></div>'+
+    '<div class="card"><b style="font-size:16px">รับสมัครไรเดอร์ส่งของในตลาด</b><div style="font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.5">มีเวลาว่าง มีรถ? รับงานส่งของในตลาด/ละแวกบ้าน · เลือกเวลาเองได้ · ค่ารอบดี</div></div>'+
+    '<div class="card" style="font-size:13px;color:var(--ink-3)">🇹🇭 คนไทยที่รับจ็อบ + แรงงานที่อยากหารายได้เสริม สมัครเองได้เลย</div>'+
+    '<button class="btn blue" id="apply-btn" style="margin-top:auto">🙋 สมัครเป็นไรเดอร์</button></div>';
+  if(step===1) return head('ใบสมัครไรเดอร์','กรอกข้อมูล')+
+    '<div class="body">'+
+    '<div class="fld"><b>ชื่อ-นามสกุล</b><div class="v">สมชาย ใจดี</div></div>'+
+    '<div class="fld"><b>รถ / ทะเบียน</b><div class="v">มอเตอร์ไซค์ · 1กข 2345</div></div>'+
+    '<div class="fld"><b>เอกสาร</b><div class="v">บัตร ปชช. ✓ · ใบขับขี่ ✓</div></div>'+
+    '<div class="fld"><b>พื้นที่วิ่ง</b><div class="v">ตลาดสี่มุมเมือง + รัศมี 5 กม.</div></div>'+
+    '<button class="btn blue" id="submit-btn" style="margin-top:auto">ส่งใบสมัคร</button></div>';
+  if(step===2) return head('อนุมัติแล้ว','สมชาย · ไรเดอร์','linear-gradient(135deg,#0E7C4E,#1DB954)')+
+    '<div class="body"><div class="status"><div class="big">✅</div><div class="t">ยินดีต้อนรับ ไรเดอร์สมชาย</div><div class="s">ผ่านการตรวจสอบ เข้าทะเบียนแล้ว<br>กดออนไลน์เพื่อเริ่มรับงาน</div></div><button class="btn" id="online-btn" style="margin-top:auto">🟢 เปิดรับงาน (ออนไลน์)</button></div>';
+  if(step===3) return head('🔔 งานใหม่','ส่งวัตถุดิบ','var(--blue)')+
+    '<div class="body"><div class="jobcard"><div style="font-size:12px;opacity:.85">รับที่</div><b style="font-size:16px">เฮียตี๋ค้าส่ง (ล็อก C-4)</b><div style="font-size:12px;opacity:.85;margin-top:8px">ส่งที่</div><b style="font-size:16px">ร้านส้มตำเจ๊หน่อย (ล็อก F-12)</b><div class="r" style="border-top:1px solid rgba(255,255,255,.25);margin-top:9px;padding-top:8px"><span>ระยะ 1.2 กม.</span><b>ค่าส่ง ฿25</b></div></div>'+
+    '<button class="btn blue" id="accept-btn" style="margin-top:auto">🟢 รับงานนี้</button></div>';
+  if(step===4) return head('ร้านส้มตำเจ๊หน่อย','สั่งวัตถุดิบออนไลน์','var(--brand)')+
+    '<div class="body"><div class="card"><b>🛒 ออเดอร์: มะละกอ 10 กก. · พริก 2 กก.</b><div style="font-size:13px;color:var(--ink-3);margin-top:4px">จากเฮียตี๋ค้าส่ง · ฿480</div></div>'+
+    '<div class="lbl">เลือกไรเดอร์ส่ง</div>'+
+    '<div class="rider" id="fav-btn" style="border:2px solid var(--gold)"><div class="av">🛵</div><div style="flex:1"><div class="nm">สมชาย ใจดี <span class="tag fav">⭐ คนโปรด</span></div><div class="mt">4.9 · ส่งให้ร้านนี้ 32 ครั้ง</div></div></div>'+
+    '<div class="rider"><div class="av">🛵</div><div style="flex:1"><div class="nm">วิชัย</div><div class="mt">4.7 · ว่างอยู่ใกล้</div></div></div>'+
+    '<div class="card" style="font-size:12.5px;color:var(--ink-3);text-align:center">เลือกไรเดอร์ประจำที่ชอบได้ เหมือน Grab</div></div>';
+  if(step===5) return head('ติดตามการส่ง','ออเดอร์ #R-882','#1f2a24')+
+    '<div class="body"><div class="card"><div style="display:flex;flex-direction:column;gap:3px">'+
+    '<div class="rowc"><b>✓ รับของที่เฮียตี๋ค้าส่ง</b><span style="font-size:12px;color:var(--brand)">สำเร็จ</span></div>'+
+    '<div class="rowc" style="margin-top:6px"><b>🛵 กำลังส่ง</b><span style="font-size:12px;color:var(--blue)">1.2 กม.</span></div>'+
+    '<div class="rowc" style="margin-top:6px;color:var(--ink-3)"><span>📍 ถึงร้านส้มตำ</span><span style="font-size:12px">~6 นาที</span></div>'+
+    '</div></div><div class="status" style="flex:1"><div class="big">🛵</div><div class="s">ร้านที่สั่ง + ร้านค้าส่ง เห็นสถานะเรียลไทม์<br>เก็บเงินปลายทาง/พร้อมเพย์ได้</div></div></div>';
+  return head('KaiDee Platform','ระบบไรเดอร์ครบวงจร','var(--brand)')+
+    '<div class="body"><div class="status"><div class="big">♻️</div><div class="t">ไรเดอร์เชื่อมทั้งระบบ</div><div class="s">สมัครเอง · ส่งของสปอนเซอร์ · ส่งวัตถุดิบร้านตลาด<br>เลือกคนโปรดแบบ Grab · เชื่อม Lalamove นอกพื้นที่</div></div></div>';
+}
+function sideHTML(){ var s=STEPS[step].side; return '<h3>'+s.h+'</h3><p>'+s.p+'</p><div class="f">'+s.f.map(function(x){return '<div class="fi">'+x+'</div>';}).join('')+'</div>'; }
+function render(){
+  var st=STEPS[step];
+  document.getElementById('scr').innerHTML=screenHTML();
+  document.getElementById('side').innerHTML=sideHTML();
+  document.getElementById('g-badge').textContent=st.badge;
+  document.getElementById('g-step').textContent='ขั้นที่ '+(step+1)+' / '+STEPS.length;
+  document.getElementById('g-tip').textContent=st.tip;
+  document.getElementById('prog').style.width=((step+1)/STEPS.length*100)+'%';
+  document.getElementById('g-prev').disabled=step===0;
+  document.getElementById('g-next').textContent=step===STEPS.length-1?'↻ เริ่มใหม่':'ถัดไป →';
+  if(st.focus){ var el=document.querySelector(st.focus); if(el){ el.classList.add('pulse'); el.onclick=function(){next();}; var h=document.createElement('div'); h.className='hint'; h.textContent=st.hint||'แตะ'; el.style.position='relative'; el.appendChild(h);} }
+}
+function next(){ if(step===STEPS.length-1){ step=0; } else { step++; } render(); }
+function prev(){ if(step>0){ step--; render(); } }
+document.getElementById('g-next').onclick=next;
+document.getElementById('g-prev').onclick=prev;
+document.addEventListener('keydown',function(e){ if(e.key==='ArrowRight')next(); if(e.key==='ArrowLeft')prev(); });
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>จองแผงค้า — KaiDee ตลาด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#F1F9F7;--ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--bg:#EDF3F1;--card:#fff;--hair:#E4EAE8;--hair-2:#D5DEDB;--gold:#E8992F;--green:#22A559;--danger:#E0533D;--line:#06C755;--hero:linear-gradient(158deg,#14A886 0%,#0A6E60 100%);--font:"IBM Plex Sans Thai",system-ui,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100%;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  #root{min-height:100vh;}
+  .mono{font-family:"IBM Plex Mono",monospace;}
+  button{font-family:var(--font);cursor:pointer;}
+  input,select,textarea{font-family:var(--font);font-size:16px;width:100%;}
+  .wrap{max-width:560px;margin:0 auto;min-height:100vh;background:var(--card);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.07);position:relative;}
+  .hero{background:var(--hero);color:#fff;padding:calc(22px + env(safe-area-inset-top)) 22px 26px;}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:16px;}
+  .brand .lg{width:38px;height:38px;border-radius:10px;background:#fff;padding:5px;display:flex;align-items:center;justify-content:center;}
+  .brand .lg img{width:100%;height:100%;object-fit:contain;}
+  .brand .bt{font-weight:700;font-size:14.5px;line-height:1.2;}
+  .brand .bt small{display:block;font-weight:500;font-size:11px;color:#bfe6db;}
+  .hero h1{font-size:22px;font-weight:700;line-height:1.25;}
+  .hero .mkt{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:5px 13px;font-size:13.5px;font-weight:600;margin-top:9px;}
+  .hero p{color:#d4ede5;font-size:13.5px;line-height:1.5;margin-top:11px;}
+  .form{padding:20px 22px 28px;flex:1;width:100%;}
+  .lb{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin:15px 0 7px;}
+  .lb .req{color:var(--danger);}
+  .field{border:1.5px solid var(--hair-2);border-radius:12px;padding:12px 14px;background:#fff;outline:none;transition:border-color .15s;}
+  .field:focus{border-color:var(--brand);}
+  textarea.field{resize:vertical;min-height:64px;}
+  .hint{font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.45;}
+  .seg{display:flex;gap:8px;flex-wrap:wrap;}
+  .seg .opt{flex:1;min-width:120px;border:1.5px solid var(--hair-2);border-radius:12px;padding:12px;text-align:center;transition:all .15s;background:#fff;}
+  .seg .opt.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-ink);}
+  .seg .opt .t{font-weight:700;font-size:13.5px;} .seg .opt .s{font-size:11px;color:var(--ink-3);margin-top:2px;}
+  .seg .opt.on .s{color:var(--brand-ink);}
+  .linebtn{width:100%;background:var(--line);color:#fff;border:none;border-radius:13px;padding:13px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px;}
+  .linebtn:active{transform:scale(.98);}
+  .linebtn .li{width:21px;height:21px;border-radius:6px;background:#fff;color:var(--line);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .lineon{display:flex;align-items:center;gap:12px;background:#eafaf1;border:1.5px solid #b6e6c9;border-radius:13px;padding:11px 13px;}
+  .lineon .av{width:42px;height:42px;border-radius:50%;background:var(--line);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;overflow:hidden;flex:0 0 auto;}
+  .lineon .av img{width:100%;height:100%;object-fit:cover;}
+  .lineon .t{font-weight:700;font-size:14px;} .lineon .s{font-size:11.5px;color:#3a8f5e;font-weight:600;}
+  .orline{display:flex;align-items:center;gap:10px;color:var(--ink-3);font-size:12px;margin:15px 0 2px;} .orline::before,.orline::after{content:"";flex:1;height:1px;background:var(--hair);}
+  .submit{width:100%;margin-top:22px;background:var(--brand);color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:700;transition:filter .15s,transform .1s;}
+  .submit:active{transform:scale(.98);} .submit:disabled{opacity:.45;}
+  .foot{padding:14px 22px calc(22px + env(safe-area-inset-bottom));font-size:12px;color:var(--ink-3);text-align:center;line-height:1.5;border-top:1px solid var(--hair);}
+  /* map */
+  .mtop{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--hair);padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;gap:12px;}
+  .mtop .bk{background:var(--brand-softer);border:1px solid var(--hair-2);border-radius:10px;width:38px;height:38px;font-size:18px;color:var(--brand-ink);flex:0 0 auto;}
+  .mtop h2{font-size:16px;font-weight:700;line-height:1.2;} .mtop .s{font-size:11.5px;color:var(--ink-3);}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;padding:11px 18px;font-size:11.5px;color:var(--ink-2);background:var(--brand-softer);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .mapbody{padding:16px 16px 30px;flex:1;}
+  .zone{margin-bottom:20px;}
+  .zone .zh{font-size:14px;font-weight:700;color:var(--brand-ink);margin-bottom:9px;display:flex;align-items:center;gap:8px;}
+  .zone .zh .zn{background:var(--brand);color:#fff;width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:9px;}
+  .cell{border:1.5px solid var(--hair-2);border-radius:12px;padding:10px;text-align:left;background:#fff;display:flex;flex-direction:column;gap:2px;min-height:74px;transition:transform .1s;}
+  .cell:active{transform:scale(.97);}
+  .cell .cc-code{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--ink-3);}
+  .cell .cc-t{font-size:13px;font-weight:700;line-height:1.2;}
+  .cell .cc-cat{font-size:10.5px;color:var(--ink-3);line-height:1.25;}
+  .cell.occ{border-left:5px solid var(--cc,var(--ink-3));background:color-mix(in srgb,var(--cc) 7%,#fff);}
+  .cell.vacant{border:1.5px dashed var(--green);background:#f2fbf5;}
+  .cell.vacant .cc-t{color:var(--green);}
+  .cell.soon{border:1.5px solid var(--gold);background:#fff9ef;}
+  .cell.soon .cc-t{color:#B26A00;}
+  .cell.held{border:1.5px solid #E0A800;background:#fffbe9;}
+  .cell.held .cc-t{color:#9A7A00;}
+  .cc-soon{font-size:10px;font-weight:700;color:#B26A00;}
+  /* sheet */
+  .sheetbg{position:fixed;inset:0;background:rgba(10,25,22,.42);display:flex;align-items:flex-end;justify-content:center;z-index:20;}
+  .sheet{background:#fff;width:100%;max-width:560px;border-radius:22px 22px 0 0;max-height:92vh;overflow-y:auto;padding:8px 22px calc(26px + env(safe-area-inset-bottom));animation:up .22s ease;}
+  @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:translateY(0);opacity:1}}
+  .grab{width:40px;height:4px;border-radius:3px;background:var(--hair-2);margin:8px auto 14px;}
+  .sh-h{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px;}
+  .sh-h .code{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);}
+  .sh-h h3{font-size:20px;font-weight:700;}
+  .sh-x{margin-left:auto;background:var(--brand-softer);border:none;border-radius:9px;width:34px;height:34px;font-size:16px;color:var(--ink-2);flex:0 0 auto;}
+  .pricebox{background:var(--brand-soft);border-radius:14px;padding:15px 17px;margin:12px 0;}
+  .pricebox .pl{font-size:12px;color:var(--brand-ink);font-weight:600;}
+  .pricebox .pv{font-size:24px;font-weight:800;color:var(--brand-ink);line-height:1.1;margin-top:3px;}
+  .pricebox .ps{font-size:12px;color:var(--ink-2);margin-top:4px;}
+  .metarow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+  .meta{background:var(--brand-softer);border:1px solid var(--hair);border-radius:10px;padding:7px 11px;font-size:12.5px;}
+  .meta b{color:var(--ink);}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+  .chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;color:#fff;}
+  .note2{border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.5;margin-top:12px;}
+  .note2.warn{background:#FDECEA;color:#A5352A;border:1px solid #f3c6bf;}
+  .note2.gap{background:#EAF3FB;color:#255C8A;border:1px solid #c3ddf0;}
+  .note2.ok2{background:#EAF7EF;color:#1E7A44;border:1px solid #bfe6cd;}
+  .seclb{font-size:13px;font-weight:700;color:var(--ink-2);margin:18px 0 9px;}
+  .pathbtn{width:100%;border:1.5px solid var(--hair-2);border-radius:14px;padding:14px 15px;text-align:left;background:#fff;margin-bottom:10px;display:flex;align-items:center;gap:13px;transition:all .12s;}
+  .pathbtn:active{transform:scale(.99);}
+  .pathbtn .pic{width:42px;height:42px;border-radius:11px;background:var(--brand-soft);color:var(--brand-ink);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;}
+  .pathbtn .pt{font-weight:700;font-size:15px;} .pathbtn .pd{font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.4;}
+  .pathbtn .pa{margin-left:auto;font-weight:800;color:var(--brand-ink);font-size:14px;white-space:nowrap;text-align:right;}
+  .qrbox{background:#fff;border:1.5px solid var(--hair-2);border-radius:16px;padding:18px;text-align:center;margin:14px 0;}
+  .qrbox .qr{width:180px;height:180px;margin:0 auto 10px;}
+  .qrbox .qr svg{width:100%;height:100%;}
+  .qrbox .amt{font-size:22px;font-weight:800;color:var(--brand-ink);}
+  .qrbox .pp{font-size:12.5px;color:var(--ink-2);margin-top:4px;}
+  .datewrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+  .datechip{border:1.5px solid var(--hair-2);border-radius:11px;padding:9px 12px;font-size:12.5px;background:#fff;text-align:center;min-width:78px;}
+  .datechip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-ink);font-weight:700;}
+  .datechip .dd{font-weight:700;font-size:14px;}
+  .ok{padding:40px 24px;text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .ok .ic{width:74px;height:74px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:18px;}
+  .ok h2{font-size:21px;font-weight:700;margin-bottom:9px;}
+  .ok p{color:var(--ink-2);font-size:14px;line-height:1.6;max-width:400px;}
+  .ok .recap{background:var(--brand-soft);border-radius:14px;padding:15px 17px;margin-top:20px;width:100%;max-width:400px;text-align:left;}
+  .ok .recap .rw{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:5px 0;} .ok .recap .rw .k{color:var(--ink-2);} .ok .recap .rw .v{font-weight:600;text-align:right;}
+  .badbox{padding:70px 30px;text-align:center;color:var(--ink-2);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="market-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState, useEffect } = React;
+const LIFF_ID = '2010720123-MARKET01'; // TODO: LIFF ID จริงของ LINE channel "ตลาด"
+const B=(n)=>MK.B(n);
+const TIMINGS=[['now','พร้อมเข้าทันที'],['m1','ภายใน 1 เดือน'],['m3','1–3 เดือน'],['look','ขอดูไว้ก่อน']];
+const WD=['อา','จ','อ','พ','พฤ','ศ','ส'];
+
+function App(){
+  const mid = new URLSearchParams(location.search).get('market') || 'mkt-4mm';
+  const [data,setData]=useState(()=>MK.load());
+  const reload=()=>setData(MK.load());
+  const market = data.markets.find(m=>m.id===mid);
+  const [screen,setScreen]=useState('gate');   // gate|map|detail|book|done
+  const [line,setLine]=useState(null);
+  const [g,setG]=useState({name:'',contact:'',phone:'',catId:'',catOther:'',budget:'',timing:'now',line:false,note:''});
+  const [lead,setLead]=useState(null);
+  const [sel,setSel]=useState(null);            // stall
+  const [path,setPath]=useState(null);          // appt|deposit|full|daily
+  const [appt,setAppt]=useState('');            // ISO date
+  const [dates,setDates]=useState([]);          // daily selected dates
+  const [done,setDone]=useState(null);
+  const set=(k,v)=>setG(cur=>({...cur,[k]:v}));
+
+  useEffect(()=>{ (async()=>{ try{
+    if(window.liff){ await liff.init({liffId:LIFF_ID});
+      if(liff.isInClient() && liff.isLoggedIn()){ const p=await liff.getProfile(); applyLine(p); } }
+  }catch(e){} })(); },[]);
+  function applyLine(p){ setLine(p); setG(cur=>({...cur,line:true,contact:cur.contact||p.displayName})); }
+  const connectLine=async()=>{ try{
+    if(window.liff){ await liff.init({liffId:LIFF_ID});
+      if(!liff.isLoggedIn()){ liff.login(); return; }
+      const p=await liff.getProfile(); applyLine(p); return; }
+  }catch(e){}
+    applyLine({displayName:'คุณสมาชิก LINE',userId:'Udemo'+Date.now().toString(36),pictureUrl:''});
+  };
+
+  if(!market) return (<div className="wrap"><div className="badbox"><h2>ลิงก์ไม่ถูกต้อง</h2><p style={{marginTop:10}}>ไม่พบตลาดที่ระบุ — ขอลิงก์จองแผงใหม่จากตลาด</p></div></div>);
+  const cfg = MK.bookingCfg(market);
+  const mstalls = data.stalls.filter(s=>s.marketId===mid);
+  const zoneKeys = [...new Set(mstalls.map(s=>s.zone))];
+  const dTo=(s)=>MK.daysTo(s.contractEnd);
+  const heldMap={}; mstalls.forEach(s=>{ if(s.held||s.reserved) heldMap[s.id]=true; });
+  (data.applications||[]).forEach(a=>{ if(a.marketId===mid&&a.stallId&&a.status==='booked') heldMap[a.stallId]=true; });
+  const catTh=(id)=>(MK.CATEGORIES.find(c=>c.id===id)||{}).th||'';
+
+  // ── lead gate ──
+  const validGate = g.name.trim() && g.phone.trim() && (g.catId||g.catOther.trim());
+  const submitLead=()=>{
+    const d=MK.load(); const id='app-'+Date.now().toString(36);
+    const cat = g.catId==='other'||!g.catId ? g.catOther.trim() : catTh(g.catId);
+    const rec={ id, marketId:mid, name:g.name.trim(), contact:(g.contact.trim()||g.name.trim()), phone:g.phone.trim(),
+      catId:(g.catId||'other'), cat: cat||'—', budget:+g.budget||0, timing:g.timing, model:'fixed',
+      line:!!g.line, lineName:line?line.displayName:'', lineId:line?line.userId:'', note:g.note.trim(),
+      type:'lead', status:'lead', createdAt:Date.now() };
+    (d.applications=d.applications||[]).push(rec); MK.save(d); setLead(rec); setData(d); setScreen('map');
+  };
+
+  // ── price / amounts ──
+  const priceInfo=(stall)=>{ const mode=MK.zonePriceMode(market,stall.zone); const t=MK.typicalRent(data.stalls,stall);
+    if(mode==='hidden') return {mode,label:'สอบถาม / นัดดูพื้นที่',val:t};
+    if(mode==='range'){ const low=Math.floor(t*0.9/100)*100; return {mode,label:'เริ่มต้น '+B(low)+'/เดือน',val:t}; }
+    return {mode,label:'≈ '+B(t)+'/เดือน',val:t}; };
+  const amtOf=(p,t)=>{ if(p==='appt') return cfg.apptDepositOn?cfg.apptDeposit:0;
+    if(p==='deposit') return cfg.depositRule==='onemonth'? t : cfg.depositFixed;
+    if(p==='full') return t + t; return 0; };
+
+  // ── booking confirm ──
+  const isoPlus=(n)=>{ const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+  const confirmBook=(payAmt,noFeeAppt)=>{
+    const t=priceInfo(sel).val; const daily=path==='daily';
+    const amount = payAmt!=null?payAmt:(daily?(cfg.dailyRate+cfg.dailyUtil)*dates.length:amtOf(path,t));
+    const d=MK.load(); const rec=(d.applications||[]).find(a=>a.id===(lead&&lead.id));
+    const patch={ type:'booking', bookPath:path, stallId:sel.id, stallCode:sel.code, zone:sel.zone,
+      priceShown:t, amount, deposit:amount, apptDate:appt||'', dates:daily?dates:undefined, idVerify:!!noFeeAppt,
+      holdDays:(path==='deposit'?cfg.holdDays:0), status:'booked', bookedAt:Date.now() };
+    if(rec) Object.assign(rec,patch); else (d.applications=d.applications||[]).push({id:'app-'+Date.now().toString(36),marketId:mid,name:(lead&&lead.name)||'ผู้จอง',phone:(lead&&lead.phone)||'',cat:(lead&&lead.cat)||'',createdAt:Date.now(),...patch});
+    const st=d.stalls.find(x=>x.id===sel.id);
+    if(st && !daily){ st.held=true; st.heldBy=(lead&&lead.name)||''; st.heldUntil=path==='deposit'?isoPlus(cfg.holdDays):(path==='full'?isoPlus(30):''); if(path==='full') st.reserved=true; }
+    MK.save(d); setData(d);
+    setDone({ path, amount, stall:sel, apptDate:appt, price:t, dates:daily?dates:null, idVerify:!!noFeeAppt });
+    setScreen('done');
+  };
+  const notifyLine=()=>{
+    if(!done)return; const P={appt:'นัดดูพื้นที่',deposit:'จอง+มัดจำ',full:'โอนเต็มจำนวน',daily:'จองรายวัน'}[done.path];
+    const txt='🏬 จองแผง '+market.name+'\nแผง '+done.stall.code+' ('+done.stall.zoneName+')\nร้าน: '+(lead&&lead.name)+' · '+(lead&&lead.cat)+'\nเบอร์: '+(lead&&lead.phone)+'\nรูปแบบ: '+P+' · ยอด '+B(done.amount)+(done.apptDate?'\nนัด: '+MK.thDate(done.apptDate):'');
+    window.open('https://line.me/R/msg/text/?'+encodeURIComponent(txt),'_blank');
+  };
+
+  /* ══ SCREEN: GATE ══ */
+  if(screen==='gate') return (<div className="wrap">
+    <div className="hero">
+      <div className="brand"><div className="lg"><img src="assets/kaidee-logo.png" alt="KaiDee"/></div>
+        <div className="bt">KaiDee Platform<small>โปรแกรมตลาด · จองแผงค้า</small></div></div>
+      <h1>สนใจเช่าแผงที่นี่?</h1>
+      <div className="mkt">🏢 {market.name}</div>
+      <p>กรอกข้อมูลร้านสั้นๆ เพื่อ<b> ดูผังแผงว่าง + จองพื้นที่</b> ได้เลย — ทีมงานตลาดจะเห็นข้อมูลคุณและติดต่อกลับ</p>
+    </div>
+    <div className="form">
+      {line ? (<div className="lineon"><div className="av">{line.pictureUrl?<img src={line.pictureUrl} alt=""/>:(line.displayName||'L').slice(0,1)}</div>
+        <div style={{flex:1}}><div className="t">{line.displayName}</div><div className="s">✓ เชื่อม LINE แล้ว · รับแจ้งเตือนทาง LINE</div></div></div>
+      ) : (<>
+        <button className="linebtn" onClick={connectLine}><span className="li">L</span> เชื่อม LINE กรอกให้อัตโนมัติ</button>
+        <div className="hint" style={{textAlign:'center',marginTop:8}}>ไม่มี LINE ก็ได้ · กรอกเองด้านล่าง</div>
+        <div className="orline">หรือกรอกเอง</div>
+      </>)}
+      <label className="lb">ชื่อร้าน / กิจการ <span className="req">*</span></label>
+      <input className="field" value={g.name} onChange={e=>set('name',e.target.value)} placeholder="เช่น ร้านผักป้าสมจิตร"/>
+      <label className="lb">ชื่อ-นามสกุลผู้เช่า</label>
+      <input className="field" value={g.contact} onChange={e=>set('contact',e.target.value)} placeholder="ชื่อจริงสำหรับทำสัญญา"/>
+      <label className="lb">เบอร์โทร <span className="req">*</span></label>
+      <input className="field" type="tel" inputMode="tel" value={g.phone} onChange={e=>set('phone',e.target.value)} placeholder="08x-xxx-xxxx"/>
+      <label className="lb">ขายสินค้าประเภทไหน? <span className="req">*</span></label>
+      <select className="field" value={g.catId} onChange={e=>set('catId',e.target.value)}>
+        <option value="">— เลือกประเภทสินค้า —</option>
+        {MK.CATEGORIES.map(c=><option key={c.id} value={c.id}>{c.icon} {c.th}</option>)}
+      </select>
+      {(g.catId==='other'||g.catId==='') && <input className="field" style={{marginTop:8}} value={g.catOther} onChange={e=>set('catOther',e.target.value)} placeholder="ระบุสินค้าที่จะขาย เช่น น้ำพริก, ไอศกรีม"/>}
+      <div className="hint">ระบบใช้ประเภทนี้ช่วยเช็คว่าสินค้าจะซ้ำกับร้านในตลาดไหม</div>
+      <label className="lb">งบค่าเช่าที่รับได้ (บาท/เดือน)</label>
+      <input className="field mono" type="number" inputMode="numeric" value={g.budget} onChange={e=>set('budget',e.target.value)} placeholder="เช่น 4000"/>
+      <label className="lb">อยากเข้าเมื่อไหร่</label>
+      <div className="seg">{TIMINGS.slice(0,2).map(([k,l])=><div key={k} className={'opt'+(g.timing===k?' on':'')} onClick={()=>set('timing',k)}><div className="t">{l}</div></div>)}</div>
+      <div className="seg" style={{marginTop:8}}>{TIMINGS.slice(2).map(([k,l])=><div key={k} className={'opt'+(g.timing===k?' on':'')} onClick={()=>set('timing',k)}><div className="t">{l}</div></div>)}</div>
+      <label className="lb">หมายเหตุถึงตลาด</label>
+      <textarea className="field" value={g.note} onChange={e=>set('note',e.target.value)} placeholder="เช่น อยากได้โซนใกล้ทางเข้า"/>
+      <button className="submit" disabled={!validGate} onClick={submitLead}>ดูผังแผงว่าง →</button>
+      <div className="hint" style={{textAlign:'center',marginTop:12}}>🔒 ต้องกรอกข้อมูลก่อนเพื่อเข้าดูผัง — ป้องกันการส่องข้อมูล และให้ตลาดติดต่อกลับได้</div>
+    </div>
+    <div className="foot">เปิดผ่าน LINE หรือเบราว์เซอร์ · ไม่ต้องล็อกอิน · ผูกตัวตนด้วยเบอร์โทร</div>
+  </div>);
+
+  /* ══ SCREEN: DONE ══ */
+  if(screen==='done' && done){ const P={appt:'นัดดูพื้นที่',deposit:'จอง + มัดจำ',full:'โอนเต็มจำนวน',daily:'จองขายรายวัน'}[done.path];
+    return (<div className="wrap"><div className="ok">
+      <div className="ic">✓</div><h2>ส่งคำขอจองแล้ว</h2>
+      <p>ขอบคุณ {lead&&lead.name} — ตลาด <b>{market.name}</b> ได้รับคำขอจองแผง <b>{done.stall.code}</b> ของคุณแล้ว · สถานะ <b>รอตลาดยืนยัน</b> ตลาดจะตรวจสลิปแล้วติดต่อกลับ{lead&&lead.line?' ทาง LINE':' ทางโทรศัพท์'}</p>
+      <div className="recap">
+        <div className="rw"><span className="k">แผงที่จอง</span><span className="v">{done.stall.code} · {done.stall.zoneName}</span></div>
+        <div className="rw"><span className="k">รูปแบบ</span><span className="v">{P}</span></div>
+        <div className="rw"><span className="k">ยอดโอน</span><span className="v">{done.amount>0?B(done.amount):'—'}</span></div>
+        {done.apptDate && <div className="rw"><span className="k">{done.path==='appt'?'วันนัดดู':'นัดเซ็นสัญญา'}</span><span className="v">{MK.thDate(done.apptDate)}</span></div>}
+        <div className="rw"><span className="k">สถานะ</span><span className="v" style={{color:'var(--gold)'}}>● รอตลาดยืนยัน</span></div>
+      </div>
+      <button className="linebtn" style={{maxWidth:400,marginTop:20}} onClick={notifyLine}><span className="li">L</span> แจ้งตลาดผ่าน LINE</button>
+      <button className="submit" style={{maxWidth:400,background:'var(--brand-softer)',color:'var(--brand-ink)'}} onClick={()=>{setDone(null);setSel(null);setPath(null);setScreen('map');}}>← กลับไปดูผัง</button>
+    </div>
+    <div className="foot">โปรแกรมตลาด · KaiDee Platform — ข้อมูลการจองส่งให้ทีมงาน {market.name} เท่านั้น</div></div>);
+  }
+
+  /* ══ SCREEN: MAP ══ */
+  if(screen==='map'||screen==='detail'||screen==='book'){
+    const vacN=mstalls.filter(s=>s.status==='vacant').length;
+    return (<div className="wrap">
+      <div className="mtop"><button className="bk" onClick={()=>setScreen('gate')}>←</button>
+        <div><h2>ผังแผงค้า · {market.name}</h2><div className="s">แตะแผง 🟢 เพื่อจอง · ว่าง {vacN} แผง</div></div></div>
+      <div className="legend">
+        <span><i className="dot" style={{background:'#f2fbf5',border:'1.5px dashed var(--green)'}}/> ว่าง</span>
+        <span><i className="dot" style={{background:'#fff9ef',border:'1.5px solid var(--gold)'}}/> ว่างเร็วๆนี้</span>
+        <span><i className="dot" style={{background:'#fffbe9',border:'1.5px solid #E0A800'}}/> ถูกจอง</span>
+        <span><i className="dot" style={{background:'#eee'}}/> มีร้าน (แตะดูสินค้า)</span>
+      </div>
+      <div className="mapbody">
+        {zoneKeys.map(z=>{ const list=mstalls.filter(s=>s.zone===z).sort((a,b)=>a.code<b.code?-1:1); const zn=(market.zones&&market.zones[z])||('โซน '+z);
+          return (<div className="zone" key={z}>
+            <div className="zh"><span className="zn">{z}</span>{zn}</div>
+            <div className="grid">{list.map(s=>{ const gc=MK.catGroup(s.cat); const vac=s.status==='vacant';
+              const soon=!vac&&cfg.showLeaseEnd&&dTo(s)!=null&&dTo(s)>=0&&dTo(s)<=90; const held=heldMap[s.id];
+              const state= vac?(held?'held':'vacant') : (held?'held':(soon?'soon':'occ'));
+              return (<button key={s.id} className={'cell '+state} style={state==='occ'?{'--cc':gc.color}:null} onClick={()=>{setSel(s);setPath(null);setAppt('');setDates([]);setScreen('detail');}}>
+                <span className="cc-code">{s.code}</span>
+                {vac? <span className="cc-t">{held?'🟡 ถูกจอง':'ว่าง'}</span>
+                   : <><span className="cc-t">{s.vendor}</span><span className="cc-cat">{gc.icon} {s.cat}</span></>}
+                {soon&&!held&&<span className="cc-soon">ว่าง ~{dTo(s)} วัน</span>}
+              </button>); })}</div>
+          </div>); })}
+      </div>
+      {sel && (screen==='detail'||screen==='book') && <Sheet/>}
+    </div>);
+  }
+  return null;
+
+  /* ══ SHEET (detail + book) ══ */
+  function Sheet(){
+    const gc=MK.catGroup(sel.cat); const vac=sel.status==='vacant'; const held=heldMap[sel.id];
+    const soon=!vac&&cfg.showLeaseEnd&&dTo(sel)!=null&&dTo(sel)>=0&&dTo(sel)<=90;
+    const bookable = (vac||soon) && !held;
+    const pi=priceInfo(sel);
+    // category signals (zone)
+    const zoneOcc=mstalls.filter(s=>s.status==='occupied'&&s.zone===sel.zone);
+    const catCount={}; zoneOcc.forEach(s=>{ const gg=MK.catGroup(s.cat); (catCount[gg.id]=catCount[gg.id]||{g:gg,n:0}).n++; });
+    const myId=lead&&lead.catId; const dup=myId&&catCount[myId]&&catCount[myId].n>=2;
+    const presentIds=new Set(mstalls.filter(s=>s.status==='occupied').map(s=>MK.catGroup(s.cat).id));
+    const gaps=MK.CATEGORIES.filter(c=>c.id!=='other'&&!presentIds.has(c.id));
+    const close=()=>{ setScreen('map'); setSel(null); };
+    const paths=[];
+    if(cfg.dailyOn) paths.push(['daily','📅','จองขายรายวัน', 'เลือกวันที่อยากมาขาย · ตลาดเปิด '+cfg.openTime+'–'+cfg.closeTime, 0]);
+    if(cfg.paths.appt) paths.push(['appt','🗓️','นัดดูพื้นที่ก่อน', cfg.apptDepositOn?('มัดจำนัด '+B(cfg.apptDeposit)+' (กันเบี้ยว · หักคืนถ้าเช่าจริง)'):(cfg.idVerifyAppt?'ฟรี · นำบัตรปชช.มายืนยันวันนัด':'ฟรี · เลือกวันนัดเข้าดู'), amtOf('appt',pi.val)]);
+    if(cfg.paths.deposit) paths.push(['deposit','🔖','จอง + วางมัดจำ', 'กันแผงให้ '+cfg.holdDays+' วัน แล้วนัดทำสัญญา', amtOf('deposit',pi.val)]);
+    if(cfg.paths.full && pi.mode!=='hidden') paths.push(['full','✅','โอนเต็มจำนวน → ล็อกแผง', cfg.fullTerms+' · นัดเซ็นสัญญา', amtOf('full',pi.val)]);
+
+    return (<div className="sheetbg" onClick={close}><div className="sheet" onClick={e=>e.stopPropagation()}>
+      <div className="grab"/>
+      {screen==='detail' ? (<>
+        <div className="sh-h"><div><div className="code">{sel.code} · {sel.zoneName}</div><h3>{vac?'แผงว่าง':sel.vendor}</h3></div><button className="sh-x" onClick={close}>✕</button></div>
+        <div className="metarow">
+          <span className="meta">📐 <b>{sel.area} ตร.ม.</b></span>
+          <span className="meta">🏷️ <b>{MK.UNIT_TYPES[sel.unitType]||sel.unitType}</b></span>
+          {!vac && <span className="meta">{gc.icon} <b>{sel.cat}</b></span>}
+          {!vac && cfg.showLeaseEnd && sel.contractEnd && <span className="meta">📄 สัญญาถึง <b>{MK.thDate(sel.contractEnd)}</b>{soon?' · ว่างเร็วๆนี้':''}</span>}
+        </div>
+        {bookable && <div className="pricebox"><div className="pl">ค่าเช่าโดยประมาณ</div><div className="pv">{pi.label}</div>
+          <div className="ps">{pi.mode==='hidden'?'ตลาดยังไม่เปิดเผยราคา — จองเข้ามาเพื่อสอบถาม/นัดดู':(pi.mode==='range'?'ราคาจริงยืนยันตอนทำสัญญา':'รวมค่าเช่า ยังไม่รวมค่าน้ำ/ไฟ/ส่วนกลาง')}</div></div>}
+
+        <div className="seclb">🏬 รอบๆ แผงนี้ (โซน {sel.zone}) ขายอะไรบ้าง</div>
+        {Object.keys(catCount).length? <div className="chips">{Object.values(catCount).sort((a,b)=>b.n-a.n).map(c=>
+          <span key={c.g.id} className="chip" style={{background:c.g.color}}>{c.g.icon} {c.g.th} · {c.n}</span>)}</div>
+          : <div className="hint">ยังไม่มีร้านในโซนนี้ — คุณอาจเป็นเจ้าแรก</div>}
+        {dup && <div className="note2 warn">⚠️ ประเภท “{catTh(myId)}” มี {catCount[myId].n} ร้านในโซนนี้แล้ว — อาจแข่งกันสูง ลองพิจารณาโซนอื่นหรือปรับจุดขายให้ต่าง</div>}
+        {!dup && myId && <div className="note2 ok2">✓ ยังไม่มีร้าน “{catTh(myId)}” มากในโซนนี้ — โอกาสดี</div>}
+        {gaps.length>0 && <div className="note2 gap">💡 ตลาดนี้ยังไม่มี: {gaps.slice(0,4).map(x=>x.th).join(' · ')} — ขายของกลุ่มนี้มีโอกาสเด่น</div>}
+
+        {bookable ? (<>
+          <div className="seclb">เลือกวิธีจอง</div>
+          {paths.map(([k,ic,t,dd,amt])=><button key={k} className="pathbtn" onClick={()=>{setPath(k);setAppt('');setDates([]);setScreen('book');}}>
+            <span className="pic">{ic}</span><span style={{flex:1}}><span className="pt">{t}</span><div className="pd">{dd}</div></span>
+            <span className="pa">{k==='daily'?(B(cfg.dailyRate+cfg.dailyUtil)+'/วัน'):(amt>0?B(amt):'ฟรี')}</span></button>)}
+        </>) : (<div className="note2 gap" style={{marginTop:18}}>{held?'🟡 แผงนี้ถูกจองไว้แล้ว — ลองเลือกแผงอื่น หรือฝากข้อมูลไว้ ตลาดจะแจ้งถ้าว่าง':'แผงนี้มีผู้เช่าอยู่ — แตะแผง 🟢 ว่าง เพื่อจอง'}</div>)}
+      </>) : (<>
+        {/* BOOK */}
+        <div className="sh-h"><div><div className="code">{sel.code} · {sel.zoneName}</div>
+          <h3>{ {appt:'นัดดูพื้นที่',deposit:'จอง + มัดจำ',full:'โอนเต็มจำนวน',daily:'จองขายรายวัน'}[path] }</h3></div>
+          <button className="sh-x" onClick={()=>setScreen('detail')}>✕</button></div>
+        {(()=>{ const noFeeAppt=path==='appt'&&cfg.idVerifyAppt&&!cfg.apptDepositOn;
+          const payAmt=path==='daily'?(cfg.dailyRate+cfg.dailyUtil)*dates.length:amtOf(path,priceInfo(sel).val);
+          const canGo=!(path==='appt'&&!appt)&&!(path==='daily'&&!dates.length);
+          return (<>
+          {path==='appt' && <>
+            <div className="seclb">เลือกวันนัดเข้าดูพื้นที่</div>
+            <div className="datewrap">{[1,2,3,4,5,6].map(n=>{ const iso=isoPlus(n); const dt=new Date(iso);
+              return <div key={n} className={'datechip'+(appt===iso?' on':'')} onClick={()=>setAppt(iso)}>
+                <div>{WD[dt.getDay()]}</div><div className="dd">{dt.getDate()}</div><div style={{fontSize:10}}>{dt.getMonth()+1}</div></div>; })}</div>
+            {noFeeAppt && <div className="note2 gap" style={{marginTop:12}}>🪩 ไม่มีค่าจอง — กรุณานำ <b>บัตรประชาชนตัวจริง</b> มายืนยันตัวตนในวันนัด</div>}
+          </>}
+          {(path==='deposit'||path==='full') && <>
+            <div className="seclb">นัดวันทำสัญญา (เลือกได้)</div>
+            <div className="datewrap">{[2,3,5,7,10].map(n=>{ const iso=isoPlus(n); const dt=new Date(iso);
+              return <div key={n} className={'datechip'+(appt===iso?' on':'')} onClick={()=>setAppt(iso)}>
+                <div>{WD[dt.getDay()]}</div><div className="dd">{dt.getDate()}</div><div style={{fontSize:10}}>{dt.getMonth()+1}</div></div>; })}</div>
+          </>}
+          {path==='daily' && <>
+            <div className="seclb">เลือกวันที่จะมาขาย · ตลาดเปิด {cfg.openTime}–{cfg.closeTime}</div>
+            <div className="datewrap">{Array.from({length:14},(_,i)=>i+1).map(n=>{ const iso=isoPlus(n); const dt=new Date(iso); if(!cfg.openDays.includes(dt.getDay()))return null; const on=dates.includes(iso);
+              return <div key={n} className={'datechip'+(on?' on':'')} onClick={()=>setDates(on?dates.filter(x=>x!==iso):[...dates,iso])}>
+                <div>{WD[dt.getDay()]}</div><div className="dd">{dt.getDate()}</div><div style={{fontSize:10}}>{dt.getMonth()+1}</div></div>; })}</div>
+            <div className="hint" style={{marginTop:6}}>{cfg.dailyRate?B(cfg.dailyRate)+'/วัน':''} + น้ำไฟ {B(cfg.dailyUtil)}/วัน · เลือกแล้ว {dates.length} วัน</div>
+            {cfg.dailyEquip && <div className="note2 ok2">🎪 ตลาดจัดหาให้: {cfg.dailyEquip}</div>}
+          </>}
+          <div className="qrbox">
+            <div className="qr" dangerouslySetInnerHTML={{__html:MK.qrSVG((market.promptpay||'')+sel.code+path)}}/>
+            <div className="amt">{payAmt>0? B(payAmt) : (noFeeAppt?'ไม่มีค่าจอง':'ไม่มีค่ามัดจำ')}</div>
+            <div className="pp">PromptPay ตลาด · {market.promptpay||'—'}</div>
+            <div className="pp" style={{marginTop:6,color:'var(--ink-3)'}}>{ path==='appt'?(noFeeAppt?'กดยืนยันนัด — นำบัตรปชช.มาวันนัด':'มัดจำนัด กันเบี้ยว · หักคืนเป็นค่าเช่าถ้าตกลงเช่า'):(path==='deposit'?('มัดจำจอง — กันแผง '+cfg.holdDays+' วัน'):(path==='daily'?('รวม '+dates.length+' วัน (ค่าเช่า+น้ำไฟ)'):'ค่าเช่าเดือนแรก + เงินประกัน — ล็อกแผงทันที')) }</div>
+          </div>
+          <div className="note2 gap">{noFeeAppt?'กด “ยืนยันนัด” — ระบบแจ้งตลาด ตลาดยืนยันวันนัดกลับ':'โอนแล้วกด “ยืนยัน” — ระบบแจ้งตลาดทันที ตลาดตรวจสลิปแล้วยืนยันกลับ'}</div>
+          <button className="submit" disabled={!canGo} onClick={()=>confirmBook(payAmt,noFeeAppt)}>ยืนยัน{noFeeAppt?'นัด':'การจอง'}{!canGo?' (เลือกวันก่อน)':''}</button>
+          </>); })()}
+      </>)}
+    </div></div>);
+  }
+}
+
+/* ══ DONE (top-level render swap) ══ */
+function Root(){ return <App/>; }
+ReactDOM.createRoot(document.getElementById('root')).render(<Root/>);
+</script>
+</body>
+</html>

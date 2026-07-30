@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คู่มือการเชื่อมต่อระบบ — Integration Guide</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --pc-black:#1a1d20; --pc-yellow:#2e934a; --pc-green:#2e934a; --bg:#eef1f4; --blue:#2f5fb3; }
+  *{ box-sizing:border-box; }
+  body{ font-family:'Kanit',sans-serif; background:var(--bg); color:var(--pc-black); margin:0; }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  .topbar{ background:var(--pc-black); color:#fff; padding:16px 22px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:30; }
+  .topbar h1{ font-family:'Montserrat',sans-serif; font-weight:700; font-size:1.05rem; margin:0; letter-spacing:.3px; }
+  .topbar h1 i{ color:var(--pc-yellow); margin-right:9px; }
+  .topbar .pr{ margin-left:auto; }
+  .pbtn{ border:0; background:rgba(255,255,255,.12); color:#fff; font-family:inherit; font-weight:600; font-size:.82rem; border-radius:9px; padding:8px 14px; cursor:pointer; }
+  .pbtn:hover{ background:rgba(255,255,255,.22); }
+  .wrap{ max-width:920px; margin:0 auto; padding:24px 20px 70px; }
+
+  .intro{ background:#fff; border:1px solid #e7eaee; border-radius:16px; padding:18px 22px; margin-bottom:18px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .intro h2{ font-family:'Montserrat',sans-serif; font-size:1.18rem; margin:0 0 6px; }
+  .intro p{ color:#5a616b; font-size:.92rem; line-height:1.6; margin:0; }
+  .legend{ display:flex; gap:10px; margin-top:13px; flex-wrap:wrap; }
+  .badge{ font-size:.74rem; font-weight:700; border-radius:8px; padding:4px 11px; display:inline-flex; align-items:center; gap:6px; }
+  .b-free{ background:#eafaf1; color:#1d7a4d; } .b-api{ background:#eaf4ee; color:#9a6700; } .b-dev{ background:#fdecea; color:#c0392b; }
+
+  .sec{ background:#fff; border:1px solid #e7eaee; border-radius:16px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.05); overflow:hidden; break-inside:avoid; }
+  .sec-hd{ display:flex; align-items:center; gap:14px; padding:15px 20px; border-bottom:1px solid #f1f4f7; }
+  .sec-hd .ic{ width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#fff; flex:none; }
+  .sec-hd .t{ font-family:'Montserrat',sans-serif; font-weight:700; font-size:1.04rem; }
+  .sec-hd .w{ font-size:.82rem; color:#8a9099; margin-top:1px; }
+  .sec-hd .st{ margin-left:auto; }
+  table{ width:100%; border-collapse:collapse; font-size:.88rem; }
+  th{ text-align:left; font-size:.68rem; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:#8a9099; padding:10px 20px; background:#fafbfc; border-bottom:1px solid #eef1f4; }
+  td{ padding:11px 20px; border-bottom:1px solid #f4f6f8; vertical-align:top; line-height:1.5; }
+  tr:last-child td{ border-bottom:0; }
+  td.k{ font-weight:600; width:150px; color:#3a4150; }
+  td b{ font-weight:600; }
+  .pill{ font-size:.72rem; font-weight:700; border-radius:6px; padding:2px 8px; }
+  .p-free{ background:#eafaf1; color:#1d7a4d; } .p-pay{ background:#eaf4ee; color:#9a6700; } .p-now{ background:#eef4ff; color:#2c4a82; }
+  .demo-note{ font-size:.74rem; color:#aab0b8; text-align:center; margin-top:24px; }
+  @media print{ .topbar,.pr{ display:none !important; } .wrap{ padding:0; } body{ background:#fff; } .sec,.intro{ box-shadow:none; } }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <h1><i class="fas fa-plug-circle-bolt"></i>คู่มือการเชื่อมต่อระบบ · INTEGRATION GUIDE</h1>
+    <div class="pr"><button class="pbtn" onclick="window.print()"><i class="fas fa-print me-1"></i>พิมพ์ / PDF</button></div>
+  </div>
+
+  <div class="wrap">
+    <div class="intro">
+      <h2>ภาพรวมการเชื่อมต่อ</h2>
+      <p>เว็บนี้คือ <b>“หน้ากรอกข้อมูล”</b> ของแต่ละทีม (MKT/IT/สาขา) — IT นำข้อมูลไปทำต่อที่ระบบหลังบ้าน (Backoffice/CMPOS) · ตอนนี้หลายส่วนทำงานแบบ <b>ไฟล์/ตัวอย่าง</b> ใช้ได้เลยโดยไม่มีค่าใช้จ่าย · ถ้าต้องการ <b>เชื่อมอัตโนมัติ (API)</b> จะมีค่าใช้จ่าย/ข้อจำกัดตามตารางด้านล่าง</p>
+      <div class="legend">
+        <span class="badge b-free"><i class="fas fa-circle-check"></i>ใช้ได้เลย (ฟรี)</span>
+        <span class="badge b-api"><i class="fas fa-plug"></i>เชื่อม API (มีค่าใช้จ่าย/ต้องตั้งค่า)</span>
+        <span class="badge b-dev"><i class="fas fa-code"></i>ต้องพัฒนาเพิ่ม (Dev + Backend)</span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#c9870a"><i class="fas fa-database"></i></span><div><div class="t">CMPOS / Backoffice</div><div class="w">โค้ดโปรโมชัน · บัตรสมาชิก · Item Set · ราคา</div></div><span class="st badge b-api"><i class="fas fa-plug"></i>เชื่อม API</span></div>
+      <table>
+        <tr><td class="k">วันนี้ทำได้</td><td>ระบบออกไฟล์ <b class="mono">.xlsx (ProID / ProStatus / ProExpire)</b> + คัดลอก Code Promotion → IT อัปมือที่ Backoffice · <span class="pill p-free">ฟรี · ใช้ได้เลย</span></td></tr>
+        <tr><td class="k">เชื่อมอัตโนมัติ</td><td>ต้องมี <b>API ของ CMPOS/Backoffice</b> (REST/SOAP) → ต่อ API + ยืนยันตัวตน (API Key / OAuth)</td></tr>
+        <tr><td class="k">ค่าใช้จ่าย</td><td>ค่า Dev เชื่อมต่อ · อาจมีค่า License/สิทธิ์ API ของผู้ให้บริการ POS</td></tr>
+        <tr><td class="k">ข้อจำกัด</td><td>ขึ้นกับว่า CMPOS <b>เปิด API ให้ไหม</b> — ถ้าไม่เปิด ต้องใช้ไฟล์ต่อ (วิธีปัจจุบันก็เพียงพอ)</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#c9870a"><i class="fas fa-envelope"></i></span><div><div class="t">อีเมล (Email)</div><div class="w">แจ้งเตือนเข้าอีเมลทีม/บุคคล</div></div><span class="st badge b-api"><i class="fas fa-plug"></i>เชื่อม API</span></div>
+      <table>
+        <tr><td class="k">ตัวเลือก</td><td><b>SMTP</b> (เมลบริษัท) · <b>Microsoft Graph</b> (sendMail) · <b>Gmail API</b> · บริการส่งเมล (SendGrid / Amazon SES)</td></tr>
+        <tr><td class="k">ค่าใช้จ่าย</td><td>SMTP/Graph/Gmail <span class="pill p-free">ฟรีในแพ็กเกจองค์กร</span> · SendGrid/SES <span class="pill p-pay">คิดตามจำนวนเมล</span></td></tr>
+        <tr><td class="k">ข้อจำกัด</td><td>SMTP มีลิมิตส่ง/วัน · ต้องตั้ง <b class="mono">SPF / DKIM / DMARC</b> กันเข้า Spam</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#2f5fb3"><i class="fas fa-comments"></i></span><div><div class="t">Team Chat (Teams / Slack)</div><div class="w">โพสต์เข้าห้องแชท + @mention</div></div><span class="st badge b-api"><i class="fas fa-plug"></i>เชื่อม API</span></div>
+      <table>
+        <tr><td class="k">ง่ายสุด</td><td><b>Incoming Webhook</b> — โพสต์ข้อความเข้าห้องได้ทันที <span class="pill p-free">ฟรี</span></td></tr>
+        <tr><td class="k">ถ้าต้อง @mention คน</td><td>ต้องใช้ <b>Bot / Graph API</b> (Teams) — Dev เพิ่ม</td></tr>
+        <tr><td class="k">ข้อจำกัด</td><td>Webhook โพสต์เข้าห้องได้ แต่ไม่ mention รายคน · เลือกห้องปลายทางได้ใน “ตั้งค่าแจ้งเตือน” อยู่แล้ว</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#06934a"><i class="fab fa-line"></i></span><div><div class="t">LINE (กลุ่ม/OA)</div><div class="w">แจ้งเตือนเข้ากลุ่ม LINE</div></div><span class="st badge b-api"><i class="fas fa-plug"></i>เชื่อม API</span></div>
+      <table>
+        <tr><td class="k">ต้องใช้</td><td><b>LINE Official Account + Messaging API</b> (LINE Notify ถูกยกเลิกแล้ว มี.ค. 2025)</td></tr>
+        <tr><td class="k">ค่าใช้จ่าย</td><td>มีโควต้าข้อความฟรี/เดือน · เกินคิดเงินตามแพ็กเกจ <span class="pill p-pay">มีค่าใช้จ่ายเมื่อปริมาณสูง</span></td></tr>
+        <tr><td class="k">ข้อจำกัด</td><td>ส่งเข้ากลุ่มต้องเชิญ OA เข้ากลุ่ม + ตั้ง Channel Access Token / Webhook (ตั้งค่าไว้ในหน้า Notification แล้ว)</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#0a7d3c"><i class="fas fa-calendar-check"></i></span><div><div class="t">ปฏิทิน (Outlook / Google)</div><div class="w">นัดเตือนวันสำคัญของโปร/โค้ด</div></div><span class="st badge b-free"><i class="fas fa-circle-check"></i>ICS ฟรี</span></div>
+      <table>
+        <tr><td class="k">วันนี้ทำได้</td><td><b>ICS (.ics)</b> โหลด/แนบไฟล์ → เข้าทุกปฏิทิน (Outlook/Google/Apple) <span class="pill p-free">ฟรี · ใช้ได้เลย</span></td></tr>
+        <tr><td class="k">M365 อัตโนมัติ</td><td><b class="mono">Graph · Calendars.ReadWrite</b> — ฟรีในแพ็กเกจ M365 · ต้อง <b>Admin consent</b> + App registration</td></tr>
+        <tr><td class="k">Google อัตโนมัติ</td><td><b class="mono">Google Calendar API</b> — ฟรีในโควต้า · ต้อง OAuth + Admin อนุมัติ</td></tr>
+        <tr><td class="k">ข้อจำกัด</td><td>โหมดอัตโนมัติ <b>เฉพาะอีเมลในองค์กร</b>นั้น (M365/Workspace) — อีเมลส่วนตัวใช้ ICS</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#1a1d20"><i class="fas fa-right-to-bracket"></i></span><div><div class="t">Login / SSO</div><div class="w">เข้าระบบด้วยอีเมลบริษัท</div></div><span class="st badge b-dev"><i class="fas fa-code"></i>Dev</span></div>
+      <table>
+        <tr><td class="k">วันนี้</td><td>ตรวจโดเมนอีเมล (ตัวอย่าง) <span class="pill p-now">mock</span></td></tr>
+        <tr><td class="k">ของจริง</td><td><b>SSO</b> กับ Microsoft (Azure AD / Entra) หรือ Google — ฟรีในแพ็กเกจ · ต้อง Dev + Admin ตั้งค่า</td></tr>
+        <tr><td class="k">ข้อจำกัด</td><td>ต้องมี Identity Provider (IdP) ขององค์กร · กำหนดสิทธิ์ตาม role ได้ (Permissions)</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#9b51e0"><i class="fas fa-server"></i></span><div><div class="t">Backend / Database / หลายแบรนด์</div><div class="w">ทำให้เป็นระบบจริง รองรับหลายบริษัท</div></div><span class="st badge b-dev"><i class="fas fa-code"></i>Dev + Backend</span></div>
+      <table>
+        <tr><td class="k">วันนี้</td><td>เก็บข้อมูลในเครื่อง (localStorage) — เหมาะกับ mock/สาธิต <span class="pill p-now">mock</span></td></tr>
+        <tr><td class="k">ของจริง</td><td>ต้องมี <b>Backend + Database</b> (เช่น Google Apps Script + Sheet, Firebase, หรือ Cloud + SQL)</td></tr>
+        <tr><td class="k">ค่าใช้จ่าย</td><td>ค่า Hosting + DB ตามขนาดผู้ใช้/ข้อมูล</td></tr>
+        <tr><td class="k">หลายแบรนด์</td><td>แยกข้อมูลด้วย <b>Brand Key</b> (วางโครงไว้ในระบบแล้ว) + เปิด/ปิดโมดูลรายแบรนด์</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd"><span class="ic" style="background:#2e934a"><i class="fas fa-list-check"></i></span><div><div class="t">สรุป: เริ่มได้เลย vs ต้องเชื่อม</div></div></div>
+      <table>
+        <tr><th>ใช้ได้เลย (ฟรี)</th><th>ต้องเชื่อม/พัฒนาเพิ่ม</th></tr>
+        <tr>
+          <td>• ออกไฟล์โค้ด/บัตร ให้ IT อัป Backoffice<br>• ปฏิทิน ICS (.ics) + Add to Google<br>• Team Chat ผ่าน Webhook<br>• คู่มือ/รายงาน/พิมพ์ PDF</td>
+          <td>• เชื่อม CMPOS อัตโนมัติ (ถ้ามี API)<br>• ส่งเมล/LINE/Teams mention จริง<br>• ปฏิทิน M365/Google อัตโนมัติ<br>• SSO + Backend/Database จริง</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="demo-note">— เอกสารแนวทาง · ตัวเลขค่าใช้จ่ายจริงขึ้นกับผู้ให้บริการและปริมาณการใช้ · กด “พิมพ์ / PDF” เพื่อส่งให้ IT/ผู้บริหาร —</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ร้านออนไลน์สปอนเซอร์ — ค้นตามโซน + ส่งในตลาด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E9F5EE;--gold:#F4900C;--gold-soft:#FEF1E2;--blue:#2563eb;--blue-soft:#e6eefb;--red:#C0392B;--purple:#7C5CE0;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#dde5e0;--font:"IBM Plex Sans Thai",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(140% 100% at 50% 0%,#f6f9f7,#dce6e1);color:var(--ink);font-family:var(--font);min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px}
+a{color:var(--brand)}
+.head{text-align:center;margin-bottom:14px;flex:0 0 auto}
+.head .kick{display:inline-flex;gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:var(--gold-soft);padding:6px 13px;border-radius:100px}
+.head h1{font-size:20px;font-weight:800;margin:8px 0 2px}
+.head p{font-size:12.5px;color:var(--ink-2);max-width:480px}
+.phone{width:390px;height:760px;max-height:calc(100dvh - 40px);background:#0f1720;border-radius:44px;padding:12px;box-shadow:0 30px 66px rgba(14,60,40,.30);flex:0 0 auto}
+.screen{width:100%;height:100%;background:#F3F6F4;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.hd{color:#fff;padding:15px 16px 13px;flex:0 0 auto;background:var(--brand);display:flex;align-items:center;gap:11px}
+.hd .logo{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto}
+.hd .s2{font-size:16.5px;font-weight:800;line-height:1.1}
+.hd .s1{font-size:11.5px;opacity:.9;display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap}
+.hd .badge{font-size:9.5px;font-weight:700;background:var(--gold);color:#fff;padding:2px 7px;border-radius:100px}
+.hd .back{background:rgba(255,255,255,.16);border:none;color:#fff;font-family:inherit;font-size:18px;width:34px;height:34px;border-radius:10px;cursor:pointer;flex:0 0 auto}
+.loc{background:#0b3d2a;color:#bfe8d6;font-size:11.5px;padding:8px 16px;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.loc b{color:#fff}
+.body{padding:14px;display:flex;flex-direction:column;gap:11px;flex:1;overflow:auto;min-height:0}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;border-radius:100px;padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink-2)}
+.chip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+/* sponsor discovery card */
+.sc{background:#fff;border-radius:15px;padding:13px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;gap:12px;cursor:pointer;align-items:center}
+.sc .ic{width:52px;height:52px;border-radius:13px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:27px;background:var(--brand-soft)}
+.sc .nm{font-size:15px;font-weight:800;display:flex;align-items:center;gap:6px}
+.sc .tb{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:100px}
+.sc .meta{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.sc .far{font-size:11px;color:var(--gold);font-weight:700;margin-top:3px}
+.sc .go{margin-left:auto;color:var(--ink-3);font-size:20px;flex:0 0 auto}
+.spon{border:2px dashed var(--gold);background:var(--gold-soft);border-radius:14px;padding:11px 13px;font-size:12px;color:#8a5a12;line-height:1.5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pd{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column}
+.pd .im{height:76px;display:flex;align-items:center;justify-content:center;font-size:34px;background:#eef4f0}
+.pd .tx{padding:9px 10px;display:flex;flex-direction:column;gap:3px;flex:1}
+.pd .nm{font-size:12.5px;font-weight:700;line-height:1.2}
+.pd .pr{font-size:14px;color:var(--brand);font-weight:800}
+.pd .add{border:none;background:var(--brand-soft);color:var(--brand);font-family:inherit;font-weight:700;font-size:12.5px;border-radius:9px;padding:8px;cursor:pointer;margin:0 10px 10px}
+.qbtns{display:flex;align-items:center;gap:8px;margin:0 10px 10px}
+.qbtns button{width:28px;height:28px;border:none;border-radius:8px;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:15px;cursor:pointer}
+.qbtns b{flex:1;text-align:center;font-size:14px}
+.card{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.ci{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.ci:last-child{border-bottom:none}
+.ci .e{font-size:22px}.ci .nm{font-size:13px;font-weight:700}.ci .u{font-size:12px;color:var(--ink-3)}
+.ci .pr{margin-left:auto;font-weight:800;color:var(--brand)}
+.ci .rm{border:none;background:none;color:var(--ink-3);font-size:16px;cursor:pointer}
+.modes{display:flex;flex-direction:column;gap:9px}
+.mode{border:2px solid var(--line);border-radius:13px;padding:12px 13px;cursor:pointer;display:flex;align-items:flex-start;gap:11px}
+.mode.on{border-color:var(--brand);background:var(--brand-soft)}
+.mode .me{font-size:24px;flex:0 0 auto}
+.mode .mt{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px}
+.mode .rec{font-size:9px;font-weight:700;background:var(--gold);color:#fff;padding:1px 6px;border-radius:100px}
+.mode .ms{font-size:11.5px;color:var(--ink-3);margin-top:2px;line-height:1.4}
+.mode .r{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto}
+.mode.on .r{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 3px #fff}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:700;color:var(--ink-2)}
+.field input,.field select{font-family:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.seg2{display:flex;gap:8px}
+.seg2 .s{flex:1;border:1.5px solid var(--line);border-radius:11px;padding:10px 6px;text-align:center;font-size:12.5px;font-weight:700;cursor:pointer;background:#fff}
+.seg2 .s.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+.sum{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.sum.tot{font-size:16px;font-weight:800;border-top:1px dashed var(--line);margin-top:6px;padding-top:8px}
+.sum .g{color:var(--ink-3)}
+.split{background:var(--blue-soft);border-radius:11px;padding:11px 12px;font-size:11.5px;color:#1e4fa8;line-height:1.5}
+.foot{flex:0 0 auto;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}
+.btn{border:none;cursor:pointer;font-family:inherit;border-radius:13px;padding:14px;text-align:center;font-size:15.5px;font-weight:800;width:100%;color:#fff;background:var(--brand);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:disabled{opacity:.4;cursor:default}
+.btn .c{background:rgba(255,255,255,.22);border-radius:100px;padding:1px 9px;font-size:13px}
+.status{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:22px}
+.status .big{font-size:52px}.status .t{font-size:20px;font-weight:800}.status .s{font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.track{width:100%;display:flex;flex-direction:column;gap:0;margin-top:6px}
+.tk{display:flex;gap:11px;align-items:flex-start;padding:7px 0;text-align:left}
+.tk .dot{width:22px;height:22px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--brand);color:#fff}
+.tk.off .dot{background:#cdd8d2}
+.tk .tt{font-size:13.5px;font-weight:700}.tk .ts{font-size:11.5px;color:var(--ink-3)}
+.empty{text-align:center;color:var(--ink-3);font-size:13px;padding:40px 10px}
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;font-weight:700;padding:10px 18px;border-radius:100px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.3);white-space:nowrap;animation:tin .25s}
+@keyframes tin{from{opacity:0;transform:translate(-50%,8px)}}
+@media(max-width:520px){
+  body{padding:0;display:block}
+  .head{display:none}
+  .phone{width:100%;height:100dvh;max-height:none;border-radius:0;padding:0;box-shadow:none}
+  .screen{border-radius:0}
+}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div class="head">
+<span class="kick">🛒 ร้านสปอนเซอร์ · ค้นตามโซน</span>
+<h1>เห็นร้านในตลาดเดียวกัน → เรียกส่งถึงแผง</h1>
+<p>อยู่คนละโซน เดินไกล หรือเฝ้าร้านคนเดียวออกไปซื้อไม่ได้ — กดสั่งให้ไรเดอร์วินในตลาดส่งถึงแผงได้เลย</p>
+</div>
+<div id="mount"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="platform-api.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState } = React;
+const B=(n)=>'฿'+Number(n||0).toLocaleString('en-US');
+// ผู้ซื้อ = ร้านที่ใช้ POS ของเรา อยู่ในตลาด
+const ME={market:'ตลาดธนบุรี',zone:'C',stall:'A-12'};
+// ประเภทร้านสปอนเซอร์ — กำหนดหน้าตา + โหมดรับของที่สอดคล้อง
+const TYPES={
+  food:{th:'ร้านอาหาร',c:'var(--red)',bg:'#FDECEA',scope:'near',modes:['inmarket','pickup']},
+  cafe:{th:'คาเฟ่ / เครื่องดื่ม',c:'var(--purple)',bg:'#EEE9FB',scope:'near',modes:['inmarket','pickup']},
+  fresh:{th:'ตลาดสด / ของสด',c:'var(--brand)',bg:'var(--brand-soft)',scope:'near',modes:['inmarket','preorder','transport']},
+  wholesale:{th:'ค้าส่ง / ของใช้',c:'var(--blue)',bg:'var(--blue-soft)',scope:'ship',modes:['ship','preorder','transport']},
+  home:{th:'ของใช้ในบ้าน',c:'var(--gold)',bg:'var(--gold-soft)',scope:'ship',modes:['ship','transport']},
+};
+// โหมดรับของ (นิยามกลาง)
+const MODEDEF={
+  inmarket:{e:'🛵',t:'ส่งถึงแผงในตลาด',s:'ไรเดอร์วินในตลาดรับของข้ามโซนมาส่งที่แผงคุณ',rec:true},
+  pickup:{e:'🏃',t:'เดินไปรับเอง',s:'ไปรับที่ร้านสปอนเซอร์ · ไม่มีค่าส่ง'},
+  preorder:{e:'📦',t:'จองล่วงหน้า',s:'สั่งก่อน มารับ/นัดส่งตามวัน-เวลา'},
+  transport:{e:'🚚',t:'เรียกขนส่งมารับ',s:'ของชิ้นใหญ่/จำนวนมาก · เรียกขนส่งไปรับที่ร้าน'},
+  ship:{e:'📮',t:'ส่งทั่วไทย (ขนส่ง)',s:'ส่งผ่านขนส่งถึงบ้าน — ไม่ต้องอยู่ใกล้ เหมือนช้อปออนไลน์',rec:true},
+};
+const SPONSORS=[
+  {id:'potato',name:'Potato Corner',emoji:'🥔',type:'food',zone:'A',walk:6,km:0.3,rating:4.8,
+    products:[{e:'🍟',nm:'มันฝรั่งทอด ถ้วยใหญ่',pr:59},{e:'🌭',nm:'ชีสด็อก',pr:45},{e:'🍗',nm:'ไก่ป็อป',pr:55},{e:'🥤',nm:'น้ำอัดลม',pr:25}]},
+  {id:'kruaploy',name:'ครัวป้าพลอย ตามสั่ง',emoji:'🍜',type:'food',zone:'B',walk:4,km:0.2,rating:4.6,
+    products:[{e:'🍚',nm:'กะเพราหมูสับไข่ดาว',pr:60},{e:'🍜',nm:'ก๋วยเตี๋ยวต้มยำ',pr:55},{e:'🍳',nm:'ข้าวไข่เจียว',pr:40}]},
+  {id:'brew',name:'Brew คาเฟ่',emoji:'☕',type:'cafe',zone:'A',walk:7,km:0.4,rating:4.7,
+    products:[{e:'☕',nm:'อเมริกาโน่เย็น',pr:45},{e:'🧋',nm:'ชานมไข่มุก',pr:50},{e:'🍰',nm:'เค้กช็อกโกแลต',pr:65}]},
+  {id:'freshveg',name:'สวนผักลุงมี',emoji:'🥬',type:'fresh',zone:'D',walk:9,km:0.6,rating:4.5,
+    products:[{e:'🥬',nm:'ผักกาดขาว 1kg',pr:35},{e:'🍅',nm:'มะเขือเทศ 1kg',pr:40},{e:'🌶️',nm:'พริกสด 1/2kg',pr:30},{e:'🧅',nm:'หอมแดง 1kg',pr:55}]},
+  {id:'cpwholesale',name:'CP ค้าส่ง',emoji:'📦',type:'wholesale',city:'กรุงเทพฯ',zone:'E',walk:12,rating:4.9,disc:15,
+    products:[{e:'🍚',nm:'ข้าวสาร 5kg',pr:180},{e:'🧴',nm:'น้ำมันพืช ลัง 12 ขวด',pr:640},{e:'🧻',nm:'ทิชชู่ ยกแพ็ก',pr:220},{e:'🥤',nm:'น้ำดื่ม ลัง 12',pr:60}]},
+  {id:'homemart',name:'HomeMart ของใช้',emoji:'🧺',type:'home',city:'นนทบุรี',rating:4.7,disc:20,
+    products:[{e:'🧴',nm:'น้ำยาซักผ้า 3.5kg',pr:310},{e:'🧽',nm:'ฟองน้ำล้างจาน',pr:75},{e:'🧹',nm:'ไม้กวาดพื้น',pr:129},{e:'💡',nm:'หลอด LED แพ็ก 4',pr:199}]},
+];
+// คูปองที่สปอนสร้างเอง (แชร์ key เดียวกับ Sponsor Console) — seller voucher แบบ Shopee
+const CP_LS='kd_sponsor_coupons_v1';
+function seedCoupons(){ return [
+  {id:'c1',shopId:'cpwholesale',title:'ลด ฿30 เมื่อครบ ฿300',kind:'baht',value:30,minSpend:300,quota:100,used:12},
+  {id:'c2',shopId:'homemart',title:'ลด 15% ครบ ฿200',kind:'pct',value:15,minSpend:200,quota:50,used:8},
+  {id:'c3',shopId:'potato',title:'ลด ฿10 ครบ ฿100',kind:'baht',value:10,minSpend:100,quota:200,used:33},
+]; }
+function loadCoupons(){ try{ const a=JSON.parse(localStorage.getItem(CP_LS)); if(Array.isArray(a)) return a; }catch(e){} const s=seedCoupons(); try{ localStorage.setItem(CP_LS,JSON.stringify(s)); }catch(e){} return s; }
+
+function Root(){
+  const [screen,setScreen]=useState('browse'); // browse | shop | cart | checkout | done
+  const [bmode,setBmode]=useState('near');     // near (ใกล้ฉัน/ส่งเร็ว) | ship (ช้อปทั่วไทย)
+  const [filter,setFilter]=useState('all');
+  const [coupons,setCoupons]=useState(loadCoupons);       // คูปองทั้งหมดที่สปอนสร้าง
+  React.useEffect(()=>{ if(!window.PLAT_API) return;
+    const biz=(new URLSearchParams(location.search)).get('biz')||'demo-sponsor';
+    const sync=window.PLAT_API.attach({ biz, type:'sponsor', key:'sponsor_coupons',
+      read:()=>loadCoupons(), write:(b)=>{try{localStorage.setItem(CP_LS,JSON.stringify(b||[]))}catch(e){}}, onRemote:(b)=>setCoupons(b||[]) });
+    return ()=>{ try{sync.stop();}catch(e){} };
+  },[]);
+  const [claimed,setClaimed]=useState(null);   // id คูปองที่กดใช้
+  const [shopId,setShopId]=useState(null);
+  const [cart,setCart]=useState({});
+  const [mode,setMode]=useState('inmarket');
+  const [rider,setRider]=useState('win'); // win | lalamove (นอกตลาด)
+  const [toast,setToast]=useState('');
+  const flash=(m)=>{setToast(m);setTimeout(()=>setToast(''),1400);};
+  const shop=SPONSORS.find(s=>s.id===shopId);
+  const openShop=(id)=>{ setShopId(id); setCart({}); setClaimed(null); const s=SPONSORS.find(x=>x.id===id); setMode(TYPES[s.type].modes[0]); setScreen('shop'); };
+
+  const add=(k)=>{ setCart(c=>({...c,[k]:(c[k]||0)+1})); flash('เพิ่มลงตะกร้า'); };
+  const dec=(k)=>setCart(c=>{const n={...c};n[k]=(n[k]||0)-1;if(n[k]<=0)delete n[k];return n;});
+  const items=shop?shop.products.map((p,i)=>({...p,k:String(i),q:cart[String(i)]||0})).filter(p=>p.q>0):[];
+  const count=items.reduce((s,i)=>s+i.q,0);
+  const sub=items.reduce((s,i)=>s+i.pr*i.q,0);
+  const fee=mode==='inmarket'?(rider==='lalamove'?45:20):mode==='transport'?80:mode==='ship'?40:0;
+  const isShip=shop?TYPES[shop.type].scope==='ship':false;
+  const shopCoupons=shop?coupons.filter(c=>c.shopId===shop.id):[];   // คูปองของร้านนี้ (สปอนสร้างเอง)
+  const appliedCp=shopCoupons.find(c=>c.id===claimed);
+  const cpOk=appliedCp&&sub>=appliedCp.minSpend;
+  const cpDisc=cpOk?(appliedCp.kind==='pct'?Math.round(sub*appliedCp.value/100):appliedCp.value):0;
+  const total=Math.max(0,sub-cpDisc)+fee;
+
+  const Header=({title,badge,onBack,color})=>(
+    <div className="hd" style={color?{background:color}:null}>
+      {onBack?<button className="back" onClick={onBack}>‹</button>:<div className="logo">📍</div>}
+      <div style={{flex:1,minWidth:0}}><div className="s2">{title}</div><div className="s1">{badge}</div></div>
+    </div>
+  );
+  const LocBar=()=><div className="loc">📍 คุณอยู่ <b>{ME.market}</b> · โซน <b>{ME.zone}</b> · แผง <b>{ME.stall}</b></div>;
+
+  /* ── ค้นร้าน: 2 โหมด ใกล้ฉัน / ช้อปทั่วไทย + ปักหน้าแรกตามทีเออร์ ── */
+  if(screen==='browse'){
+    const near=bmode==='near';
+    const FEAT={potato:2,brew:1,homemart:2,cpwholesale:1};   // 2=ปักหน้าแรก(Premium) 1=แนะนำ(Growth) 0=ปกติ
+    const cats=near?[['all','ทั้งหมด'],['food','🍜 ร้านอาหาร'],['cafe','☕ คาเฟ่'],['fresh','🥬 ตลาดสด']]:[['all','ทั้งหมด'],['wholesale','📦 ค้าส่ง'],['home','🧺 ของใช้']];
+    const list=SPONSORS.filter(s=>TYPES[s.type].scope===bmode).filter(s=>filter==='all'||s.type===filter)
+      .map(s=>({...s,feat:FEAT[s.id]||0}))
+      .sort((a,b)=> (b.feat-a.feat) || (near?((a.km||9)-(b.km||9)):(coupons.filter(c=>c.shopId===b.id).length-coupons.filter(c=>c.shopId===a.id).length)));
+    return <div className="screen">
+      <Header title="ร้านสปอนเซอร์" badge={near?<><span className="badge">ใกล้ฉัน</span> ส่งเร็วในพื้นที่</>:<><span className="badge">ทั่วไทย</span> ราคา+ส่วนลด</>}/>
+      {near&&<LocBar/>}
+      <div className="body">
+        <div className="seg2">
+          <div className={'s'+(near?' on':'')} onClick={()=>{setBmode('near');setFilter('all');}}>🛵 ใกล้ฉัน · ส่งเร็ว</div>
+          <div className={'s'+(!near?' on':'')} onClick={()=>{setBmode('ship');setFilter('all');}}>🛍️ ช้อปทั่วไทย</div>
+        </div>
+        <div className="chips">{cats.map(([k,l])=><button key={k} className={'chip'+(filter===k?' on':'')} onClick={()=>setFilter(k)}>{l}</button>)}</div>
+        {near
+          ? <div className="spon">📍 <b>จับพื้นที่แบบไลน์แมน</b> — เรียงร้านใกล้คุณก่อน · ร้าน <b>⭐ แนะนำ</b> = สปอนซื้อแพ็กปักหน้าแรก (เห็นก่อน = ขายได้มากกว่า แบบ Grab)</div>
+          : <div className="spon" style={{borderColor:'var(--brand)',background:'var(--brand-soft)',color:'var(--brand-ink)'}}>🎟️ <b>ช้อปทั่วไทยแบบ Shopee</b> — เน้นราคา+<b>คูปองที่ร้านสปอนสร้างเอง</b> กดเก็บใช้ได้เลย · ร้าน ⭐ แนะนำ = ซื้อสิทธิ์ปักหน้าแรก</div>}
+        {list.map(s=>{const ty=TYPES[s.type];const far=near&&s.zone!==ME.zone;const nc=coupons.filter(c=>c.shopId===s.id).length;return(
+          <div className="sc" key={s.id} onClick={()=>openShop(s.id)}>
+            <div className="ic" style={{background:ty.bg}}>{s.emoji}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div className="nm">{s.name}<span className="tb" style={{background:ty.bg,color:ty.c}}>{ty.th}</span>{s.feat>0&&<span className="tb" style={{background:'var(--gold-soft)',color:'var(--gold)'}}>{s.feat===2?'⭐ ปักหน้าแรก':'⭐ แนะนำ'}</span>}</div>
+              {near
+                ? <div className="meta">⭐ {s.rating} · โซน {s.zone} · เดิน ~{s.walk} น. · {s.km} กม.</div>
+                : <div className="meta">⭐ {s.rating} · {s.city} · ส่งทั่วไทย</div>}
+              {near&&far&&<div className="far">🛵 คนละโซน — กดสั่งส่งถึงแผงได้</div>}
+              {nc>0&&<div className="far" style={{color:'var(--brand)'}}>🎟️ มีคูปองส่วนลด {nc} ใบ — กดเก็บใช้</div>}
+            </div>
+            <span className="go">›</span>
+          </div>);})}
+      </div>
+    </div>;
+  }
+
+  const ty=shop?TYPES[shop.type]:null;
+
+  /* ── หน้าร้าน ── */
+  if(screen==='shop') return <div className="screen">
+    <Header color={ty.c} onBack={()=>setScreen('browse')} title={shop.name} badge={isShip?<><span className="badge">{ty.th}</span> {shop.city} · ส่งทั่วไทย</>:<><span className="badge">{ty.th}</span> โซน {shop.zone} · เดิน ~{shop.walk} น.</>}/>
+    {!isShip&&<LocBar/>}
+    <div className="body">
+      {!isShip&&shop.zone!==ME.zone&&<div className="spon">🛵 ร้านนี้อยู่ <b>โซน {shop.zone}</b> คุณอยู่ <b>โซน {ME.zone}</b> — สั่งแล้วเลือก “ส่งถึงแผงในตลาด” ไรเดอร์วินยกมาให้ ไม่ต้องปิดร้านเดินไปเอง</div>}
+      {shopCoupons.length>0&&<><div className="lbl">🎟️ คูปองร้านนี้ (สปอนสร้างเอง · กดเก็บใช้)</div>
+        <div className="chips">{shopCoupons.map(c=><button key={c.id} className={'chip'+(claimed===c.id?' on':'')} onClick={()=>{setClaimed(claimed===c.id?null:c.id);flash(claimed===c.id?'เอาคูปองออก':'เก็บคูปองแล้ว');}}>{claimed===c.id?'✓ ':'🎟️ '}{c.title}</button>)}</div></>}
+      <div className="lbl">{isShip?'สินค้า':'เมนู'}</div>
+      <div className="grid">{shop.products.map((p,i)=>{const k=String(i);const q=cart[k]||0;return(
+        <div className="pd" key={k}><div className="im" style={{background:ty.bg}}>{p.e}</div>
+          <div className="tx"><div className="nm">{p.nm}</div><div className="pr" style={{color:ty.c}}>{B(p.pr)}</div></div>
+          {q===0?<button className="add" style={{background:ty.bg,color:ty.c}} onClick={()=>add(k)}>+ เพิ่ม</button>
+            :<div className="qbtns"><button style={{background:ty.bg,color:ty.c}} onClick={()=>dec(k)}>−</button><b>{q}</b><button style={{background:ty.bg,color:ty.c}} onClick={()=>add(k)}>+</button></div>}
+        </div>);})}</div>
+    </div>
+    {count>0&&<div className="foot"><button className="btn" style={{background:ty.c}} onClick={()=>setScreen('cart')}><span className="c">{count}</span> ดูตะกร้า · {B(sub)}</button></div>}
+    {toast&&<div className="toast">{toast}</div>}
+  </div>;
+
+  if(screen==='cart') return <div className="screen">
+    <Header color={ty.c} title="ตะกร้าสินค้า" badge={count+' รายการ · '+shop.name} onBack={()=>setScreen('shop')}/>
+    <div className="body">
+      {items.length===0?<div className="empty">ตะกร้าว่าง</div>:<>
+      <div className="card">{items.map(i=><div className="ci" key={i.k}><span className="e">{i.e}</span><div><div className="nm">{i.nm}</div><div className="u">{B(i.pr)} × {i.q}</div></div><span className="pr" style={{color:ty.c}}>{B(i.pr*i.q)}</span><button className="rm" onClick={()=>setCart(c=>{const n={...c};delete n[i.k];return n;})}>✕</button></div>)}</div>
+      <div className="card"><div className="sum tot"><span>รวมค่าสินค้า</span><span>{B(sub)}</span></div></div></>}
+    </div>
+    {items.length>0&&<div className="foot"><button className="btn" style={{background:ty.c}} onClick={()=>setScreen('checkout')}>เลือกวิธีรับของ →</button></div>}
+  </div>;
+
+  if(screen==='checkout') return <div className="screen">
+    <Header color={ty.c} title="วิธีรับของ & จ่ายเงิน" onBack={()=>setScreen('cart')}/>
+    <div className="body">
+      <div className="lbl">โหมดรับของ <span style={{fontWeight:500,color:'var(--ink-3)'}}>· ตามประเภทร้าน ({ty.th})</span></div>
+      <div className="modes">{ty.modes.map(mk=>{const m=MODEDEF[mk];return <div key={mk} className={'mode'+(mode===mk?' on':'')} onClick={()=>setMode(mk)}><span className="me">{m.e}</span><div style={{flex:1}}><div className="mt">{m.t}{m.rec&&<span className="rec">แนะนำ</span>}</div><div className="ms">{m.s}</div></div><span className="r"></span></div>;})}</div>
+
+      {mode==='inmarket'&&<div className="card" style={{display:'flex',flexDirection:'column',gap:11}}>
+        <div className="field"><label>ส่งถึง (แผงของคุณ)</label><input defaultValue={ME.market+' · โซน '+ME.zone+' · แผง '+ME.stall}/></div>
+        <div className="field"><label>ไรเดอร์</label><div className="seg2"><div className={'s'+(rider==='win'?' on':'')} onClick={()=>setRider('win')}>🛵 วินในตลาด · {B(20)}</div><div className={'s'+(rider==='lalamove'?' on':'')} onClick={()=>setRider('lalamove')}>📦 Lalamove · {B(45)}</div></div></div>
+        <div className="split">🛵 ส่งข้ามโซน {shop.zone}→{ME.zone} ในตลาดเดียวกัน · ไรเดอร์วินยกมาถึงแผง ไม่ต้องปิดร้าน</div>
+      </div>}
+      {mode==='pickup'&&<div className="card"><div className="split">🏃 ไปรับเองที่ร้าน {shop.name} (โซน {shop.zone} · เดิน ~{shop.walk} นาที) — ไม่มีค่าส่ง</div></div>}
+      {mode==='preorder'&&<div className="card" style={{display:'flex',flexDirection:'column',gap:11}}>
+        <div className="field"><label>วันที่รับ</label><input type="date"/></div>
+        <div className="field"><label>ช่วงเวลา</label><select defaultValue="เช้า 07:00–10:00"><option>เช้า 07:00–10:00</option><option>สาย 10:00–13:00</option><option>บ่าย 14:00–17:00</option></select></div>
+        <div className="split">📦 จองล่วงหน้า เหมาะกับของสด/ของเยอะ — ร้านเตรียมไว้ตามเวลาที่นัด</div>
+      </div>}
+      {mode==='transport'&&<div className="card" style={{display:'flex',flexDirection:'column',gap:11}}>
+        <div className="field"><label>บริษัทขนส่ง</label><select defaultValue="รถกระบะรับจ้างในตลาด"><option>รถกระบะรับจ้างในตลาด</option><option>Kerry / เคอรี่</option><option>Flash Express</option></select></div>
+        <div className="field"><label>วันที่ให้ไปรับที่ร้าน</label><input type="date"/></div>
+        <div className="split">🚚 ของชิ้นใหญ่/ยกลัง · ค่าขนส่งประเมิน {B(80)} (เก็บปลายทางได้)</div>
+      </div>}
+      {mode==='ship'&&<div className="card" style={{display:'flex',flexDirection:'column',gap:11}}>
+        <div className="field"><label>ที่อยู่จัดส่ง</label><input defaultValue="123/45 ถ.สุขุมวิท แขวง... เขต... กทม. 10xxx"/></div>
+        <div className="field"><label>ขนส่ง</label><select defaultValue="Flash Express"><option>Flash Express</option><option>Kerry / เคอรี่</option><option>J&amp;T Express</option><option>ไปรษณีย์ไทย</option></select></div>
+        <div className="split">📮 ส่งทั่วไทยแบบ Shopee · สปอนเซอร์แพ็ก+ส่งเอง เงินค่าสินค้าวิ่งตรงหาสปอน</div>
+      </div>}
+
+      {shopCoupons.length>0&&<><div className="lbl">🎟️ คูปองส่วนลด (สปอนสร้างเอง)</div>
+      <div className="card" style={{display:'flex',flexDirection:'column',gap:8}}>
+        {shopCoupons.map(c=>{const ok=sub>=c.minSpend;const on=claimed===c.id;return(
+          <div key={c.id} onClick={()=>ok&&setClaimed(on?null:c.id)} style={{display:'flex',alignItems:'center',gap:10,border:on?'2px solid var(--brand)':'1.5px solid var(--line)',borderRadius:11,padding:'10px 12px',opacity:ok?1:.5,cursor:ok?'pointer':'default'}}>
+            <span style={{fontSize:18}}>🎟️</span><div style={{flex:1}}><b style={{fontSize:13}}>{c.title}</b><div style={{fontSize:11,color:'var(--ink-3)'}}>{ok?'ใช้ได้':'ซื้อครบ '+B(c.minSpend)+' ก่อน'}</div></div>
+            <span style={{fontSize:12,fontWeight:700,color:on?'var(--brand)':'var(--ink-3)'}}>{on?'✓ ใช้อยู่':'กดใช้'}</span></div>);})}
+        <div className="split">คูปองนี้ <b>สปอนเซอร์ออกเอง</b> — หักที่ราคาขายของสปอนตรง ไม่ผ่านแพลตฟอร์ม (แพลตฟอร์มเก็บแค่ค่าแพค)</div>
+      </div></>}
+
+      <div className="lbl">สรุปยอด</div>
+      <div className="card">
+        <div className="sum"><span className="g">ค่าสินค้า</span><span>{B(sub)}</span></div>
+        {cpDisc>0&&<div className="sum"><span className="g">🎟️ {appliedCp.title}</span><span style={{color:'var(--brand)'}}>−{B(cpDisc)}</span></div>}
+        {fee>0&&<div className="sum"><span className="g">{mode==='inmarket'?('ค่าส่ง ('+(rider==='lalamove'?'Lalamove':'วินในตลาด')+')'):mode==='ship'?'ค่าจัดส่ง (ขนส่ง)':'ค่าขนส่ง (ประเมิน)'}</span><span>{B(fee)}</span></div>}
+        {fee===0&&<div className="sum"><span className="g">ค่าส่ง</span><span>ฟรี</span></div>}
+        <div className="sum tot"><span>รวมจ่าย</span><span>{B(total)}</span></div>
+      </div>
+      <div className="split">💸 <b>แยกเงินอัตโนมัติ:</b> ค่าสินค้า (หลังหักส่วนลด) → ร้าน {shop.name} ตรง{fee>0&&mode==='inmarket'?(' · ค่าส่ง '+B(fee)+' → ไรเดอร์วินตรง'):''} — ไม่ผ่านกระเป๋ากลาง (กันเกณฑ์ e-money ธปท.)</div>
+    </div>
+    <div className="foot"><button className="btn" style={{background:ty.c}} onClick={()=>setScreen('done')}>ยืนยันสั่งซื้อ · จ่าย {B(total)}</button></div>
+  </div>;
+
+  // done
+  const m=MODEDEF[mode];
+  const steps=mode==='inmarket'?[['ร้านรับออเดอร์',1],['ร้านแพ็กของ',1],['ไรเดอร์วินรับของ โซน '+shop.zone,0],['ยกข้ามมาโซน '+ME.zone,0],['ถึงแผง '+ME.stall,0]]
+    :mode==='pickup'?[['ร้านรับออเดอร์',1],['ร้านเตรียมของ',1],['พร้อมให้รับ',0],['ไปรับที่ร้าน',0]]
+    :mode==='preorder'?[['รับออเดอร์',1],['ยืนยันวันนัด',1],['ร้านเตรียมของ',0],['รับ/ส่งตามนัด',0]]
+    :mode==='ship'?[['สปอนเซอร์รับออเดอร์',1],['แพ็กสินค้า',1],['ส่งเข้าขนส่ง',0],['กำลังจัดส่ง',0],['ถึงบ้านคุณ',0]]
+    :[['รับออเดอร์',1],['ร้านแพ็กของ',1],['นัดขนส่ง',0],['ขนส่งไปรับที่ร้าน',0],['ส่งปลายทาง',0]];
+  return <div className="screen">
+    <Header color={ty.c} title="สั่งซื้อสำเร็จ"/>
+    <div className="body"><div className="status">
+      <div className="big">✅</div>
+      <div className="t">สั่งซื้อสำเร็จ!</div>
+      <div className="s">จ่าย {B(total)} · {m.e} {m.t}<br/>{shop.name} → {mode==='inmarket'?('แผง '+ME.stall+' โซน '+ME.zone):'ตามที่เลือก'}<br/>เลขออเดอร์ #SP{Math.floor(1000+Math.random()*9000)}</div>
+      <div className="track">{steps.map((s,i)=><div key={i} className={'tk'+(s[1]?'':' off')}><div className="dot" style={s[1]?{background:ty.c}:null}>{s[1]?'✓':i+1}</div><div><div className="tt">{s[0]}</div></div></div>)}</div>
+    </div></div>
+    <div className="foot"><button className="btn" style={{background:ty.c}} onClick={()=>{setCart({});setScreen('browse');}}>↩ กลับไปดูร้านอื่น</button></div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('mount')).render(<div className="phone"><Root/></div>);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E7C4E"/><text x="50" y="46" font-size="30" text-anchor="middle">🛒</text><text x="50" y="74" font-size="10" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">Shop</text></svg>
+</template>
+</body>
+</html>

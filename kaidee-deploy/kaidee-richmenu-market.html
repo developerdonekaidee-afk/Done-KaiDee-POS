@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="th"><head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rich Menu ตลาด — ระบบวิน (4 ช่อง)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Mali:wght@500;600;700&family=Oswald:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#c9dbd0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;font-family:'IBM Plex Sans Thai',sans-serif;gap:20px;padding:26px}
+  .cap{font-family:'IBM Plex Sans Thai';color:#33473d;font-size:14px;font-weight:600;text-align:center;max-width:640px;line-height:1.6}
+  #rm{width:1250px;height:843px;position:relative;overflow:hidden;background:#E4F0E8;border-radius:6px}
+  .hd{height:158px;background:linear-gradient(100deg,#137254 0%,#186F81 52%,#1C5E94 100%);display:flex;align-items:center;gap:22px;padding:0 46px}
+  .hd .tile{width:112px;height:112px;border-radius:50%;overflow:hidden;background:#fff;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:52px}
+  .hd .nm{font-family:'Fredoka',sans-serif;font-weight:600;font-size:50px;color:#fff;line-height:1;letter-spacing:.3px}
+  .hd .sb{font-family:'Oswald','Mali',cursive;font-size:22px;color:rgba(255,255,255,.92);font-weight:500;margin-top:8px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:685px}
+  .cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:0 34px;position:relative}
+  .cell .ic{height:96px;display:flex;align-items:center;justify-content:center;font-size:74px}
+  .cell .lb{font-family:'Mali',cursive;font-weight:700;font-size:46px;color:#234F3B;line-height:1.05}
+  .cell .ds{font-size:22px;color:#4E6E5D;font-weight:500;margin-top:-8px}
+  .cell .ml{font-size:18px;color:#7A9187;font-weight:500;margin-top:-4px;font-family:'Mali',cursive}
+  .pill{margin-top:4px;background:#17352A;color:#fff;border-radius:999px;padding:14px 34px;font-size:26px;font-weight:600;font-family:'Mali',cursive;display:flex;align-items:center;gap:12px}
+  .pill .dot{width:12px;height:12px;border-radius:999px;background:#E7B84B}
+  /* quadrant tints */
+  .c1{background:#FDEED8}   /* แรงงาน — เด่นด้วยโทนทอง */
+  .c2{background:#E7F1EA}
+  .c3{background:#D6E8DC}
+  .c4{background:#CBDAD1}
+  .c1 .lb{color:#8a5a12}
+  .c1 .pill{background:#B5710A}
+  .badge{position:absolute;top:20px;right:24px;background:#B5710A;color:#fff;font-family:'Mali';font-size:16px;font-weight:700;border-radius:100px;padding:4px 14px}
+  .divx{position:absolute;left:0;top:50%;width:100%;height:2px;background:rgba(30,92,67,.10)}
+  .divy{position:absolute;top:158px;left:50%;height:685px;width:2px;background:rgba(30,92,67,.10)}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head><body>
+<div id="rm">
+  <div class="hd">
+    <div class="tile" id="tile">🏬</div>
+    <div><div class="nm" id="nm">ตลาดสี่มุมเมือง</div><div class="sb" id="sb">ระบบวินแรงงาน · จ้าง–รับงานในตลาด</div></div>
+  </div>
+  <div class="grid">
+    <div class="cell c1">
+      <div class="badge">แตะรับงานเลย</div>
+      <div class="ic">👷</div>
+      <div class="lb">รับงาน</div>
+      <div class="ds">แรงงาน · รับงาน–รับเงินสด</div>
+      <div class="ml">အလုပ်လက်ခံ · ទទួលការងារ</div>
+      <div class="pill"><span class="dot"></span>คลิก</div>
+    </div>
+    <div class="cell c2">
+      <div class="ic">🏪</div>
+      <div class="lb">เรียกแรงงาน</div>
+      <div class="ds">ร้าน / แม่ค้า</div>
+      <div class="pill"><span class="dot"></span>คลิก</div>
+    </div>
+    <div class="cell c3">
+      <div class="ic">🎽</div>
+      <div class="lb">จัดการวิน</div>
+      <div class="ds">หัวหน้าวิน · คิว–ค่าหัวคิว</div>
+      <div class="pill"><span class="dot"></span>คลิก</div>
+    </div>
+    <div class="cell c4">
+      <div class="ic">🔑</div>
+      <div class="lb">เข้าสู่ระบบ</div>
+      <div class="ds">เคยลงทะเบียนแล้ว · เข้าตรง</div>
+      <div class="pill"><span class="dot"></span>คลิก</div>
+    </div>
+  </div>
+  <div class="divx" style="top:calc(158px + 342px)"></div>
+  <div class="divy"></div>
+</div>
+<div class="cap">Rich menu ของ “OA ตลาด” (2×2) — 3 บทบาท + เข้าสู่ระบบ · ปุ่ม 👷 รับงาน เด่นสุด (คนใช้เยอะสุด อ่านน้อย) + มีภาษาพม่า/เขมรกำกับ · <b>ชื่อ/โลโก้เปลี่ยนตามทะเบียนตลาด</b> — ส่งผ่าน <code>?name=…&amp;logo=…&amp;sub=…</code></div>
+<script>
+(function(){ var p=new URLSearchParams(location.search);
+  var name=p.get('name'), sub=p.get('sub'), logo=p.get('logo');
+  if(name) document.getElementById('nm').textContent=name;
+  if(sub) document.getElementById('sb').textContent=sub;
+  if(logo){ var t=document.getElementById('tile'); if(/^(https?:|data:)/.test(logo)){ t.innerHTML='<img src="'+logo.replace(/"/g,'&quot;')+'" alt="" style="width:100%;height:100%;object-fit:cover">'; } else { t.textContent=logo; } }
+})();
+</script>
+</body></html>

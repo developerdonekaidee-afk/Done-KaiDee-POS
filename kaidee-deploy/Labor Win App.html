@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<script>if(!location.search.includes('v1=1')){location.replace('Labor Win App v2.html'+location.search+location.hash)}</script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Labor Win — แอปจริง 3 บทบาท</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E9F5EE;--gold:#F4900C;--gold-soft:#FEF1E2;--red:#C0392B;--red-soft:#FDECEA;--green:#1DB954;--blue:#2563eb;--blue-soft:#e6eefb;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#dde5e0;--font:"IBM Plex Sans Thai",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(140% 100% at 50% 0%,#f6f9f7,#dce6e1);color:var(--ink);font-family:var(--font);min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px}
+a{color:var(--brand)}
+.head{text-align:center;margin-bottom:14px;flex:0 0 auto}
+.head .kick{display:inline-flex;gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);background:var(--brand-soft);padding:6px 13px;border-radius:100px}
+.head h1{font-size:20px;font-weight:800;margin:8px 0 2px}
+.head p{font-size:12.5px;color:var(--ink-2);max-width:460px}
+/* phone frame — desktop shows bezel */
+.phone{width:390px;height:760px;max-height:calc(100dvh - 40px);background:#0f1720;border-radius:44px;padding:12px;box-shadow:0 30px 66px rgba(14,60,40,.30);flex:0 0 auto}
+.screen{width:100%;height:100%;background:#F3F6F4;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.hd{color:#fff;padding:18px 17px 15px;flex:0 0 auto}
+.hd .s1{font-size:13px;opacity:.85}.hd .s2{font-size:20px;font-weight:800;margin-top:1px;line-height:1.15}
+.hd .lang{position:absolute;top:16px;right:15px;display:flex;gap:4px}
+.hd .lang b{font-size:11px;font-weight:700;background:rgba(255,255,255,.16);padding:4px 8px;border-radius:8px;cursor:pointer}
+.hd .lang b.on{background:#fff;color:var(--gold)}
+.body{padding:14px;display:flex;flex-direction:column;gap:11px;flex:1;overflow:auto;min-height:0}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.row{display:flex;gap:8px}
+.chip{flex:1;background:#fff;border:2px solid transparent;border-radius:12px;padding:11px 6px;text-align:center;font-size:13.5px;cursor:pointer;transition:.15s}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);font-weight:700}
+.chip.red.on{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.chip.blue.on{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.chip.green.on{background:var(--brand-soft);border-color:var(--green);color:var(--green)}
+.card{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.price{display:flex;justify-content:space-between;align-items:center}
+.price b{font-size:20px;color:var(--brand)}
+.btn{border:none;cursor:pointer;font-family:inherit;border-radius:13px;padding:14px;text-align:center;font-size:15.5px;font-weight:800;width:100%;color:#fff;background:var(--brand)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.gold{background:var(--gold)}.btn.dark{background:var(--ink)}.btn.ghost{background:#fff;color:var(--ink-2);border:1.5px solid var(--line)}
+.btn2{display:flex;gap:9px}
+.btn2 .b{flex:1;border:none;font-family:inherit;border-radius:13px;padding:15px;text-align:center;font-size:15px;font-weight:800;color:#fff;cursor:pointer}
+.jobc{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:7px}
+.jobc .jt{display:flex;align-items:center;gap:9px}
+.jobc .jt .e{font-size:24px}.jobc .jt b{font-size:16px;font-weight:800}
+.jobc .my{font-size:13px;color:var(--ink-3)}
+.rowb{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px}
+.tag.work{background:var(--red-soft);color:var(--red)}.tag.free{background:var(--brand-soft);color:var(--brand)}
+.tag.q{background:var(--gold-soft);color:var(--gold)}.tag.done{background:#eef1f0;color:var(--ink-3)}
+.status{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;text-align:center;padding:20px}
+.status .big{font-size:48px}.status .t{font-size:18px;font-weight:800}.status .s{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.paybox{border:2px dashed var(--brand);background:var(--brand-soft);border-radius:12px;padding:11px 12px}
+.paybox .h{font-size:12px;font-weight:700;color:var(--brand)}
+.big-in{font-size:32px;font-weight:800;color:#5fe0a0}
+.timer{text-align:center;font-size:12.5px;font-weight:700;color:var(--gold)}
+.empty{text-align:center;color:var(--ink-3);font-size:13px;padding:24px 10px}
+.seg{display:flex;gap:6px;background:#eef1f0;border-radius:11px;padding:4px}
+.seg button{flex:1;border:none;background:none;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--ink-3);padding:8px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.paysel{display:flex;flex-direction:column;gap:7px}
+.paysel .p{border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:9px}
+.paysel .p.on{border-color:var(--brand);background:var(--brand-soft)}
+.paysel .p .r{margin-left:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto}
+.paysel .p.on .r{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 3px #fff}
+.reset{margin-top:8px;font-size:12px;color:var(--ink-3);background:none;border:none;cursor:pointer;text-decoration:underline;align-self:center}
+.spin{width:42px;height:42px;border:4px solid #d8e6df;border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;font-weight:700;padding:10px 18px;border-radius:100px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:tin .25s;white-space:nowrap}
+@keyframes tin{from{opacity:0;transform:translate(-50%,8px)}}
+/* bottom role tabs — inside the phone screen */
+.tabbar{flex:0 0 auto;display:flex;background:#fff;border-top:1px solid var(--line);padding:7px 6px calc(7px + env(safe-area-inset-bottom))}
+.tabbar button{flex:1;border:none;background:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;color:var(--ink-3);font-size:11px;font-weight:700;border-radius:12px}
+.tabbar button .e{font-size:21px;line-height:1}
+.tabbar button.on{color:var(--brand)}
+.tabbar button.on .e{transform:translateY(-1px)}
+.tabbar button.on.worker{color:var(--gold)}
+.tabbar button.on.win{color:var(--ink)}
+/* MOBILE: phone fills the screen, no bezel, no external header */
+@media(max-width:520px){
+  body{padding:0;display:block}
+  .head{display:none}
+  .phone{width:100%;height:100dvh;max-height:none;border-radius:0;padding:0;box-shadow:none}
+  .screen{border-radius:0}
+}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div id="mount"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="platform-api.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState, useEffect } = React;
+const LS='kd_laborwin_v1';
+const B=(n)=>'฿'+Number(n||0).toLocaleString('en-US');
+const COMMISSION=0.10;
+
+const JOBS_DEF=[{id:'lift',e:'📦',th:'ยกของ',my:'ကုန်ချ',price:120},{id:'carry',e:'🛒',th:'แบกของ',my:'သယ်ပို့',price:100},{id:'pack',e:'📦',th:'แพ็กสินค้า',my:'ထုပ်ပိုး',price:90}];
+const WINS=[{id:'red',th:'แดง',cls:'red',dot:'🔴'},{id:'blue',th:'น้ำเงิน',cls:'blue',dot:'🔵'},{id:'green',th:'เขียว',cls:'green',dot:'🟢'}];
+const ME={name:'หม่อง',win:'red'};
+const QP=new URLSearchParams(location.search);
+const REGION=QP.get('region')||'pool';
+const MARKET=QP.get('market')||null;
+const DEMO_LOC={lat:13.9846,lng:100.6540}; // ตลาดกลางลาดสวาย (fallback ถ้า GPS ปิด)
+function getGeo(){ return new Promise(res=>{ if(!navigator.geolocation) return res(DEMO_LOC); navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),()=>res(DEMO_LOC),{timeout:6000,maximumAge:60000}); }); }
+
+const T={
+  th:{newjob:'งานใหม่',wage:'ค่าแรง',commission:'หักค่าคิว',accept:'รับงาน',reject:'ไม่รับ',answer:'ตอบใน 60 วิ',free:'ว่าง',waiting:'รองานเข้า…',going:'ไปที่ล็อก',working:'กำลังทำงาน',getcash:'รับเงินสด',queue:'คิว',lock:'ล็อก'},
+  my:{newjob:'အလုပ်အသစ်',wage:'လုပ်ခ',commission:'ကော်မရှင်',accept:'လက်ခံ',reject:'ငြင်း',answer:'၆၀ စက္ကန့်',free:'အားနေ',waiting:'အလုပ်စောင့်…',going:'သွားပါ',working:'အလုပ်လုပ်နေ',getcash:'ငွေလက်ခံ',queue:'တန်းစီ',lock:'နေရာ'},
+  kh:{newjob:'ការងារថ្មី',wage:'ប្រាក់ឈ្នួល',commission:'កាត់',accept:'ទទួល',reject:'បដិសេធ',answer:'៦០វិ',free:'ទំនេរ',waiting:'រង់ចាំ…',going:'ទៅ',working:'កំពុងធ្វើ',getcash:'ទទួលប្រាក់',queue:'ជួរ',lock:'ទីតាំង'},
+};
+
+function seed(){ return {jobs:[],winIncome:840,payMode:'cash',lock:'A-12'}; }
+function load(){ try{return JSON.parse(localStorage.getItem(LS))||seed()}catch(e){return seed()} }
+
+function Hd({bg,s1,s2,children}){return <div className="hd" style={{background:bg}}><div className="s1">{s1}</div><div className="s2">{s2}</div>{children}</div>;}
+
+/* ── บทบาท 1: แม่ค้า / ร้าน ── */
+function Shop({st,up,flash}){
+  const [job,setJob]=useState('lift');
+  const [win,setWin]=useState(null);
+  const active=st.jobs.filter(j=>j.status!=='done');
+  const jd=JOBS_DEF.find(j=>j.id===job);
+  const call=()=>{ if(!win)return; const jid='j'+Date.now(); up(s=>{s.jobs.unshift({id:jid,type:job,win,price:jd.price,status:'queued',t:Date.now()})}); flash('ส่งงานเข้าคิววิน'+WINS.find(w=>w.id===win).th+'แล้ว');
+    if(window.PLAT_API){ getGeo().then(loc=>PLAT_API.poolPostJob({id:jid,title:jd.th,type:job,pay:jd.price,win,shopName:'เจ๊แดง · แผง A-12',marketId:MARKET,lat:loc.lat,lng:loc.lng},REGION).catch(()=>{})); }
+    setWin(null); };
+  const finish=(jid)=>{ up(s=>{const j=s.jobs.find(x=>x.id===jid);if(j){j.status='done';s.winIncome+=Math.round(j.price*COMMISSION);}}); flash('จบงาน · จ่ายสด + ค่าคิวเข้าวิน'); };
+  return <>
+    <Hd bg="var(--brand)" s1="หน้าร้าน · เรียกแรงงาน" s2="เจ๊แดง · แผง A-12"/>
+    <div className="body">
+      <div className="lbl">เลือกประเภทงาน</div>
+      <div className="row">{JOBS_DEF.map(j=><div key={j.id} className={'chip'+(job===j.id?' on':'')} onClick={()=>setJob(j.id)}>{j.e} {j.th}</div>)}</div>
+      <div className="lbl">เลือกวิน (สีเสื้อ) — ค่าคิวเข้าหัวหน้าวินสีนี้</div>
+      <div className="row">{WINS.map(w=><div key={w.id} className={'chip '+w.cls+(win===w.id?' on':'')} onClick={()=>setWin(w.id)}>{w.dot} {w.th}</div>)}</div>
+      <div className="card price"><span style={{color:'var(--ink-3)',fontSize:14}}>ราคากลาง (จ่ายสด)</span><b>{B(jd.price)}</b></div>
+      <button className="btn" disabled={!win} onClick={call}>เรียกแรงงาน →</button>
+      <div className="lbl" style={{marginTop:6}}>งานที่กำลังดำเนินการ</div>
+      {active.length===0&&<div className="empty">ยังไม่มีงานค้าง — เลือกงานแล้วกดเรียก</div>}
+      {active.map(j=>{const d=JOBS_DEF.find(x=>x.id===j.type);const w=WINS.find(x=>x.id===j.win);
+        return <div className="jobc" key={j.id}>
+          <div className="jt"><span className="e">{d.e}</span><b>{d.th}</b><span style={{marginLeft:'auto'}}>{
+            j.status==='queued'?<span className="tag q">รอแรงงานรับ</span>:
+            j.status==='accepted'?<span className="tag work">กำลังมา 🛵</span>:
+            <span className="tag work">ทำงานอยู่ 💪</span>}</span></div>
+          <div className="rowb"><span style={{color:'var(--ink-3)'}}>{w.dot} วิน{w.th} · {B(j.price)}</span>{j.worker&&<b>👷 {j.worker}</b>}</div>
+          {(j.status==='accepted'||j.status==='working')&&<button className="btn" onClick={()=>finish(j.id)}>จ่าย {B(j.price)} + จบงาน (สแกน QR)</button>}
+          {j.status==='queued'&&<div style={{fontSize:12,color:'var(--ink-3)',textAlign:'center'}}>แตะแท็บ “แรงงาน” ล่างเพื่อกดรับงาน</div>}
+        </div>;})}
+    </div>
+  </>;
+}
+
+/* ── งานใกล้ฉัน (worker pool กลาง + GPS · ผูก backend จริง) ── */
+function NearJobs(){
+  const [loc,setLoc]=useState(null),[jobs,setJobs]=useState(null),[reg,setReg]=useState(false),[busy,setBusy]=useState(false);
+  const refresh=async(l)=>{ if(!window.PLAT_API)return; try{const r=await PLAT_API.jobsNear(l.lat,l.lng,{radius:15,status:'open',win:ME.win,region:REGION});setJobs(r.jobs||[]);}catch(e){setJobs([]);} };
+  const share=async()=>{ setBusy(true); const l=await getGeo(); setLoc(l);
+    if(window.PLAT_API){try{await PLAT_API.poolWorker({id:ME.name,name:ME.name,line:ME.name,skills:['lift','carry','pack'],lat:l.lat,lng:l.lng,available:true,marketId:MARKET,lang:'th'},REGION);}catch(e){}}
+    setReg(true); await refresh(l); setBusy(false); };
+  const take=async(j)=>{ if(window.PLAT_API){try{await PLAT_API.poolPatchJob(j.id,{status:'accepted',worker:ME.name},REGION);await PLAT_API.poolWorker({id:ME.name,name:ME.name,available:false,lat:loc.lat,lng:loc.lng},REGION);}catch(e){}} refresh(loc); };
+  useEffect(()=>{ if(reg&&loc){const t=setInterval(()=>refresh(loc),5000);return ()=>clearInterval(t);} },[reg,loc]);
+  if(!window.PLAT_API) return <div className="empty">ยังไม่ได้เชื่อม backend<br/>(ตั้ง endpoint ใน platform-api.jsx)</div>;
+  if(!reg) return <div className="status" style={{flex:1}}><div className="big">📍</div><div className="t">งานใกล้ฉัน</div><div className="s">แชร์พิกัดเพื่อรับงานจากร้านทุกตลาดในรัศมี 15 กม.<br/>(worker pool กลาง)</div><button className="btn" onClick={share} disabled={busy}>{busy?'กำลังหาพิกัด…':'📍 ลงทะเบียนพร้อมทำงาน'}</button></div>;
+  return <>
+    <div className="rowb card"><b>🟢 พร้อมทำงาน</b><span className="tag free">📍 {loc.lat.toFixed(3)}, {loc.lng.toFixed(3)}</span></div>
+    {jobs==null&&<div className="empty">กำลังโหลดงานใกล้คุณ…</div>}
+    {jobs&&jobs.length===0&&<div className="empty">ยังไม่มีงานในรัศมี 15 กม.<br/>ให้ร้านกดเรียกงาน (แท็บแม่ค้า) จากเครื่องอื่น</div>}
+    {jobs&&jobs.map(j=><div className="jobc" key={j.id} style={{border:'2px solid var(--gold)'}}>
+      <div className="jt"><span className="e">📦</span><div><b>{j.title}</b><div className="my">{j.shopName||'ร้านในระบบ'}</div></div><span style={{marginLeft:'auto'}} className="tag q">{j.distKm!=null?j.distKm+' กม.':'—'}</span></div>
+      <div className="rowb"><span style={{color:'var(--ink-3)'}}>ค่าแรง</span><b style={{fontSize:20,color:'var(--brand)'}}>{B(j.pay)}</b></div>
+      <button className="btn" style={{background:'var(--green)'}} onClick={()=>take(j)}>🟢 รับงานนี้</button>
+    </div>)}
+  </>;
+}
+
+/* ── บทบาท 2: แรงงาน ── */
+function Worker({st,up,flash}){
+  const [lang,setLang]=useState('th');
+  const [wtab,setWtab]=useState('win');
+  const t=T[lang];
+  const offers=st.jobs.filter(j=>j.status==='queued'&&j.win===ME.win);
+  const mine=st.jobs.find(j=>j.worker===ME.name&&(j.status==='accepted'||j.status==='working'));
+  const accept=(jid)=>{ up(s=>{const j=s.jobs.find(x=>x.id===jid);if(j){j.status='accepted';j.worker=ME.name;}}); flash('รับงานแล้ว'); };
+  const reject=(jid)=>{ up(s=>{const j=s.jobs.find(x=>x.id===jid);if(j){j.status='queued';j.rejected=true;}}); flash('ส่งงานให้คิวถัดไป'); };
+  const arrive=(jid)=>{ up(s=>{const j=s.jobs.find(x=>x.id===jid);if(j)j.status='working';}); };
+  const langBar=<div className="lang">{['th','my','kh'].map(l=><b key={l} className={lang===l?'on':''} onClick={()=>setLang(l)}>{l.toUpperCase()}</b>)}</div>;
+  if(mine){ const d=JOBS_DEF.find(x=>x.id===mine.type);
+    return <><Hd bg="var(--green)" s1={'วิน'+WINS.find(w=>w.id===ME.win).th+' · '+ME.name} s2={mine.status==='accepted'?t.going+' '+st.lock:t.working}>{langBar}</Hd>
+      <div className="body"><div className="status">
+        <div className="big">{mine.status==='accepted'?'🗺️':'💪'}</div>
+        <div className="t">{d.e} {d.th} · {B(mine.price)}</div>
+        <div className="card" style={{width:'100%'}}>{t.lock} <b>{st.lock}</b> · แผนที่จำลอง</div>
+        {mine.status==='accepted'
+          ? <button className="btn" style={{background:'var(--green)'}} onClick={()=>arrive(mine.id)}>ถึงแล้ว · เริ่มงาน</button>
+          : <div className="s">{t.getcash} {B(mine.price)} — รอแม่ค้ากดจบงาน</div>}
+      </div></div></>;
+  }
+  return <><Hd bg="#1f2a24" s1={'วิน'+WINS.find(w=>w.id===ME.win).th+' · '+ME.name} s2={t.newjob+' / '+t.queue}>{langBar}</Hd>
+    <div className="body">
+      <div className="seg"><button className={wtab==='win'?'on':''} onClick={()=>setWtab('win')}>งานในวิน (เดโม)</button><button className={wtab==='near'?'on':''} onClick={()=>setWtab('near')}>🌍 งานใกล้ฉัน</button></div>
+      {wtab==='near'?<NearJobs/>:<>
+      <div className="rowb card"><b>สถานะ</b><span className="tag free">🟢 {t.free} · {t.queue} 1</span></div>
+      {offers.length===0&&<div className="status" style={{flex:1}}><div className="big">⏳</div><div className="s">{t.waiting}<br/>แตะแท็บ “แม่ค้า” เพื่อเรียกงานเข้ามา</div></div>}
+      {offers.map(j=>{const d=JOBS_DEF.find(x=>x.id===j.type);
+        return <div className="jobc" key={j.id} style={{border:'2px solid var(--gold)'}}>
+          <div className="jt"><span className="e">{d.e}</span><div><b>{d.th}</b><div className="my">{d.my}</div></div></div>
+          <div className="rowb"><span style={{color:'var(--ink-3)'}}>{t.wage} / {d.my}</span><b style={{fontSize:20,color:'var(--brand)'}}>{B(j.price)}</b></div>
+          <div className="rowb"><span style={{color:'var(--ink-3)'}}>{t.commission}</span><span style={{color:'var(--red)'}}>-{B(Math.round(j.price*COMMISSION))}</span></div>
+          <div className="timer">⏱️ {t.answer}</div>
+          <div className="btn2"><div className="b" style={{background:'var(--red)'}} onClick={()=>reject(j.id)}>🔴 {t.reject}</div><div className="b" style={{background:'var(--green)'}} onClick={()=>accept(j.id)}>🟢 {t.accept}</div></div>
+        </div>;})}
+      </>}
+    </div></>;
+}
+
+/* ── บทบาท 3: หัวหน้าวิน ── */
+function Win({st,up,flash}){
+  const [tab,setTab]=useState('queue');
+  const working=st.jobs.filter(j=>(j.status==='accepted'||j.status==='working')&&j.win==='red');
+  const withdraw=()=>{ up(s=>{s.winIncome=0}); flash('ถอนเข้าบัญชีแล้ว'); };
+  const PM=[{id:'cash',e:'💵',th:'เงินสด',s:'แรงงานจ่ายค่าคิวสด · แอปไม่แตะเงิน'},{id:'promptpay',e:'💳',th:'PromptPay ตรง',s:'ส่ง QR หัวหน้าวิน · แรงงานโอน+แนบสลิป'},{id:'wallet',e:'👛',th:'กระเป๋าล่วงหน้า',s:'หัก wallet แรงงานอัตโนมัติเข้าวิน 100%'}];
+  return <><Hd bg="#1f2a24" s1="หัวหน้าวินแดง · คิวในสังกัด" s2="แดชบอร์ด"/>
+    <div className="body">
+      <div className="card" style={{background:'#1f2a24',color:'#fff'}}><div style={{fontSize:12,opacity:.8}}>รายได้ค่าหัวคิววันนี้</div><div className="big-in">{B(st.winIncome)}</div></div>
+      <div className="seg"><button className={tab==='queue'?'on':''} onClick={()=>setTab('queue')}>คิว & แรงงาน</button><button className={tab==='pay'?'on':''} onClick={()=>setTab('pay')}>หน้ารับเงิน</button></div>
+      {tab==='queue'?<>
+        <div className="lbl">แรงงานในวิน</div>
+        <div className="rowb card"><b>👷 หม่อง</b>{working.find(j=>j.worker==='หม่อง')?<span className="tag work">ทำงาน · {st.lock}</span>:<span className="tag free">🟢 ว่าง · คิว 1</span>}</div>
+        <div className="rowb card"><b>👷 จอ</b><span className="tag free">🟢 ว่าง · คิว 2</span></div>
+        <div className="rowb card"><b>👷 อาทิตย์</b><span className="tag free">🟢 ว่าง · คิว 3</span></div>
+        <button className="btn dark" disabled={st.winIncome===0} onClick={withdraw}>💳 ถอน {B(st.winIncome)} เข้าบัญชี</button>
+        <div style={{fontSize:12,color:'var(--ink-3)',textAlign:'center'}}>ค่าคิวเข้าอัตโนมัติทุกครั้งที่แม่ค้ากดจบงาน</div>
+      </>:<>
+        <div className="lbl">เลือกวิธีรับค่าหัวคิว (หัวหน้าวินตั้งเอง)</div>
+        <div className="paysel">{PM.map(p=><div key={p.id} className={'p'+(st.payMode===p.id?' on':'')} onClick={()=>up(s=>{s.payMode=p.id})}><span style={{fontSize:20}}>{p.e}</span><div><b style={{fontSize:13.5}}>{p.th}</b><div style={{fontSize:11.5,color:'var(--ink-3)'}}>{p.s}</div></div><span className="r"></span></div>)}</div>
+        <div className="paybox"><div className="h">ตอนนี้ใช้: {PM.find(p=>p.id===st.payMode).th}</div><div style={{fontSize:12.5,marginTop:4}}>{PM.find(p=>p.id===st.payMode).s}</div></div>
+      </>}
+      <button className="reset" onClick={()=>{if(confirm('ล้างงานทั้งหมด + รายได้กลับค่าเริ่มต้น?')){localStorage.removeItem(LS);location.reload();}}}>↻ รีเซ็ตเดโม</button>
+    </div></>;
+}
+
+function Root(){
+  const [role,setRole]=useState('shop');
+  const [st,setSt]=useState(load);
+  const [toast,setToast]=useState('');
+  const first=React.useRef(true);
+  useEffect(()=>{ if(first.current){first.current=false;return;} try{st.updatedAt=Date.now();localStorage.setItem(LS,JSON.stringify(st))}catch(e){} if(window.__laborSync)window.__laborSync.push(); },[st]);
+  useEffect(()=>{ if(!window.PLAT_API) return;
+    const p=new URLSearchParams(location.search); const biz=p.get('biz')||'demo-labor';
+    const sync=window.PLAT_API.attach({ biz, type:'laborwin', key:'laborwin',
+      read:()=>load(), write:(b)=>{try{localStorage.setItem(LS,JSON.stringify(b))}catch(e){}}, onRemote:(b)=>setSt(b), stamp:(b)=>(b&&b.updatedAt)||0 });
+    window.__laborSync=sync; return ()=>{ try{sync.stop()}catch(e){} window.__laborSync=null; };
+  },[]);
+  const flash=(m)=>{setToast(m);setTimeout(()=>setToast(''),1600);};
+  const up=(fn)=>setSt(s=>{const n=JSON.parse(JSON.stringify(s));fn(n);return n;});
+  const R=[{id:'shop',e:'🏪',l:'แม่ค้า',c:'shop'},{id:'worker',e:'👷',l:'แรงงาน',c:'worker'},{id:'win',e:'🎽',l:'หัวหน้าวิน',c:'win'}];
+  // badge counts
+  const nOffer=st.jobs.filter(j=>j.status==='queued'&&j.win===ME.win).length;
+  return (<>
+    <div className="head">
+      <span className="kick">🎽 Labor Win · แอปจริง</span>
+      <h1>ระบบวินแรงงาน 3 บทบาท</h1>
+      <p>แตะแท็บล่างเพื่อสลับบทบาท — เรียกงาน · รับงาน · เก็บค่าคิว เชื่อมกันจริงในเครื่องเดียว</p>
+    </div>
+    <div className="phone"><div className="screen">
+      {role==='shop'&&<Shop st={st} up={up} flash={flash}/>}
+      {role==='worker'&&<Worker st={st} up={up} flash={flash}/>}
+      {role==='win'&&<Win st={st} up={up} flash={flash}/>}
+      {toast&&<div className="toast">{toast}</div>}
+      <div className="tabbar">{R.map(r=><button key={r.id} className={(role===r.id?'on '+r.c:'')} onClick={()=>setRole(r.id)}>
+        <span className="e" style={{position:'relative'}}>{r.e}{r.id==='worker'&&nOffer>0&&<span style={{position:'absolute',top:-4,right:-9,background:'var(--red)',color:'#fff',fontSize:10,fontWeight:800,minWidth:16,height:16,borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',padding:'0 3px'}}>{nOffer}</span>}</span>
+        {r.l}</button>)}</div>
+    </div></div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('mount')).render(<Root/>);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E7C4E"/><text x="50" y="46" font-size="30" text-anchor="middle">🎽</text><text x="50" y="74" font-size="11" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">Labor Win</text></svg>
+</template>
+</body>
+</html>

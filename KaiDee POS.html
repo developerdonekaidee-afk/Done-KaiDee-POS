@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KaiDee POS</title>
+<meta name="theme-color" content="#0E9C88">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="logo.jpg">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KaiDee POS">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#0E9C88;        /* teal — green-blue */
+    --brand-ink:#0A6E60;
+    --brand-soft:#E3F5F1;
+    --brand-softer:#EFFAF7;
+    --accent:#2E6FB0;       /* blue (accent) */
+    --hero:linear-gradient(152deg,#14A886 0%,#1E73B0 100%); /* green→blue */
+    --accent-soft:#E6EFF9;
+    --accent-ink:#1F5C99;
+    --blue:#2E6FB0;
+    --danger:#E0533D;
+    --line-green:#06C755;   /* LINE */
+    --ink:#1B2420;
+    --ink-2:#57635C;
+    --ink-3:#8A948E;
+    --bg:#F5F7F5;
+    --card:#FFFFFF;
+    --hair:#EAEFEA;
+    --hair-2:#DDE5DF;
+    --shadow:0 1px 2px rgba(20,40,30,.05), 0 6px 20px rgba(20,40,30,.06);
+    --shadow-lg:0 12px 40px rgba(20,40,30,.14);
+    --r:18px;
+    --font:"IBM Plex Sans Thai","IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font);
+    background:#E6EAE7;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;
+  }
+  #stage{
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;min-height:100vh;width:100%;
+  }
+  a{color:var(--brand-ink);}
+  a:hover{color:var(--brand);}
+
+  /* full-screen app shell on real phones (no device bezel) */
+  .kd-fill{ position:fixed; inset:0; background:var(--bg); overflow:hidden;
+    padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+    padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+
+  /* ---- shared app primitives (inside device) ---- */
+  .kd-screen{ position:absolute; inset:0; display:flex; flex-direction:column;
+    background:var(--bg); overflow:hidden; }
+  .kd-body{ flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
+  .kd-body::-webkit-scrollbar{ display:none; }
+  .kd-body{ scrollbar-width:none; }
+
+  .kd-btn{ font-family:var(--font); font-weight:600; border:none; cursor:pointer;
+    border-radius:14px; padding:14px 18px; font-size:16px; transition:transform .12s, filter .15s, background .15s;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+  .kd-btn:active{ transform:scale(.97); }
+  .kd-btn-primary{ background:var(--brand); color:#fff; }
+  .kd-btn-primary:hover{ filter:brightness(1.05); }
+  .kd-btn-ghost{ background:var(--brand-soft); color:var(--brand-ink); }
+  .kd-btn-dark{ background:var(--ink); color:#fff; }
+  .kd-btn-line{ background:var(--line-green); color:#fff; }
+  .kd-btn-block{ width:100%; }
+
+  .kd-card{ background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); }
+
+  .kd-chip{ display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600;
+    padding:4px 10px; border-radius:999px; background:var(--brand-soft); color:var(--brand-ink); white-space:nowrap; }
+
+  .kd-fadein{ animation:kdFade .35s ease both; }
+  @keyframes kdFade{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+  .kd-pop{ animation:kdPop .3s cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes kdPop{ from{opacity:0; transform:scale(.92);} to{opacity:1; transform:none;} }
+  .kd-slideup{ animation:kdSlide .32s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes kdSlide{ from{transform:translateY(100%);} to{transform:none;} }
+
+  input,textarea,select{ font-family:var(--font); }
+  .kd-input{ width:100%; border:1.5px solid var(--hair-2); border-radius:12px; padding:12px 14px;
+    font-size:15px; background:#fff; color:var(--ink); outline:none; transition:border .15s; }
+  .kd-input:focus{ border-color:var(--brand); }
+  .num{ font-variant-numeric:tabular-nums; }
+
+  /* horizontal chip row — compact, no scrollbar */
+  .kd-chiprow{ display:flex; align-items:center; gap:8px; overflow-x:auto; overflow-y:hidden;
+    scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+  .kd-chiprow::-webkit-scrollbar{ display:none; }
+  .kd-chip-btn{ flex:0 0 auto; border:none; cursor:pointer; white-space:nowrap; font-family:var(--font);
+    font-weight:600; font-size:14px; padding:9px 15px; border-radius:12px; height:40px;
+    display:inline-flex; align-items:center; gap:6px; background:#fff; color:var(--ink-2);
+    box-shadow:var(--shadow); transition:background .15s, color .15s; }
+  .kd-chip-btn.on{ background:var(--brand); color:#fff; box-shadow:none; }
+  .kd-chip-add{ flex:0 0 auto; width:40px; height:40px; border-radius:12px; border:1.5px dashed var(--hair-2);
+    background:var(--brand-softer); color:var(--brand); cursor:pointer; display:inline-flex;
+    align-items:center; justify-content:center; }
+</style>
+</head>
+<body>
+  <div id="stage"><div id="root"><div id="kdBoot" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fff;font-family:system-ui,-apple-system,'Noto Sans Thai',sans-serif"><img src="logo.jpg" alt="" style="width:56px;height:56px;border-radius:15px;object-fit:cover"/><div style="width:26px;height:26px;border-radius:999px;border:3px solid #e3efe9;border-top-color:#12A56E;animation:kdbootspin .7s linear infinite"></div><div style="font-size:13px;color:#7a8b84;font-weight:600" id="kdBootMsg">กำลังโหลด…</div><style>@keyframes kdbootspin{to{transform:rotate(360deg)}}</style><script>(function(){try{var fs=false;try{fs=sessionStorage.getItem('kd_fresh_signup')==='1';}catch(e){}var signup=fs||/(go%3[dD]signup|go=signup|role%3[dD]signup|role=signup)/.test(location.href);var s=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}');var nm=(!signup)&&s&&s.shop&&s.shop.name;var en=s&&s.lang==='en';var el=document.getElementById('kdBootMsg');if(el)el.textContent=nm?(en?('Signing in · '+nm+'…'):('กำลังเข้าสู่ระบบ '+nm+'…')):(en?'Loading… Signing in to register a shop':'กำลังโหลด… กำลังเข้าสู่ระบบสมัครร้าน');}catch(e){}})();</script></div></div></div>
+
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="#12A56E"/>
+      <rect x="30" y="24" width="40" height="52" rx="7" fill="#fff"/>
+      <rect x="37" y="33" width="26" height="8" rx="2" fill="#12A56E"/>
+      <circle cx="43" cy="52" r="3.5" fill="#E8992F"/><circle cx="57" cy="52" r="3.5" fill="#E8992F"/>
+      <circle cx="43" cy="64" r="3.5" fill="#12A56E"/><circle cx="57" cy="64" r="3.5" fill="#12A56E"/>
+    </svg>
+  </template>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <!-- LINE LIFF SDK (exposes window.liff) -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- QR code renderer (PromptPay) -->
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+  <!-- Free map (Leaflet + OpenStreetMap) for address pin -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script type="text/babel" src="kaidee-liff.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-license.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-api.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="ios-frame.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-data.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-map.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-merchant.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kd-sponsor-feed.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-home.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kd-wallet.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-merchant2.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-stock.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-cash.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-quote.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-customer.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-customer2.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-rider.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-help.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-crm.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-board.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-app.jsx?v=p2-20260730j"></script>
+  <script>
+    if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+      window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+    }
+  </script>
+  <script type="text/babel">
+    (async () => {
+      // init LINE LIFF ก่อน render — ได้โปรไฟล์ผู้ใช้ (ถ้าเปิดในแอป LINE), fallback เดโมถ้าเปิดในเบราว์เซอร์
+      if (window.kdInitLiff) { try { await kdInitLiff(); } catch(e) { console.warn(e); } }
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<KaiDeeApp/>);
+    })();
+  </script>
+</body>
+</html>

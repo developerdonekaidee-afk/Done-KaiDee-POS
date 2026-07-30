@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Labor Win v2 — market-optional · 4 บทบาท</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E9F5EE;--gold:#F4900C;--gold-soft:#FEF1E2;--red:#C0392B;--red-soft:#FDECEA;--green:#1DB954;--blue:#2563eb;--blue-soft:#e6eefb;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#dde5e0;--font:"IBM Plex Sans Thai",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(140% 100% at 50% 0%,#f6f9f7,#dce6e1);color:var(--ink);font-family:var(--font);min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px}
+a{color:var(--brand)}a:hover{color:var(--brand-2)}
+.head{text-align:center;margin-bottom:14px;flex:0 0 auto}
+.head .kick{display:inline-flex;gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);background:var(--brand-soft);padding:6px 13px;border-radius:100px}
+.head h1{font-size:20px;font-weight:800;margin:8px 0 2px}
+.head p{font-size:12.5px;color:var(--ink-2);max-width:470px;margin:0 auto}
+.phone{width:390px;height:788px;max-height:calc(100dvh - 40px);background:#0f1720;border-radius:44px;padding:12px;box-shadow:0 30px 66px rgba(14,60,40,.30);flex:0 0 auto}
+.screen{width:100%;height:100%;background:#F3F6F4;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.hd{color:#fff;padding:18px 17px 15px;flex:0 0 auto;position:relative}
+.hd .s1{font-size:13px;opacity:.85}.hd .s2{font-size:19px;font-weight:800;margin-top:1px;line-height:1.15}
+.hd .lang{position:absolute;top:16px;right:15px;display:flex;gap:4px}
+.hd .lang b{font-size:11px;font-weight:700;background:rgba(255,255,255,.16);padding:4px 8px;border-radius:8px;cursor:pointer}
+.hd .lang b.on{background:#fff;color:var(--gold)}
+.body{padding:14px;display:flex;flex-direction:column;gap:10px;flex:1;overflow:auto;min-height:0}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.row{display:flex;gap:8px}
+.chip{flex:1;background:#fff;border:2px solid transparent;border-radius:12px;padding:11px 6px;text-align:center;font-size:13.5px;cursor:pointer;transition:.15s}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);font-weight:700}
+.chip.red.on{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.chip.blue.on{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.chip.green.on{background:var(--brand-soft);border-color:var(--green);color:var(--green)}
+.bigchip{flex:1;background:#fff;border:2px solid transparent;border-radius:13px;padding:11px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:.15s}
+.bigchip b{font-size:13.5px}.bigchip span{font-size:10.5px;color:var(--ink-3);line-height:1.3}
+.bigchip.on.green{border-color:var(--green);background:var(--brand-soft)}
+.bigchip.on.blue{border-color:var(--blue);background:var(--blue-soft)}
+.card{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.price{display:flex;justify-content:space-between;align-items:center}
+.price b{font-size:20px;color:var(--brand)}
+.btn{border:none;cursor:pointer;font-family:inherit;border-radius:13px;padding:14px;text-align:center;font-size:15px;font-weight:800;width:100%;color:#fff;background:var(--brand)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.gold{background:var(--gold)}.btn.dark{background:var(--ink)}.btn.ghost{background:#fff;color:var(--ink-2);border:1.5px solid var(--line)}
+.btn2{display:flex;gap:9px}
+.btn2 .b{flex:1;border:none;font-family:inherit;border-radius:13px;padding:15px;text-align:center;font-size:15px;font-weight:800;color:#fff;cursor:pointer}
+.jobc{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:7px}
+.jobc .jt{display:flex;align-items:center;gap:9px}
+.jobc .jt .e{font-size:24px}.jobc .jt b{font-size:15.5px;font-weight:800}
+.jobc .my{font-size:12px;color:var(--ink-3)}
+.rowb{display:flex;justify-content:space-between;align-items:center;font-size:13px;gap:8px}
+.tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap}
+.tag.work{background:var(--red-soft);color:var(--red)}.tag.free{background:var(--brand-soft);color:var(--brand)}
+.tag.q{background:var(--gold-soft);color:var(--gold)}.tag.done{background:#eef1f0;color:var(--ink-3)}
+.status{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;text-align:center;padding:16px}
+.status .big{font-size:44px}.status .t{font-size:17px;font-weight:800}.status .s{font-size:13px;color:var(--ink-2);line-height:1.5}
+.big-in{font-size:32px;font-weight:800;color:#5fe0a0}
+.timer{text-align:center;font-size:12.5px;font-weight:700;color:var(--gold)}
+.empty{text-align:center;color:var(--ink-3);font-size:13px;padding:22px 10px;line-height:1.5}
+.seg{display:flex;gap:6px;background:#eef1f0;border-radius:11px;padding:4px}
+.seg button{flex:1;border:none;background:none;font-family:inherit;font-size:12px;font-weight:700;color:var(--ink-3);padding:8px 4px;border-radius:8px;cursor:pointer}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+/* worker switch */
+.wsw{display:flex;align-items:center;gap:11px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:13px;cursor:pointer;transition:.15s}
+.wsw.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 8%,#fff)}
+.wsw.dis{opacity:.75;cursor:default}
+.wsw .e{font-size:26px}
+.wsw .tx{flex:1}.wsw .tx b{font-size:15px;display:block}.wsw .tx span{font-size:11.5px;color:var(--ink-3)}
+.wsw .knob{width:46px;height:27px;border-radius:100px;background:#cfd8d3;position:relative;flex:0 0 auto;transition:.15s}
+.wsw .knob:after{content:'';position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.wsw .knob.on:after{left:22px}
+/* paysel (statuses / pay) */
+.paysel{display:flex;flex-direction:column;gap:7px}
+.paysel .p{border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:9px}
+.paysel .p.on{border-color:var(--brand);background:var(--brand-soft)}
+.paysel .p .r{margin-left:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto}
+.paysel .p.on .r{border-color:var(--brand);background:var(--brand);box-shadow:inset 0 0 0 3px #fff}
+.mini{font-size:10px;font-weight:800;background:var(--gold);color:#fff;padding:1px 6px;border-radius:100px;margin-left:6px;vertical-align:middle}
+.mini2{font-size:10.5px;color:var(--ink-3)}
+.minibtn{border:none;background:var(--brand);color:#fff;font-family:inherit;font-weight:700;font-size:11.5px;padding:6px 12px;border-radius:9px;cursor:pointer}
+.slider{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;background:var(--line);margin:12px 0 6px;outline:none}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--brand);cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.25)}
+.sel{border:1.5px solid var(--line);border-radius:9px;padding:7px 9px;font-family:inherit;font-size:12.5px;background:#fff}
+.tin{border:1.5px solid var(--line);border-radius:8px;padding:4px 6px;font-family:inherit;font-size:12.5px}
+.daychip{flex:1;border:1.5px solid var(--line);border-radius:9px;padding:9px 0;text-align:center;font-size:12.5px;cursor:pointer;font-weight:600}
+.daychip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.ckrow{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink-2);line-height:1.4;cursor:pointer;padding:2px}
+.ckrow input{margin-top:2px;width:17px;height:17px;flex:0 0 auto}
+.reset{margin-top:6px;font-size:12px;color:var(--ink-3);background:none;border:none;cursor:pointer;text-decoration:underline;align-self:center}
+.toast{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;font-weight:700;padding:10px 18px;border-radius:100px;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:tin .25s;white-space:nowrap;max-width:88%;text-align:center}
+@keyframes tin{from{opacity:0;transform:translate(-50%,8px)}}
+/* modal */
+.modal-bg{position:absolute;inset:0;background:rgba(14,30,22,.5);z-index:40;display:flex;align-items:flex-end;animation:tin .2s}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:18px 16px calc(16px + env(safe-area-inset-bottom));width:100%;max-height:90%;overflow:auto;display:flex;flex-direction:column;gap:9px}
+.modal .mh{font-size:17px;font-weight:800}
+.modal .mp{font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.tbox{background:var(--gold-soft);border-radius:12px;padding:11px 13px;font-size:12.5px;color:var(--ink-2)}
+.tbox b{color:var(--ink)}.tbox ul{margin:6px 0 0 16px;line-height:1.6}
+.flbl{font-size:12px;font-weight:700;color:var(--ink-3);margin-top:4px}
+.fin{border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;font-family:inherit;font-size:14px;width:100%}
+.tabbar{flex:0 0 auto;display:flex;background:#fff;border-top:1px solid var(--line);padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+.tabbar button{flex:1;border:none;background:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;color:var(--ink-3);font-size:10.5px;font-weight:700;border-radius:12px}
+.tabbar button .e{font-size:20px;line-height:1;position:relative}
+.tabbar button.on{color:var(--brand)}
+.tabbar button.on.worker{color:var(--gold)}.tabbar button.on.win{color:var(--ink)}
+.badge{position:absolute;top:-4px;right:-9px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+@media(max-width:520px){
+  body{padding:0;display:block}
+  .head{display:none}
+  .phone{width:100%;height:100dvh;max-height:none;border-radius:0;padding:0;box-shadow:none}
+  .screen{border-radius:0}
+}
+</style>
+</head>
+<body>
+<div id="mount"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel">const { useState, useEffect } = React; Object.assign(window,{useState,useEffect});</script>
+<script type="text/babel" src="platform-api.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="kd-wallet.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="laborwin2-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="kd-sponsor-feed.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="laborwin2-worker.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="laborwin2-shop.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="laborwin2-win.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+function Root(){
+  const [role,setRole]=useState(()=>{ try{ const r=new URLSearchParams(location.search).get('role')||''; const map={worker:'worker',labor:'worker',shop:'shop',merchant:'shop',lead:'shop',vendor:'shop',win:'win',leader:'win',winleader:'win',market:'market'}; return map[r.toLowerCase()]||'shop'; }catch(e){ return 'shop'; } });
+  const [st,setSt]=useState(lw2load);
+  const [toast,setToast]=useState('');
+  const first=React.useRef(true);
+  useEffect(()=>{ if(first.current){first.current=false;return;} try{st.updatedAt=Date.now();localStorage.setItem(LW2_LS,JSON.stringify(st));}catch(e){} if(window.__lw2Sync)window.__lw2Sync.push(); },[st]);
+  useEffect(()=>{ if(!window.PLAT_API)return;
+    const p=new URLSearchParams(location.search);const biz=p.get('biz')||'demo-laborwin2';
+    const sync=PLAT_API.attach({biz,type:'laborwin',key:'laborwin2',read:()=>lw2load(),write:(b)=>{try{localStorage.setItem(LW2_LS,JSON.stringify(b));}catch(e){}},onRemote:(b)=>setSt(b),stamp:(b)=>(b&&b.updatedAt)||0});
+    window.__lw2Sync=sync; return ()=>{try{sync.stop();}catch(e){} window.__lw2Sync=null;};
+  },[]);
+  const flash=(m)=>{setToast(m);setTimeout(()=>setToast(''),1700);};
+  const up=(fn)=>setSt(s=>{const n=JSON.parse(JSON.stringify(s));fn(n);return n;});
+  const R=[{id:'shop',e:'🏪',l:'แม่ค้า',c:'shop'},{id:'worker',e:'👷',l:'แรงงาน',c:'worker'},{id:'win',e:'🎽',l:'หัวหน้าวิน',c:'win'},{id:'market',e:'🏛️',l:'ทะเบียนตลาด',c:'market'}];
+  const w=st.workers.find(x=>x.id===MEW);
+  const eff=effSwitches(w,HHMM());
+  const nOffer=(eff.market?st.winQueue.filter(j=>j.win_id===w.win_id&&j.status==='queued').length:0)+(eff.outside?st.openPool.filter(j=>j.status==='open').length:0);
+  return (<>
+    <div className="head">
+      <span className="kick">🎽 Labor Win v2 · market-optional</span>
+      <h1>วินแรงงาน · 4 บทบาท เชื่อมกันจริง</h1>
+      <p>ตลาดไม่ต้องสมัคร (market_id = โค้ดสถานที่) · แรงงาน 2 สวิตช์อิสระ (งานตลาด/งานนอก) · หัวคิวเห็นแค่ยอดรวม · ค่าคอมวิน 2%</p>
+    </div>
+    <div className="phone"><div className="screen">
+      {role==='shop'&&<Shop st={st} up={up} flash={flash}/>}
+      {role==='worker'&&<Worker st={st} up={up} flash={flash}/>}
+      {role==='win'&&<Win st={st} up={up} flash={flash}/>}
+      {role==='market'&&<MarketDir st={st} up={up} flash={flash}/>}
+      {toast&&<div className="toast">{toast}</div>}
+      <div className="tabbar">{R.map(r=><button key={r.id} className={(role===r.id?'on '+r.c:'')} onClick={()=>setRole(r.id)}>
+        <span className="e">{r.e}{r.id==='worker'&&nOffer>0&&<span className="badge">{nOffer}</span>}</span>{r.l}</button>)}</div>
+    </div></div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('mount')).render(<Root/>);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E7C4E"/><text x="50" y="44" font-size="28" text-anchor="middle">🎽</text><text x="50" y="72" font-size="10" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">Labor Win v2</text></svg>
+</template>
+</body>
+</html>

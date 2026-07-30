@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script src="gate.js?v=p2-20260730j"></script>
+<title>สมัครใช้งาน — ขายดี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E7F1EA;--brand-softer:#F3F8F5;--gold:#F4900C;--gold-soft:#FEF1E2;--blue:#1a56db;--blue-soft:#E8EEFB;--purple:#7C5CE0;--purple-soft:#EFEBFC;--dark:#1f2a24;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#e3e9e5;--hair-2:#cfd8d3;--bg:#F6F8F7;--red:#C0392B;--red-soft:#FBECEA}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+#app{max-width:560px;margin:0 auto;min-height:100%;background:var(--bg);display:flex;flex-direction:column}
+.hd{color:#fff;padding:calc(20px + env(safe-area-inset-top)) 20px 22px;border-radius:0 0 22px 22px;position:relative}
+.hd.g{background:linear-gradient(135deg,#0E7C4E,#12945C)}.hd.gold{background:linear-gradient(135deg,#F4900C,#e08108)}
+.hd.dark{background:linear-gradient(135deg,#25332c,#1f2a24)}.hd.brand{background:linear-gradient(135deg,#0E7C4E,#0a6440)}
+.hd.blue{background:linear-gradient(135deg,#1a56db,#1741a8)}
+.hd h1{margin:0;font-size:23px;font-weight:700}
+.hd p{margin:5px 0 0;font-size:13px;opacity:.9;line-height:1.55}
+.back{position:absolute;top:calc(18px + env(safe-area-inset-top));left:14px;width:34px;height:34px;border-radius:99px;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer}
+.hd.has-back h1{margin-left:40px}
+.bd{flex:1;padding:16px 16px calc(26px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.lbl{font-size:11.5px;font-weight:700;color:var(--ink-3);letter-spacing:.02em;margin-top:6px}
+.opt{display:flex;align-items:center;gap:13px;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px 15px;width:100%;text-align:left;font-family:inherit;cursor:pointer}
+.opt:active{transform:scale(.99)}
+.ic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto}
+.i-shop{background:var(--brand-soft)}.i-fit{background:var(--purple-soft)}.i-mkt{background:var(--gold-soft)}.i-win{background:var(--blue-soft)}
+.i-stall{background:var(--brand-soft)}.i-lead{background:#e3e9e6}.i-worker{background:var(--gold-soft)}
+.tx{flex:1;min-width:0}
+.t{font-size:15.5px;font-weight:700}
+.s{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:2px}
+.chev{color:var(--hair-2);font-size:22px}
+.foot{font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.6;margin-top:4px}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin:10px 0 5px}
+label.fl .req{color:var(--red)}
+input.f,select.f{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 13px;font-size:15px;font-family:inherit;background:#fff;color:var(--ink)}
+input.f:focus,select.f:focus{outline:none;border-color:var(--brand)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:100px;padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;font-family:inherit}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.chip.on.gold{background:var(--gold);border-color:var(--gold)}
+.chip.on.dark{background:var(--dark);border-color:var(--dark)}
+.btn{margin-top:14px;color:#fff;border:none;border-radius:14px;padding:15px;font-size:15.5px;font-weight:700;font-family:inherit;cursor:pointer;width:100%}
+.btn.brand{background:var(--brand)}.btn.gold{background:var(--gold)}.btn.dark{background:var(--dark)}.btn.blue{background:var(--blue)}
+.btn:disabled{opacity:.45}
+.gh{background:#fff;color:var(--ink-2);border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;margin-top:8px}
+.note{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 13px;font-size:12.5px;color:var(--ink-2);line-height:1.65}
+.note.gold{background:var(--gold-soft);border-color:#f4dcb4;color:#8a5a08}
+.note.blue{background:var(--blue-soft);border-color:#cfdcfa;color:#1a3fa0}
+.err{color:var(--red);font-size:12.5px;font-weight:600;min-height:17px}
+.view{display:none;flex-direction:column;flex:1}
+.view.on{display:flex;animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+a,a:link{color:var(--brand)}a:hover{color:var(--brand-2)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- เลือกระบบ -->
+  <section class="view on" id="v-main">
+    <div class="hd g"><h1>สมัครใช้งาน</h1><p>เลือกระบบที่ตรงกับธุรกิจของคุณ — กดแล้วเข้าใช้งานได้ทันที</p></div>
+    <div class="bd">
+      <div class="lbl">เลือก 1 ระบบ</div>
+      <button class="opt" onclick="openPos()"><div class="ic i-shop">🏪</div><div class="tx"><div class="t">ระบบร้านค้า</div><div class="s">ขายหน้าร้าน · รับออเดอร์ · ดูยอด (POS)</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('Fitness POS.html?signup=1')"><div class="ic i-fit">🏋️</div><div class="tx"><div class="t">ระบบฟิตเนส</div><div class="s">สมาชิก · คลาส · เทรนเนอร์ · เช็คอิน</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-market')"><div class="ic i-mkt">🏬</div><div class="tx"><div class="t">ระบบตลาด</div><div class="s">เช่าแผง · บิลค่าเช่า–น้ำไฟ · จับยอดอัตโนมัติ</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-win')"><div class="ic i-win">🎽</div><div class="tx"><div class="t">ระบบวิน (แรงงาน)</div><div class="s">เรียก–รับงานในตลาด · งานนอก · หัวคิว</div></div><span class="chev">›</span></button>
+      <div class="lbl">อยากขายของ/โฆษณาในแพลตฟอร์ม</div>
+      <button class="opt" onclick="go('v-sponsor')"><div class="ic i-fit">📣</div><div class="tx"><div class="t">เป็นร้านสปอนเซอร์</div><div class="s">ลงร้านให้ทุกโมดูลเห็น · แพ็กรายเดือน ไม่มีหัก GP</div></div><span class="chev">›</span></button>
+      <div class="foot">เพิ่ม/เปลี่ยนระบบภายหลังได้ในแอป · ทุกปุ่มเปิดแอปจริงในหน้าต่างเดิม</div>
+    </div>
+  </section>
+
+  <!-- ตลาด: เลือกบทบาท -->
+  <section class="view" id="v-market">
+    <div class="hd gold has-back"><button class="back" onclick="go('v-main')">←</button><h1>ระบบตลาด</h1><p>คุณเข้าใช้ในฐานะใคร?</p></div>
+    <div class="bd">
+      <div class="lbl">เลือกบทบาท</div>
+      <button class="opt" onclick="goApp('Market Mobile.html')"><div class="ic i-mkt">🏬</div><div class="tx"><div class="t">เจ้าของตลาด / ผู้จัดการ</div><div class="s">ผังแผง · ออกบิลค่าเช่า–น้ำไฟ · เก็บเงิน · รายงาน</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('Market Vendor.html')"><div class="ic i-stall">🧺</div><div class="tx"><div class="t">ผู้เช่าแผง (ร้านในตลาด)</div><div class="s">ดูบิล · จ่ายเงิน/แนบสลิป · แจ้งซ่อม · ประกาศ · สัญญา</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('Vendor Signup.html')"><div class="ic i-win">📍</div><div class="tx"><div class="t">ยังไม่มีแผง — อยากจองแผง</div><div class="s">ดูแผงว่าง · นัดดูพื้นที่ · จอง+มัดจำ</div></div><span class="chev">›</span></button>
+      <div class="foot">ผู้เช่าแผงเข้าได้เลยแม้ตลาดยังไม่ได้ตั้งค่าครบ · เจ้าของตลาดมาผูกทะเบียนทีหลังได้</div>
+    </div>
+  </section>
+
+  <!-- สปอนเซอร์ -->
+  <section class="view" id="v-sponsor">
+    <div class="hd g has-back"><button class="back" onclick="go('v-main')">←</button><h1>ร้านสปอนเซอร์</h1><p>ลงร้านของคุณให้ผู้ใช้ทุกโมดูลเห็น (ร้านค้า · ฟิตเนส · ตลาด · วิน)</p></div>
+    <div class="bd">
+      <div class="note blue">คิด <b>ค่าเช่าพื้นที่รายเดือนตามแพ็ก · ไม่หัก GP ต่อออเดอร์</b> — ยอดขายเข้าบัญชีร้านคุณโดยตรง (ต่างจากมาร์เก็ตเพลสอื่น)</div>
+      <div class="lbl">เลือกสิ่งที่ต้องการทำ</div>
+      <button class="opt" onclick="goApp('Sponsor Packages.html')"><div class="ic i-mkt">🎫</div><div class="tx"><div class="t">ดูแพ็ก &amp; สมัครเป็นสปอนเซอร์</div><div class="s">Premium / Growth / เริ่มต้น · เทียบสิทธิ์ที่ได้</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('Sponsor Console.html')"><div class="ic i-shop">🛠️</div><div class="tx"><div class="t">จัดการร้านสปอนเซอร์ของฉัน</div><div class="s">จัดหน้าร้าน · สร้างคูปอง · ดูยอดคนเห็น/กด</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('Sponsor Shop.html?from=signup')"><div class="ic i-win">🛍️</div><div class="tx"><div class="t">ดูหน้าร้านฝั่งลูกค้า</div><div class="s">ดีลใกล้ฉัน · ส่งทั่วไทย — แบบที่ผู้ใช้เห็น</div></div><span class="chev">›</span></button>
+      <div class="foot">สปอนเซอร์คือร้านจากโมดูลไหนก็ได้ — ร้าน POS · ฟิตเนส · ผู้เช่าแผงตลาด ซื้อแพ็กแล้วขึ้นการ์ด “ดีลใกล้คุณ” ได้ทันที</div>
+    </div>
+  </section>
+
+  <!-- วิน: เลือกบทบาท -->
+  <section class="view" id="v-win">
+    <div class="hd blue has-back"><button class="back" onclick="go('v-main')">←</button><h1>ระบบวิน (แรงงาน)</h1><p>คุณเข้าใช้ในฐานะใคร?</p></div>
+    <div class="bd">
+      <div class="lbl">เลือกบทบาท</div>
+      <button class="opt" onclick="go('v-stall')"><div class="ic i-stall">🏪</div><div class="tx"><div class="t">ร้าน / แผงตลาด (ผู้จ้าง)</div><div class="s">เรียกแรงงานในตลาด/งานนอก · ทีมประจำ</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-worker')"><div class="ic i-worker">👷</div><div class="tx"><div class="t">แรงงาน</div><div class="s">2 สวิตช์ งานตลาด/งานนอก · รับเงินสด</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-lead')"><div class="ic i-lead">🎽</div><div class="tx"><div class="t">หัวหน้าวิน</div><div class="s">คุมคิว · จัดคน · GP วิน · เบิกล่วงหน้า</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('Labor Win App v2.html?role=market')"><div class="ic i-mkt">🏬</div><div class="tx"><div class="t">เจ้าของตลาด (เคลมทะเบียน)</div><div class="s">ตลาดไม่ต้องสมัครก่อน · เข้ามาเคลมพื้นที่ทีหลัง</div></div><span class="chev">›</span></button>
+      <div class="foot">แม่ค้า/แรงงาน/หัวคิว เริ่มใช้ได้เลยแม้ตลาดยังไม่สมัคร</div>
+    </div>
+  </section>
+
+  <!-- ลงทะเบียนหัวหน้าวิน -->
+  <section class="view" id="v-lead">
+    <div class="hd dark has-back"><button class="back" onclick="go('v-win')">←</button><h1>ลงทะเบียนวิน</h1><p>หัวหน้าวิน · ผู้ดูแลคิวในตลาด</p></div>
+    <div class="bd">
+      <label class="fl">ชื่อวิน / ชื่อหัวหน้า <span class="req">*</span></label>
+      <input class="f" id="l-name" placeholder="เช่น วินแดง ตลาดสี่มุมเมือง">
+      <label class="fl">เบอร์ติดต่อ <span class="req">*</span></label>
+      <input class="f" id="l-phone" type="tel" inputmode="tel" placeholder="08x-xxx-xxxx">
+      <label class="fl">สีเสื้อวิน</label>
+      <div class="chips" data-pick="l-color"><button class="chip on dark" data-v="red">🔴 แดง</button><button class="chip" data-v="blue">🔵 น้ำเงิน</button><button class="chip" data-v="green">🟢 เขียว</button></div>
+      <label class="fl">โมเดลรับเงินค่าแรง</label>
+      <div class="chips" data-pick="l-mode"><button class="chip on dark" data-v="leader">🧑‍✈️ หัวคิวรับเงินตรง (จ่ายลูกทีม)</button><button class="chip" data-v="direct">👷 ร้านจ่ายแรงงานตรง + หัก % เข้า GP</button></div>
+      <label class="fl">วิธีรับค่าหัวคิว</label>
+      <div class="chips" data-pick="l-pay"><button class="chip on dark" data-v="cash">💵 เงินสด</button><button class="chip" data-v="promptpay">💳 พร้อมเพย์</button></div>
+      <div class="note" style="margin-top:12px">ปรับได้ทีหลังในแอป (แท็บตั้งค่า): ค่าหัวคิวงานตลาด 5–20% · ค่าคอมงานนอก 1–5% · เบิกล่วงหน้า · แพ็กเกจระบบ</div>
+      <div class="err" id="l-err"></div>
+      <button class="btn dark" onclick="submitLead()">เปิดใช้งานวิน →</button>
+    </div>
+  </section>
+
+  <!-- ลงทะเบียนร้าน/แผง -->
+  <section class="view" id="v-stall">
+    <div class="hd brand has-back"><button class="back" onclick="go('v-win')">←</button><h1>ลงทะเบียนร้าน / แผง</h1><p>ผู้จ้าง · เรียกแรงงาน</p></div>
+    <div class="bd">
+      <label class="fl">ชื่อร้าน / ชื่อแม่ค้า <span class="req">*</span></label>
+      <input class="f" id="s-name" placeholder="เช่น ร้านผักเจ๊หมวย">
+      <label class="fl">เลขแผง (ถ้ามี)</label>
+      <input class="f" id="s-code" placeholder="เช่น A-12">
+      <label class="fl">เบอร์ติดต่อ <span class="req">*</span></label>
+      <input class="f" id="s-phone" type="tel" inputmode="tel" placeholder="08x-xxx-xxxx">
+      <label class="fl">ตลาด (ข้ามได้)</label>
+      <div class="chips" data-pick="s-market"><button class="chip on" data-v="สี่มุมเมือง">🏬 สี่มุมเมือง</button><button class="chip" data-v="ตลาดไท">🏬 ตลาดไท</button><button class="chip" data-v="อื่นๆ">📍 เพิ่มเอง</button><button class="chip" data-v="">⏭️ ยังไม่ระบุ</button></div>
+      <div class="note" style="margin-top:12px">ไม่ต้องรอเจ้าของตลาดสมัคร — เรียกแรงงานได้เลย เจ้าของตลาดมาเคลมทะเบียนทีหลัง</div>
+      <div class="err" id="s-err"></div>
+      <button class="btn brand" onclick="submitStall()">เริ่มเรียกแรงงาน →</button>
+    </div>
+  </section>
+
+  <!-- ลงทะเบียนแรงงาน -->
+  <section class="view" id="v-worker">
+    <div class="hd gold has-back"><button class="back" onclick="go('v-win')">←</button><h1>ลงทะเบียนแรงงาน</h1><p>ครั้งแรกใช้เวลาราว 2 นาที</p></div>
+    <div class="bd">
+      <label class="fl">ภาษา</label>
+      <div class="chips" data-pick="w-lang"><button class="chip on gold" data-v="th">ไทย</button><button class="chip" data-v="my">မြန်မာ</button><button class="chip" data-v="km">ខ្មែរ</button></div>
+      <label class="fl">ชื่อ–สกุล <span class="req">*</span></label>
+      <input class="f" id="w-name" placeholder="ชื่อจริงตามเอกสาร">
+      <label class="fl">เบอร์โทร <span class="req">*</span></label>
+      <input class="f" id="w-phone" type="tel" inputmode="tel" placeholder="08x-xxx-xxxx">
+      <label class="fl">เลข Work Permit / บัตรประชาชน</label>
+      <input class="f" id="w-doc" placeholder="กรอกได้ภายหลัง">
+      <label class="fl">สถานะการสังกัด</label>
+      <div class="chips" data-pick="w-aff"><button class="chip on gold" data-v="both">⭐ สังกัดวิน + งานนอก (หัก 2%)</button><button class="chip" data-v="win">🎽 สังกัดวินอย่างเดียว</button><button class="chip" data-v="free">🆓 ฟรีแลนซ์ล้วน</button></div>
+      <label class="fl">เลือกวิน (สีเสื้อ) · ข้ามได้ถ้าฟรีแลนซ์</label>
+      <div class="chips" data-pick="w-win"><button class="chip on gold" data-v="red">🔴 แดง</button><button class="chip" data-v="blue">🔵 น้ำเงิน</button><button class="chip" data-v="green">🟢 เขียว</button></div>
+      <div class="note gold" style="margin-top:12px">งานนอกหัก “ค่าคอมหัวหน้าวิน” 2% (ขั้นต่ำ ฿3/บิล) · กดปุ่มด้านล่าง = ยอมรับเงื่อนไขการใช้งาน</div>
+      <div class="err" id="w-err"></div>
+      <button class="btn gold" onclick="submitWorker()">ส่งให้หัวหน้าวินอนุมัติ →</button>
+    </div>
+  </section>
+
+</div>
+<script>
+var PICK={'l-color':'red','l-mode':'leader','l-pay':'cash','s-market':'สี่มุมเมือง','w-lang':'th','w-aff':'both','w-win':'red'};
+document.querySelectorAll('[data-pick]').forEach(function(g){
+  g.addEventListener('click',function(e){ var b=e.target.closest('.chip'); if(!b)return;
+    g.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on'); PICK[g.dataset.pick]=b.dataset.v||''; });
+});
+function go(id){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.toggle('on', v.id===id); });
+  window.scrollTo(0,0);
+  try{ history.replaceState(null,'','?v='+id.slice(2)); }catch(e){}
+}
+function goApp(u){ location.href=u; }                        // เปิดในหน้าต่างเดิมเสมอ (ไม่เด้งแท็บใหม่)
+function openPos(){ goApp('KaiDee POS.html?go=signup&sys=pos'); }
+function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function saveProfile(o){ try{ var all=JSON.parse(localStorage.getItem('kd_signup_profile_v1')||'{}');
+  all[o.role]=Object.assign({at:Date.now()},o); localStorage.setItem('kd_signup_profile_v1',JSON.stringify(all)); }catch(e){} }
+function need(ids,errId){ var miss=ids.filter(function(i){ return !val(i); });
+  var e=document.getElementById(errId); if(miss.length){ e.textContent='กรอกช่องที่มีเครื่องหมาย * ให้ครบก่อน'; document.getElementById(miss[0]).focus(); return false; }
+  e.textContent=''; return true; }
+function submitLead(){ if(!need(['l-name','l-phone'],'l-err'))return;
+  saveProfile({role:'win',name:val('l-name'),phone:val('l-phone'),color:PICK['l-color'],wageMode:PICK['l-mode'],payTouch:PICK['l-pay']});
+  goApp('Labor Win App v2.html?role=win&name='+encodeURIComponent(val('l-name'))+'&color='+PICK['l-color']); }
+function submitStall(){ if(!need(['s-name','s-phone'],'s-err'))return;
+  saveProfile({role:'shop',name:val('s-name'),stall:val('s-code'),phone:val('s-phone'),market:PICK['s-market']});
+  goApp('Labor Win App v2.html?role=shop&name='+encodeURIComponent(val('s-name'))); }
+function submitWorker(){ if(!need(['w-name','w-phone'],'w-err'))return;
+  saveProfile({role:'worker',name:val('w-name'),phone:val('w-phone'),doc:val('w-doc'),lang:PICK['w-lang'],affiliation:PICK['w-aff'],win:PICK['w-win']});
+  goApp('Labor Win App v2.html?role=worker&name='+encodeURIComponent(val('w-name'))+'&lang='+PICK['w-lang']); }
+(function(){ var v=new URLSearchParams(location.search).get('v'); if(v&&document.getElementById('v-'+v)) go('v-'+v); })();
+</script>
+</body>
+</html>

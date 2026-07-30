@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="th"><head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KaiDee :D one — โลโก้เคลื่อนไหว</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#dbe6df;display:flex;align-items:center;justify-content:center;font-family:sans-serif}
+  .stage{width:640px;height:640px;border-radius:56px;background:#ECF2EF;position:relative;overflow:hidden;
+    box-shadow:0 30px 80px rgba(30,80,60,.16)}
+  .logo{position:absolute;inset:0;background:url("uploads/done-logo-640x640-9cc069f9.png") center/contain no-repeat;
+    transform-origin:50% 46%;animation:kdSpin 3.4s cubic-bezier(.5,1.4,.4,1) infinite}
+  @keyframes kdSpin{
+    0%   {transform:rotate(-90deg) scale(.7); opacity:0}
+    14%  {opacity:1}
+    42%  {transform:rotate(9deg)  scale(1.03); opacity:1}
+    56%  {transform:rotate(-3deg) scale(1);    opacity:1}
+    66%  {transform:rotate(0deg)  scale(1);    opacity:1}
+    86%  {transform:rotate(0deg)  scale(1);    opacity:1}
+    100% {transform:rotate(-90deg) scale(.7);  opacity:0}
+  }
+  /* soft glow pulse behind while it settles */
+  .glow{position:absolute;inset:0;border-radius:56px;pointer-events:none;
+    background:radial-gradient(circle at 50% 44%, rgba(46,140,119,.16), transparent 55%);
+    animation:kdGlow 3.4s ease-in-out infinite}
+  @keyframes kdGlow{0%,100%{opacity:0}60%{opacity:1}86%{opacity:.6}}
+</style>
+</head><body>
+<div class="stage">
+  <div class="glow"></div>
+  <div class="logo"></div>
+</div>
+</body></html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สมัครสมาชิก — ฟิตเนส</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;--gold-soft:#FDF0E2;--green:#1E9E6A;--red:#D8452F;--ink:#16211E;--ink-3:#8A948E;--bg:#F4F7F6;--hair:#E9EEEC;--hair-2:#DCE4E1;--font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:var(--font);background:#DDE6E3;color:var(--ink);-webkit-font-smoothing:antialiased;}
+  input{font-family:var(--font);font-size:16px;}
+  .wrap{max-width:460px;margin:0 auto;min-height:100vh;height:100dvh;background:var(--bg);display:flex;flex-direction:column;}
+  @media(min-width:500px){body{padding:20px 0;}.wrap{min-height:calc(100vh - 40px);height:calc(100dvh - 40px);border-radius:26px;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,.14);}}
+  .hd{background:var(--brand);color:#fff;padding:26px 22px 22px;}
+  .hd .em{font-size:34px;}
+  .hd h1{font-size:22px;font-weight:700;margin-top:8px;}
+  .hd p{font-size:13px;opacity:.92;margin-top:3px;}
+  .bd{flex:1;overflow-y:auto;padding:20px 20px 30px;}
+  label{display:block;font-size:13px;font-weight:700;color:#54615B;margin:16px 0 6px;}
+  .field{border:1px solid var(--hair-2);border-radius:12px;padding:13px 14px;background:#fff;outline:none;width:100%;}
+  .field:focus{border-color:var(--brand);}
+  .chk{display:flex;gap:10px;font-size:13px;font-weight:600;color:#54615B;margin-top:16px;line-height:1.5;align-items:flex-start;}
+  .chk input{width:20px;height:20px;accent-color:var(--brand);flex:0 0 auto;margin-top:1px;}
+  .btn{border:none;border-radius:13px;padding:15px;font-size:16px;font-weight:700;width:100%;background:var(--brand);color:#fff;margin-top:22px;cursor:pointer;font-family:var(--font);}
+  .btn:disabled{opacity:.45;}
+  .btn.line{background:#06C755;}
+  .btn.gh{background:#fff;color:var(--brand-ink);border:1px solid var(--hair-2);}
+  .note{background:var(--gold-soft);color:#8a5a12;border:1px solid #f0d8b0;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.5;font-weight:600;margin-top:16px;}
+  .ok{text-align:center;padding:14px 8px;}
+  .ok .ic{width:78px;height:78px;border-radius:50%;background:var(--green);color:#fff;font-size:42px;display:flex;align-items:center;justify-content:center;margin:8px auto 14px;}
+  .ok h2{font-size:22px;font-weight:700;}
+  .ok .code{font-family:var(--mono);font-size:20px;color:var(--brand-ink);margin-top:4px;letter-spacing:1px;}
+  .ok .qr{width:180px;height:180px;background:#fff;border-radius:16px;padding:12px;margin:18px auto 8px;border:1px solid var(--hair);}
+  .ok .qr svg{width:100%;height:100%;}
+  .ok .sub{font-size:13px;color:var(--ink-3);}
+  .err{color:var(--red);font-size:12.5px;font-weight:600;margin-top:6px;}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="market-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="fitness-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const {useState}=React; const F=window.FIT; const MK=window.MK;
+const P=new URLSearchParams(location.search);
+const gymName=P.get('name')||'ฟิตเนส';
+const lineUrl=P.get('line')||'';
+function Join(){
+  const [f,setF]=useState({name:'',phone:'',birth:'',consent:false});
+  const [err,setErr]=useState(''); const [done,setDone]=useState(null);
+  const set=(k,v)=>setF(x=>({...x,[k]:v}));
+  const submit=()=>{ const name=f.name.trim(); const phone=f.phone.trim();
+    if(!name){setErr('กรอกชื่อ-นามสกุล');return;} if(phone.replace(/\D/g,'').length<9){setErr('กรอกเบอร์โทรให้ถูกต้อง');return;}
+    const d=F.load();
+    if((d.members||[]).some(m=>m.phone&&m.phone.replace(/\D/g,'')===phone.replace(/\D/g,''))){ setErr('เบอร์นี้เป็นสมาชิกอยู่แล้ว — แจ้งพนักงานที่เคาน์เตอร์'); return; }
+    const n=(d.members||[]).length+1; const id='mb-'+Date.now().toString(36); const code='M'+F.pad(n);
+    d.members.push({id,code,name,phone,birth:f.birth||'',line:true,packageId:null,start:F.todayISO(),expiry:null,joinedAt:F.todayISO(),frozen:false,parq:false,consent:true,ptLeft:0,spend:0,bodyBefore:null,bodyAfter:null,selfJoin:true});
+    F.save(d); setDone({code,id,name});
+  };
+  if(done) return (<div className="wrap"><div className="hd"><div className="em">🎉</div><h1>สมัครสมาชิกสำเร็จ</h1><p>{gymName}</p></div>
+    <div className="bd"><div className="ok">
+      <div className="ic">✓</div><h2>{done.name}</h2><div className="code">{done.code}</div>
+      <div className="qr" dangerouslySetInnerHTML={{__html:MK.qrSVG('member'+done.id)}}/>
+      <div className="sub">แสดง QR นี้ที่เคาน์เตอร์ / แตะที่ประตูเพื่อเข้าใช้</div>
+      <div className="note" style={{textAlign:'left'}}>ยังไม่มีแพ็ก — เลือกซื้อแพ็กได้ที่เคาน์เตอร์ หรือในแอปสมาชิก แล้วเริ่มเข้าใช้ได้ทันที</div>
+      {lineUrl&&<a href={lineUrl} target="_blank" rel="noopener"><button className="btn line">➕ เพิ่มเพื่อน LINE OA ร้าน (รับข่าว/เตือนต่ออายุ)</button></a>}
+    </div></div></div>);
+  return (<div className="wrap"><div className="hd"><div className="em">🏋️</div><h1>สมัครสมาชิก</h1><p>{gymName} · กรอกข้อมูลเองได้เลย</p></div>
+    <div className="bd">
+      <label>ชื่อ-นามสกุล</label><input className="field" value={f.name} onChange={e=>set('name',e.target.value)} placeholder="ชื่อ นามสกุล"/>
+      <label>เบอร์โทร (ใช้ยืนยันตัวตน)</label><input className="field" inputMode="tel" value={f.phone} onChange={e=>set('phone',e.target.value)} placeholder="08x-xxx-xxxx"/>
+      <label>วัน/เดือน/ปีเกิด (ไม่บังคับ)</label><input className="field" type="date" value={f.birth} onChange={e=>set('birth',e.target.value)}/>
+      <label className="chk"><input type="checkbox" checked={f.consent} onChange={e=>set('consent',e.target.checked)}/><span>ยินยอมให้ร้านเก็บข้อมูลเพื่อบริการสมาชิก และติดต่อเรื่องการต่ออายุ (PDPA)</span></label>
+      {err&&<div className="err">{err}</div>}
+      <button className="btn" disabled={!f.consent} onClick={submit}>สมัครสมาชิก</button>
+      {lineUrl&&<a href={lineUrl} target="_blank" rel="noopener"><button className="btn line gh" style={{marginTop:10}}>➕ เพิ่มเพื่อน LINE OA ร้านก่อน</button></a>}
+      <div className="note">กรอกครั้งเดียว — ร้านไม่ต้องคีย์ให้ · ได้รหัสสมาชิก + QR ไว้เข้าใช้ทันที</div>
+    </div></div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Join/>);
+</script>
+</body>
+</html>

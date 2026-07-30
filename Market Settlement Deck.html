@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบเก็บเงิน · นำส่ง GP · กระเป๋าเงินร้าน — Market Settlement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+  deck-stage:not(:defined){visibility:hidden}
+  :root{--brand:#0E9C88;--brand-ink:#0A6E60;--brand-2:#14A886;--blue:#1E73B0;--blue-soft:#E7F0FC;--gold:#E8992F;--gold-soft:#FBF0DC;--red:#D8452F;--red-soft:#FBE6E1;--plum:#7a4a8c;--plum-soft:#F0E9FA;--ink:#12211E;--ink-2:#4C5B55;--ink-3:#8A968F;--soft:#E3F5F1;--softer:#F0FAF7;--paper:#FBFDFC;--line:#E4EEEA;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  section{font-family:"IBM Plex Sans Thai",system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:88px 104px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
+  .mono{font-family:"IBM Plex Mono",monospace;}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:24px;font-weight:700;color:var(--brand-ink);letter-spacing:.02em;margin-bottom:24px;}
+  .eyebrow::before{content:"";width:34px;height:3px;background:var(--brand);border-radius:2px;}
+  h1{font-size:78px;font-weight:700;line-height:1.06;letter-spacing:-.02em;}
+  h2{font-size:50px;font-weight:700;line-height:1.12;letter-spacing:-.015em;margin-bottom:12px;}
+  .sub{font-size:26px;color:var(--ink-2);line-height:1.5;font-weight:500;}
+  .fill{flex:1;}
+  .brandbar{display:flex;align-items:center;gap:16px;}
+  .brandbar .lg{width:64px;height:64px;border-radius:18px;background:#fff;box-shadow:0 4px 16px rgba(14,156,136,.18);display:flex;align-items:center;justify-content:center;padding:9px;}
+  .brandbar .lg img{width:100%;height:100%;object-fit:contain;}
+  .brandbar .tx{font-size:26px;font-weight:700;color:var(--brand-ink);line-height:1.2;}
+  .brandbar .tx small{display:block;font-weight:500;font-size:23px;color:var(--ink-3);}
+  .hero{background:linear-gradient(150deg,#0F3D36 0%,#0A6E60 55%,#14A886 130%);color:#fff;justify-content:flex-start;}
+  .hero h1{color:#fff;} .hero .eyebrow{color:#8fe6d3;} .hero .eyebrow::before{background:#8fe6d3;}
+  .hero .sub{color:#cdeee6;}
+  .hero .brandbar .tx{color:#fff;} .hero .brandbar .tx small{color:#9fd3c8;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px 28px;box-shadow:0 2px 14px rgba(20,50,40,.05);}
+  .card .ic{font-size:36px;margin-bottom:12px;display:block;}
+  .card h3{font-size:27px;font-weight:700;margin-bottom:9px;}
+  .card p{font-size:23px;color:var(--ink-2);line-height:1.5;}
+  .tag{display:inline-block;font-size:22px;font-weight:700;color:var(--brand-ink);background:var(--soft);border-radius:999px;padding:5px 16px;margin-bottom:14px;}
+  ul.chk{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px;}
+  ul.chk li{font-size:24px;color:var(--ink-2);padding-left:40px;position:relative;line-height:1.45;}
+  ul.chk li::before{content:"→";position:absolute;left:0;color:var(--brand);font-weight:700;}
+  ul.chk li b{color:var(--ink);}
+  .flywheel{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:14px;}
+  .fw{background:#fff;border:2px solid var(--brand);border-radius:16px;padding:18px 22px;font-size:23px;font-weight:600;color:var(--brand-ink);text-align:center;line-height:1.3;}
+  .fw small{display:block;font-size:18px;color:var(--ink-3);font-weight:500;margin-top:3px;}
+  .fw.alt{border-color:var(--blue);color:var(--blue);} .fw.plum{border-color:var(--plum);color:var(--plum);} .fw.gold{border-color:var(--gold);color:#9a6a12;}
+  .fw-arr{font-size:32px;color:var(--brand);font-weight:700;}
+  .footer-tag{font-size:23px;color:var(--ink-3);margin-top:auto;line-height:1.5;}
+  /* device mock */
+  .phone{width:360px;background:#fff;border:10px solid #0F3D36;border-radius:38px;padding:20px 18px;box-shadow:0 20px 50px rgba(15,50,45,.28);}
+  .phb{background:linear-gradient(150deg,var(--brand),var(--brand-ink));color:#fff;border-radius:16px;padding:16px 18px;}
+  .phb .l{font-size:18px;opacity:.85;font-weight:600;} .phb .v{font-size:40px;font-weight:700;margin-top:2px;}
+  .prow{display:flex;justify-content:space-between;align-items:center;font-size:20px;padding:11px 4px;border-bottom:1px solid var(--line);}
+  .prow:last-child{border-bottom:none;} .prow .neg{color:var(--red);font-weight:600;} .prow b{font-weight:700;}
+  .pbtn{background:var(--brand);color:#fff;border-radius:12px;text-align:center;font-size:21px;font-weight:700;padding:14px;margin-top:12px;}
+  /* accounting table */
+  .atbl{width:100%;border-collapse:collapse;margin-top:8px;font-size:23px;}
+  .atbl th{text-align:left;font-size:19px;color:var(--ink-3);font-weight:700;padding:10px 14px;border-bottom:2px solid var(--line);}
+  .atbl td{padding:14px 14px;border-bottom:1px solid var(--line);}
+  .atbl td.r{text-align:right;font-family:"IBM Plex Mono",monospace;}
+  .pill{display:inline-block;border-radius:999px;padding:3px 13px;font-size:18px;font-weight:700;}
+  .pill.ok{background:var(--soft);color:var(--brand-ink);} .pill.warn{background:var(--gold-soft);color:#8a6100;} .pill.bad{background:var(--red-soft);color:var(--red);} .pill.wait{background:var(--blue-soft);color:var(--blue);}
+  .step{display:flex;align-items:stretch;gap:0;margin-top:22px;}
+  .step .s{flex:1;background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px 22px;position:relative;}
+  .step .s .n{font-family:"IBM Plex Mono",monospace;font-size:22px;color:var(--brand-ink);font-weight:600;}
+  .step .s h3{font-size:26px;font-weight:700;margin:6px 0 8px;} .step .s p{font-size:21px;color:var(--ink-2);line-height:1.4;}
+  .step .arr{display:flex;align-items:center;padding:0 12px;font-size:30px;color:var(--brand);font-weight:700;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;}
+  .lensbox{border-radius:22px;padding:30px 30px;}
+  .lensbox.a{background:var(--softer);border:2px solid var(--brand);} .lensbox.b{background:var(--blue-soft);border:2px solid var(--blue);}
+  .lensbox h3{font-size:30px;font-weight:700;margin-bottom:6px;} .lensbox .k{font-size:22px;font-weight:700;color:var(--brand-ink);margin-bottom:14px;} .lensbox.b .k{color:var(--blue);}
+  @media (prefers-reduced-motion:no-preference){[data-deck-active] .anim{animation:rise .55s both;}[data-deck-active] .anim2{animation:rise .55s .12s both;}[data-deck-active] .anim3{animation:rise .55s .24s both;}[data-deck-active] .anim4{animation:rise .55s .36s both;}@keyframes rise{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section class="hero" data-label="ปก">
+    <div class="brandbar anim"><div class="lg"><img src="assets/kaidee-logo.png" alt="KaiDee"/></div>
+      <div class="tx">KaiDee Platform<small>Market OS · ระบบการเงิน</small></div></div>
+    <div class="fill"></div>
+    <div class="eyebrow anim2">เงินไหลอย่างไร · จาก POS ถึงบัญชี</div>
+    <h1 class="anim2">กระเป๋าเงินร้าน<br>+ นำส่ง GP + ยืนยันจ่าย T+1</h1>
+    <p class="sub anim3" style="margin-top:22px;max-width:1180px;">ยอดขายจาก POS → คำนวณ GP → เข้ากระเป๋าเงินร้าน → บัญชีตรวจ &amp; อนุมัติ → เจ้าของ/บัญชีกดโอน — ตรวจสอบได้ทุกบาท ไม่มีเงินหาย</p>
+  </section>
+
+  <section data-label="2 โมเดล">
+    <div class="eyebrow">เจ้าของตลาดเลือกได้ในตั้งค่า</div>
+    <h2>2 โมเดลการเก็บเงิน — เลือกให้เข้ากับตลาด</h2>
+    <div class="two" style="margin-top:30px;">
+      <div class="lensbox a anim">
+        <div class="k mono">MODEL A</div><h3>ร้านเก็บเงินเอง → นำส่ง GP</h3>
+        <ul class="chk">
+          <li>ลูกค้าจ่ายให้ร้านตรงๆ (เงินสด/QR ร้าน)</li>
+          <li>ระบบคิด <b>GP ที่ต้องนำส่งตลาด</b> จากยอด POS</li>
+          <li>ปุ่มหลัก = <b>“แจ้งโอน GP ให้ตลาด”</b></li>
+          <li>ทำได้ทันที · ไม่ต้องขอใบอนุญาตเงิน</li>
+        </ul>
+      </div>
+      <div class="lensbox b anim2">
+        <div class="k mono">MODEL B</div><h3>เงินเข้าระบบก่อน → โอน net คืน T+1</h3>
+        <ul class="chk">
+          <li>เงินเข้าบัญชีกลาง/wallet ของตลาดก่อน</li>
+          <li>ตลาด <b>หัก GP อัตโนมัติ</b> แล้วโอนส่วนที่เหลือคืนร้าน</li>
+          <li>ปุ่มหลัก = <b>“ถอนเข้าบัญชีธนาคาร”</b></li>
+          <li>คุม GP ได้ 100% · ต้องมีระบบ settlement</li>
+        </ul>
+      </div>
+    </div>
+    <p class="footer-tag">ทั้งสองโมเดลใช้ Wallet + หน้าบัญชีชุดเดียวกัน — ต่างกันแค่ทิศทางเงินและปุ่มหลัก</p>
+  </section>
+
+  <section data-label="ฝั่งร้าน · Wallet">
+    <div class="eyebrow">ฝั่งร้านค้า</div>
+    <h2>กระเป๋าเงินร้าน — เห็นยอดสด รู้ว่าต้องทำอะไรต่อ</h2>
+    <div style="display:flex;gap:56px;align-items:center;margin-top:24px;">
+      <div class="phone anim">
+        <div class="phb"><div class="l">ยอดคงเหลือถอนได้</div><div class="v mono">฿11,205</div></div>
+        <div style="margin-top:10px;">
+          <div class="prow"><span>ยอดขายวันนี้ (สด)</span><b class="mono">฿12,450</b></div>
+          <div class="prow"><span>GP 10% นำส่งตลาด</span><span class="neg mono">− ฿1,245</span></div>
+          <div class="prow"><span>รอเข้า (T+1)</span><b class="mono">฿8,010</b></div>
+        </div>
+        <div class="pbtn">ถอนเข้าบัญชี / แจ้งโอน GP</div>
+      </div>
+      <ul class="chk anim2" style="flex:1;">
+        <li><b>ยอดขายวิ่งสด</b> — sync ทุกบิลจาก POS แบบเรียลไทม์</li>
+        <li><b>GP โปร่งใส</b> — เห็นยอดหักและยอดสุทธิของร้านทันที</li>
+        <li><b>ประวัติเงินเข้า-ออก (ledger)</b> — ตรวจย้อนได้ทุกรายการ</li>
+        <li>ปุ่มเดียวชัด: ถอนเงิน (โมเดล B) หรือ แจ้งโอน GP (โมเดล A)</li>
+        <li>ใช้ wallet เดียวกัน <b>จ่ายค่าจ้างคนรับจ้าง/ไรเดอร์</b> ได้เลย</li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-label="ฝั่งบัญชี · Flow">
+    <div class="eyebrow">ฝั่งบัญชี / เจ้าของตลาด</div>
+    <h2>ตรวจ → อนุมัติ → กดโอน (รอบ T+1)</h2>
+    <div class="step">
+      <div class="s anim"><div class="n">01</div><h3>จับยอดอัตโนมัติ</h3><p>ระบบ match เงินเข้าจริงกับยอด POS ของแต่ละร้าน</p></div>
+      <div class="arr">→</div>
+      <div class="s anim2"><div class="n">02</div><h3>ตรวจ &amp; อนุมัติ</h3><p>บัญชีดูส่วนต่าง (variance) → กดอนุมัติ หรือบันทึกปรับปรุง</p></div>
+      <div class="arr">→</div>
+      <div class="s anim3"><div class="n">03</div><h3>ส่งอนุมัติ</h3><p>รายการที่ตรวจแล้วเข้าคิว “รอโอน” พร้อมยอดสุทธิ</p></div>
+      <div class="arr">→</div>
+      <div class="s anim4"><div class="n">04</div><h3>กดโอน</h3><p><b>เจ้าของ</b> หรือ <b>บัญชี</b> กดโอนได้ (ตั้งสิทธิ์ได้) · ล็อก audit</p></div>
+    </div>
+    <table class="atbl anim3" style="margin-top:34px;">
+      <thead><tr><th>ร้าน</th><th class="r">ยอด POS</th><th class="r">โอนจริง</th><th class="r">ส่วนต่าง</th><th>สถานะ</th></tr></thead>
+      <tbody>
+        <tr><td>ป้าแดง · ผักสด</td><td class="r">12,450</td><td class="r">11,205</td><td class="r">0</td><td><span class="pill ok">✓ อนุมัติ · กดโอน</span></td></tr>
+        <tr><td>เจ๊หมวย · ข้าวสาร</td><td class="r">8,900</td><td class="r">8,000</td><td class="r">−900</td><td><span class="pill warn">⚠ ตรวจสอบ</span></td></tr>
+        <tr><td>พี่นก · เสื้อผ้า</td><td class="r">—</td><td class="r">5,000</td><td class="r">+5,000</td><td><span class="pill bad">เงินไม่มีที่มา</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-label="Data Flow">
+    <div class="eyebrow">โครงสร้างข้อมูลหลังบ้าน</div>
+    <h2>POS → Wallet → บัญชี เชื่อมกันแบบรัดกุม</h2>
+    <div class="flywheel" style="margin-top:34px;">
+      <div class="fw">POS ร้าน<small>ออกบิล</small></div><div class="fw-arr">→</div>
+      <div class="fw">Sales Ledger<small>append-only · idempotent</small></div><div class="fw-arr">→</div>
+      <div class="fw alt">Wallet / Settlement<small>คิด GP · match เงินเข้า</small></div><div class="fw-arr">→</div>
+      <div class="fw plum">Payout T+1<small>อนุมัติ + โอน</small></div><div class="fw-arr">→</div>
+      <div class="fw gold">บัญชี / Export<small>ล็อกรอบ · audit</small></div>
+    </div>
+    <div class="grid3" style="margin-top:44px;">
+      <div class="card anim"><span class="ic">🔒</span><h3>Single source of truth</h3><p>POS เขียนอย่างเดียว ไม่แก้ย้อน · GP/Wallet/บัญชี อ่านจากตัวเดียวกัน</p></div>
+      <div class="card anim2"><span class="ic">➗</span><h3>แยกเงินควรได้ / เงินเข้าจริง</h3><p>ยอด POS (accrued) กับยอดเข้าบัญชี (bank) แยกกัน แล้วค่อย reconcile</p></div>
+      <div class="card anim3"><span class="ic">🔁</span><h3>Idempotency + รอบ immutable</h3><p>กันนับซ้ำตอน retry/offline · รอบปิดแล้วแก้ผ่าน Adjustment เท่านั้น</p></div>
+    </div>
+  </section>
+
+  <section data-label="Edge cases">
+    <div class="eyebrow">จุดที่ต้องระวัง</div>
+    <h2>โอนไม่ตรงยอด (Variance) &amp; การปรับปรุง</h2>
+    <div class="grid2" style="margin-top:28px;gap:22px;">
+      <div class="card anim"><span class="ic">⚖️</span><h3>โอนไม่ตรง = เข้าคิวตรวจ</h3><p>ตั้ง threshold (เช่น ±฿20 ผ่านอัตโนมัติ) เกินนั้น <b>ห้าม auto-อนุมัติ</b> ต้องคนตรวจ</p></div>
+      <div class="card anim2"><span class="ic">📉</span><h3>โอนขาด / เกิน</h3><p>ขาด = ยกเป็นยอดค้าง (receivable) รอบหน้า · เกิน = เครดิตร้านหักบิลถัดไป</p></div>
+      <div class="card anim3"><span class="ic">❓</span><h3>เงินเข้าไม่มีบิล</h3><p>ธง “ไม่มีที่มา” · กันเงินไว้ ห้ามนับเป็นรายได้จนกว่าจะจับคู่ได้</p></div>
+      <div class="card anim4"><span class="ic">🧾</span><h3>Adjustment (append-only)</h3><p>ปรับปรุง = เพิ่ม-ลบรายการใหม่ ไม่แก้ตัวเลขเดิม · มีเหตุผล/ผู้ทำ/เวลา · trace ได้ 100%</p></div>
+    </div>
+  </section>
+
+  <section class="hero" data-label="สรุป">
+    <div class="eyebrow">สรุป</div>
+    <h2 style="color:#fff;">ทุกบาทมีที่มา ตรวจสอบได้ อนุมัติก่อนจ่าย</h2>
+    <ul class="chk anim2" style="margin-top:26px;max-width:1240px;">
+      <li style="color:#daf0ea;">เจ้าของตลาดเลือกโมเดล A/B ได้เอง — ระบบเดียวรองรับทั้งคู่</li>
+      <li style="color:#daf0ea;">ร้านเห็นยอดสด + GP โปร่งใส · บัญชีตรวจ variance ก่อนจ่ายเสมอ</li>
+      <li style="color:#daf0ea;">โอนได้ทั้งเจ้าของและบัญชี (ตั้งสิทธิ์) · ทุกการยืนยันล็อก audit</li>
+      <li style="color:#daf0ea;">Wallet เดียวกันจ่ายค่าจ้างคนรับจ้าง/ไรเดอร์ได้ต่อยอด</li>
+    </ul>
+    <p class="footer-tag" style="color:#9fd3c8;">ขั้นถัดไป: สร้าง Wallet ในหน้า POS + หน้าบัญชีตรวจ/อนุมัติ/โอน ให้ทำงานจริง (client-only prototype ก่อน แล้วต่อ backend)</p>
+  </section>
+
+</deck-stage>
+<script src="deck-stage.js?v=p2-20260730j"></script>
+</body>
+</html>

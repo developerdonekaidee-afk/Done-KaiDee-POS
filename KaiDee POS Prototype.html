@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KaiDee POS — เดโมกดจริง (หน้าขายร้านอาหาร)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E9F5EE;--gold:#F4900C;--gold-soft:#FEF1E2;--red:#C0392B;--red-soft:#FDECEA;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--bg:#eef2f0;--line:#dde5e0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(140% 100% at 50% 0%,#f6f9f7,#e4ebe7);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+.top{padding:18px 20px 10px;text-align:center}
+.top .kick{display:inline-flex;gap:7px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);background:var(--brand-soft);padding:6px 13px;border-radius:100px}
+.top h1{font-size:22px;font-weight:800;margin:9px 0 2px}
+.top p{margin:0;color:var(--ink-2);font-size:13.5px}
+.guide{max-width:820px;margin:8px auto 0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 22px rgba(20,60,40,.07)}
+.guide .badge{flex:0 0 auto;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--brand-soft)}
+.guide .g-tx{flex:1;min-width:0;text-align:left}
+.guide .g-step{font-size:11.5px;font-weight:700;color:var(--brand);letter-spacing:.06em;text-transform:uppercase}
+.guide .g-tip{font-size:15px;font-weight:600;margin-top:2px;line-height:1.4;text-wrap:pretty}
+.g-nav{flex:0 0 auto;display:flex;gap:8px}
+.gbtn{border:none;cursor:pointer;font-family:inherit;font-weight:700;border-radius:11px;padding:11px 16px;font-size:14px}
+.gbtn.prev{background:#fff;border:1.5px solid var(--line);color:var(--ink-2)}
+.gbtn.next{background:var(--brand);color:#fff}
+.gbtn:disabled{opacity:.4;cursor:default}
+.prog{max-width:820px;margin:10px auto 0;height:5px;background:#dbe4df;border-radius:100px;overflow:hidden}
+.prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .35s}
+.stage{flex:1;display:flex;gap:34px;justify-content:center;align-items:center;padding:20px 18px 30px;flex-wrap:wrap}
+.phone{width:320px;height:650px;background:#0f1720;border-radius:42px;padding:12px;box-shadow:0 26px 60px rgba(14,124,78,.22)}
+.screen{width:100%;height:100%;background:#F3F6F4;border-radius:31px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.hd{color:#fff;padding:18px 17px 15px;background:var(--brand)}
+.hd .s1{font-size:13.5px;opacity:.85}.hd .s2{font-size:21px;font-weight:800;margin-top:1px}
+.body{padding:14px;display:flex;flex-direction:column;gap:11px;flex:1;overflow:auto}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mi{background:#fff;border-radius:13px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);cursor:pointer;text-align:center}
+.mi .em{font-size:26px}.mi .nm{font-size:13.5px;font-weight:700;margin-top:4px}.mi .pr{font-size:12.5px;color:var(--brand);font-weight:700}
+.cart{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.crow{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
+.tot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:7px;padding-top:8px}
+.tot b{font-size:20px;color:var(--brand)}
+.btn{border:none;cursor:pointer;font-family:inherit;border-radius:13px;padding:14px;text-align:center;font-size:16px;font-weight:800;width:100%;color:#fff;background:var(--brand)}
+.seg{display:flex;gap:8px}
+.seg .s{flex:1;background:#fff;border:2px solid transparent;border-radius:12px;padding:11px 6px;text-align:center;font-size:13.5px;cursor:pointer}
+.seg .s.on{background:var(--brand-soft);border-color:var(--brand);font-weight:700}
+.qr{width:150px;height:150px;margin:6px auto;border-radius:14px;background:conic-gradient(#000 0 25%,#fff 0 50%,#000 0 75%,#fff 0)0 0/16px 16px,#fff;border:6px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.12);position:relative}
+.qr::after{content:"";position:absolute;inset:32px;background:repeating-linear-gradient(90deg,#111 0 8px,#fff 0 14px),repeating-linear-gradient(0deg,#111 0 8px,#fff 0 14px);background-blend-mode:multiply;border-radius:6px}
+.status{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:18px}
+.status .big{font-size:48px}.status .t{font-size:19px;font-weight:800}.status .s{font-size:14px;color:var(--ink-2);line-height:1.5}
+.toast{position:absolute;top:66px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;font-weight:700;padding:9px 15px;border-radius:11px;box-shadow:0 8px 24px rgba(0,0,0,.28);z-index:8}
+.pulse{animation:pl 1.2s ease-in-out infinite;border-radius:13px}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(14,124,78,.5)}70%{box-shadow:0 0 0 12px rgba(14,124,78,0)}100%{box-shadow:0 0 0 0 rgba(14,124,78,0)}}
+.hint{position:absolute;z-index:9;background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:6px 11px;border-radius:9px;white-space:nowrap;pointer-events:none;transform:translate(-50%,-140%);left:50%;animation:bob 1.1s ease-in-out infinite}
+.hint::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+@keyframes bob{0%,100%{transform:translate(-50%,-140%)}50%{transform:translate(-50%,-160%)}}
+.side{max-width:300px;text-align:left;display:none}
+@media(min-width:960px){.side{display:block}}
+.side h3{font-size:16px;margin:0 0 6px}.side p{font-size:13.5px;color:var(--ink-2);line-height:1.55;margin:0}
+.side .f{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+.side .fi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.foot{text-align:center;font-size:12px;color:var(--ink-3);padding:0 20px 18px}
+</style>
+</head>
+<body>
+<div class="top">
+<span class="kick">🧾 KaiDee POS · เดโมกดจริง</span>
+<h1>หน้าขายร้านอาหาร — ขาย + เก็บเงินพร้อมเพย์</h1>
+<p>กดปุ่มที่ <b>ไฮไลต์</b> บนจอ หรือกด “ถัดไป” เพื่อดูวิธีใช้ทีละขั้น</p>
+</div>
+<div class="guide">
+<div class="badge" id="g-badge">🧾</div>
+<div class="g-tx"><div class="g-step" id="g-step">ขั้นที่ 1 / 7</div><div class="g-tip" id="g-tip">—</div></div>
+<div class="g-nav"><button class="gbtn prev" id="g-prev">← ก่อนหน้า</button><button class="gbtn next" id="g-next">ถัดไป →</button></div>
+</div>
+<div class="prog"><i id="prog"></i></div>
+<div class="stage">
+  <div class="phone"><div class="screen" id="scr"></div></div>
+  <div class="side" id="side"></div>
+</div>
+<div class="foot">เดโมสำหรับนำเสนอ — KaiDee POS: ขายหน้าร้าน · ลูกค้าสั่งเอง · เก็บเงินพร้อมเพย์ + จับยอดอัตโนมัติ</div>
+<script>
+var M;
+function reset(){ M={ cart:[], pay:'idle' }; }
+reset();
+var STEPS=[
+ {badge:'🧾',tip:'หน้าขาย — แตะเมนูเพื่อหยิบใส่ตะกร้า (ลองแตะ “ข้าวกะเพรา”)',focus:'#m-0',hint:'แตะเมนู',
+  side:{h:'หน้าขายเร็ว',p:'แตะเมนูใส่ตะกร้าทันที ไม่ต้องพิมพ์',f:['🍚 เมนู + รูป + ราคา','🧮 คิดเงินอัตโนมัติ','📦 ตัดสต๊อกให้']}},
+ {badge:'🧾',tip:'เพิ่มอีกเมนูได้ (แตะ “ชาเย็น”) — ตะกร้ารวมยอดให้อัตโนมัติ',focus:'#m-2',hint:'แตะเพิ่ม',
+  side:{h:'ตะกร้ารวมยอดสด',p:'ยอดรวม + จำนวนอัปเดตทันทีทุกครั้งที่แตะ',f:['➕ กี่รายการก็ได้','💵 รวมยอดสด','🧾 ออกใบเสร็จได้']}},
+ {badge:'💳',tip:'ลูกค้าจ่ายพร้อมเพย์ — กด “คิดเงิน” เพื่อสร้าง QR',focus:'#pay-btn',hint:'กดคิดเงิน',
+  side:{h:'เก็บเงินพร้อมเพย์',p:'สร้าง QR PromptPay ให้ลูกค้าสแกนจ่ายได้ทันที',f:['💳 QR อัตโนมัติตามยอด','📷 หรือรับเงินสด','🖨️ พิมพ์ใบเสร็จ 58/80mm']}},
+ {badge:'💳',tip:'ลูกค้าสแกน QR จ่าย — รอสักครู่ ระบบจับยอดเงินเข้าอัตโนมัติ',focus:'#paid-btn',hint:'ลูกค้าจ่ายแล้ว',
+  side:{h:'จับยอดอัตโนมัติ',p:'ยอดเข้า = ระบบเด้งแจ้ง + ยืนยันบิลให้ ไม่ต้องนั่งเช็กสลิป',f:['🔔 เด้งแจ้งเงินเข้า','✅ จับคู่บิลอัตโนมัติ','🔊 เสียงพูด “รับเงินเรียบร้อย”']}},
+ {badge:'✅',tip:'เงินเข้าแล้ว! บิลปิดอัตโนมัติ + ตัดสต๊อก + บันทึกยอดขาย',focus:null,
+  side:{h:'ปิดการขายครบ',p:'ทุกบิลเข้าระบบรายงาน — เจ้าของดูยอดขายย้อนหลังได้',f:['📊 ยอดขายรายวัน','🏆 เมนูขายดี','📒 บัญชี + ภาษี']}},
+ {badge:'📱',tip:'ลูกค้าก็สั่งเองได้ — สแกน QR ที่โต๊ะ เปิดเมนูสั่งจากมือถือตัวเอง (ไม่ต้องมีพนักงานรับออเดอร์)',focus:null,
+  side:{h:'ลูกค้าสั่งเอง (mobile order)',p:'สแกน QR ที่โต๊ะ/โปสเตอร์ → เลือกเมนู → สั่ง → เข้าครัวเลย',f:['📲 สั่งจากมือถือลูกค้า','🍳 ออเดอร์เข้าจอครัว (KDS)','🔢 จอคิวเรียกลูกค้า']}},
+ {badge:'✅',tip:'ครบวงจร — ขายหน้าร้าน · ลูกค้าสั่งเอง · เก็บเงิน · รายงาน · บัญชี ในแอปเดียว — กด “เริ่มใหม่” เพื่อสาธิตอีกครั้ง',focus:null,done:true,
+  side:{h:'ทุกอย่างในแอปเดียว',p:'เริ่มฟรี เดือนแรก — ต่อยอดเดลิเวอรี/สมาชิก/CRM ได้',f:['🧾 POS + ออเดอร์','👥 สมาชิก + แต้ม','🔗 ต่อ Market OS / ฟิตเนส']}}
+];
+var MENU=[['🍚','ข้าวกะเพรา','฿60'],['🍜','ก๋วยเตี๋ยว','฿50'],['🧋','ชาเย็น','฿25'],['🍳','ไข่ดาว','฿10']];
+var step=0, toast='';
+function money(){ return M.cart.reduce(function(a,c){return a+c;},0); }
+function head(s1,s2,bg){ return '<div class="hd"'+(bg?' style="background:'+bg+'"':'')+'><div class="s1">'+s1+'</div><div class="s2">'+s2+'</div></div>'; }
+function screenHTML(){
+  var st=STEPS[step];
+  if(st.done||step===4) { if(step===4) return head('ขายสำเร็จ','บิล #1043','var(--brand)')+
+    '<div class="body"><div class="status"><div class="big">✅</div><div class="t">รับเงิน ฿'+money()+' แล้ว</div><div class="s">พร้อมเพย์ · จับยอดอัตโนมัติ<br>ตัดสต๊อก + บันทึกยอดขาย ✓</div></div></div>'; }
+  if(step===6) return head('KaiDee POS','ร้านเจ๊แดง','var(--brand)')+
+    '<div class="body"><div class="status"><div class="big">🎉</div><div class="t">ครบวงจรในแอปเดียว</div><div class="s">ขาย · สั่งเอง · เก็บเงิน · รายงาน · บัญชี</div></div></div>';
+  if(step===5) return head('ลูกค้าสั่งเอง · โต๊ะ 4','สแกน QR ที่โต๊ะ','#1f2a24')+
+    '<div class="body"><div class="status"><div class="big">📱</div><div class="t">เมนูบนมือถือลูกค้า</div><div class="s">ลูกค้าเลือกเมนู กดสั่งเอง<br>ออเดอร์เข้าจอครัวทันที</div><div class="cart" style="width:100%"><div class="crow"><span>🍚 ข้าวกะเพรา ×1</span><span>฿60</span></div><div class="crow"><span>🧋 ชาเย็น ×1</span><span>฿25</span></div></div></div></div>';
+  if(st.badge==='💳'&&step===3) return head('รับเงินพร้อมเพย์','฿'+money(),'var(--brand)')+
+    '<div class="body"><div class="qr"></div><div style="text-align:center;font-size:13px;color:var(--ink-3)">สแกนด้วยแอปธนาคาร · ฿'+money()+'</div><button class="btn" id="paid-btn" style="margin-top:auto">🔔 (จำลอง) ลูกค้าจ่ายแล้ว</button></div>';
+  // sell screen (steps 0,1,2)
+  return head('หน้าขาย · ร้านเจ๊แดง','แตะเมนูใส่ตะกร้า')+
+    '<div class="body">'+
+      '<div class="menu">'+MENU.map(function(m,i){return '<div class="mi" id="m-'+i+'"><div class="em">'+m[0]+'</div><div class="nm">'+m[1]+'</div><div class="pr">'+m[2]+'</div></div>';}).join('')+'</div>'+
+      (M.cart.length?('<div class="cart">'+M.cart.map(function(c,i){return '<div class="crow"><span>'+cartName(i)+'</span><span>฿'+c+'</span></div>';}).join('')+'<div class="tot"><span>รวม</span><b>฿'+money()+'</b></div></div>'):'<div class="cart" style="text-align:center;color:var(--ink-3);font-size:13px">ตะกร้าว่าง — แตะเมนูด้านบน</div>')+
+      '<button class="btn" id="pay-btn" style="margin-top:auto"'+(M.cart.length?'':' style="opacity:.4"')+'>คิดเงิน ฿'+money()+' →</button>'+
+    '</div>'+(toast?'<div class="toast">'+toast+'</div>':'');
+}
+var _cartNames=[];
+function cartName(i){ return _cartNames[i]||'รายการ'; }
+function applyTo(i){ reset(); _cartNames=[];
+  if(i>=1){ M.cart.push(60); _cartNames.push('🍚 ข้าวกะเพรา ×1'); }
+  if(i>=2){ M.cart.push(25); _cartNames.push('🧋 ชาเย็น ×1'); }
+  if(i>=3){ M.pay='qr'; }
+}
+function sideHTML(){ var s=STEPS[step].side; return '<h3>'+s.h+'</h3><p>'+s.p+'</p><div class="f">'+s.f.map(function(x){return '<div class="fi">'+x+'</div>';}).join('')+'</div>'; }
+function render(){
+  applyTo(step);
+  var st=STEPS[step];
+  document.getElementById('scr').innerHTML=screenHTML();
+  document.getElementById('side').innerHTML=sideHTML();
+  document.getElementById('g-badge').textContent=st.badge;
+  document.getElementById('g-step').textContent='ขั้นที่ '+(step+1)+' / '+STEPS.length;
+  document.getElementById('g-tip').textContent=st.tip;
+  document.getElementById('prog').style.width=((step+1)/STEPS.length*100)+'%';
+  document.getElementById('g-prev').disabled=step===0;
+  document.getElementById('g-next').textContent=step===STEPS.length-1?'↻ เริ่มใหม่':'ถัดไป →';
+  if(st.focus){ var el=document.querySelector(st.focus); if(el){ el.classList.add('pulse'); el.onclick=function(){next();}; var h=document.createElement('div'); h.className='hint'; h.textContent=st.hint||'แตะ'; el.style.position='relative'; el.appendChild(h);} }
+}
+function next(){ if(step===STEPS.length-1){ step=0; } else { step++; } render(); }
+function prev(){ if(step>0){ step--; render(); } }
+document.getElementById('g-next').onclick=next;
+document.getElementById('g-prev').onclick=prev;
+document.addEventListener('keydown',function(e){ if(e.key==='ArrowRight')next(); if(e.key==='ArrowLeft')prev(); });
+render();
+</script>
+</body>
+</html>

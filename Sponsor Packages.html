@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แพ็กสปอนเซอร์ — KaiDee Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;--gold:#E8992F;--gold-soft:#FBF0DC;--purple:#7C5CE0;--purple-soft:#EEE9FB;--blue:#2F72E8;--blue-soft:#E6EEFB;--hair:#D8E0DD;--hair-2:#E9EEEC;--font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#E7ECEA;color:var(--ink);-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}button{font-family:var(--font);cursor:pointer}
+.toolbar{position:sticky;top:0;z-index:30;background:#0E2A2A;color:#dbeee7;padding:12px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.toolbar .tt{font-weight:700;color:#fff;margin-right:auto;display:flex;align-items:center;gap:10px;font-size:15.5px}
+.toolbar .tt .lg{width:28px;height:28px;background:#fff;border-radius:7px;padding:3px;object-fit:contain}
+.toolbar .tt small{display:block;font-size:11px;font-weight:500;color:#8fc7bb}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 22px 70px}
+.hero{text-align:center;margin-bottom:8px}
+.hero .eb{display:inline-block;background:var(--purple-soft);color:var(--purple);font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:100px;letter-spacing:.02em}
+.hero h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:14px 0 8px;line-height:1.2}
+.hero p{font-size:14.5px;color:var(--ink-2);max-width:640px;margin:0 auto;line-height:1.6}
+.reach{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0 4px}
+.reach .r{background:#fff;border:1px solid var(--hair-2);border-radius:12px;padding:10px 15px;display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600}
+.reach .r .e{font-size:18px}
+.reach .r small{display:block;font-size:11px;color:var(--ink-3);font-weight:500}
+.what{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0 8px}
+.what .c{background:#fff;border:1px solid var(--hair-2);border-radius:16px;padding:18px 20px}
+.what .c .ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;margin-bottom:11px}
+.what .c h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.what .c p{font-size:13px;color:var(--ink-2);line-height:1.6}
+.sec-h{font-size:12.5px;font-weight:700;color:var(--brand-ink);text-transform:uppercase;letter-spacing:.06em;margin:30px 0 4px;text-align:center}
+.sec-sub{text-align:center;font-size:13.5px;color:var(--ink-3);margin-bottom:18px}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.tier{background:#fff;border:1.5px solid var(--hair-2);border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;position:relative}
+.tier.hot{border-color:var(--brand);box-shadow:0 12px 34px rgba(14,156,136,.16)}
+.tier .badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:4px 13px;border-radius:100px;white-space:nowrap}
+.tier .nm{font-size:17px;font-weight:700}
+.tier .tl{font-size:12.5px;color:var(--ink-3);margin-top:2px;min-height:34px}
+.tier .price{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:12px 0 2px}
+.tier .price small{font-size:14px;font-weight:600;color:var(--ink-3)}
+.tier .per{font-size:12px;color:var(--ink-3);margin-bottom:14px}
+.tier ul{list-style:none;display:flex;flex-direction:column;gap:9px;flex:1;margin-bottom:16px}
+.tier li{font-size:13px;line-height:1.45;display:flex;gap:8px;color:var(--ink-2)}
+.tier li b{color:var(--ink)}
+.tier li .ck{color:var(--brand);font-weight:700;flex:0 0 auto}
+.tier li.off{color:var(--ink-3);opacity:.7}.tier li.off .ck{color:var(--ink-3)}
+.buy{border:none;border-radius:11px;padding:12px;font-size:14px;font-weight:700;width:100%}
+.buy.pri{background:var(--brand);color:#fff}.buy.gh{background:var(--brand-softer);color:var(--brand-ink);border:1px solid var(--brand-soft)}
+.ent{background:linear-gradient(135deg,#16302B,#0E5C4A);color:#fff;border-radius:18px;padding:22px 24px;margin-top:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ent h3{font-size:18px;font-weight:700}.ent p{font-size:13px;color:#bfe8de;margin-top:4px;max-width:620px;line-height:1.55}
+.ent .cta{margin-left:auto;background:#fff;color:var(--brand-ink);border-radius:11px;padding:12px 22px;font-weight:700;font-size:14px;flex:0 0 auto}
+.addons{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.addon{background:#fff;border:1px solid var(--hair-2);border-radius:13px;padding:14px 16px}
+.addon .t{font-weight:700;font-size:13.5px;display:flex;justify-content:space-between;gap:8px}
+.addon .t .p{color:var(--brand-ink)}
+.addon .s{font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.5}
+.foot{font-size:12px;color:var(--ink-3);margin-top:22px;line-height:1.7;text-align:center}
+@media(max-width:860px){.tiers,.addons{grid-template-columns:1fr}.what{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="platform-api.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState } = React;
+const B=(n)=>'฿'+Number(n||0).toLocaleString('en-US');
+const TIER_R={starter:1,growth:2,premium:3};
+const SPON_BIZ=(new URLSearchParams(location.search)).get('biz')||'demo-sponsor';
+
+const TIERS=[
+  {id:'starter',nm:'Starter · เปิดร้าน',tl:'เริ่มขายของออนไลน์ในระบบ',price:990,hot:false,btn:'gh',
+   feats:[['เปิดร้านออนไลน์ในแอป (หน้าร้านสปอนเซอร์)',1],['ลงสินค้าไม่จำกัด + รับออเดอร์',1],['เลือกจัดส่ง (ไรเดอร์เรา / Lalamove)',1],['ป้าย “สปอนเซอร์” บนร้าน',1],['พื้นที่แบนเนอร์โฆษณา',0],['ยิงโปรหาคนในระบบ',0]]},
+  {id:'growth',nm:'Growth · โฆษณา',tl:'ขาย + แบนเนอร์หมุนเวียนในแอป',price:2900,hot:true,btn:'pri',
+   feats:[['ทุกอย่างใน Starter',1],['แบนเนอร์โฆษณาหมุนเวียนในแอปตลาด',1],['แสดงในหมวด “ร้านแนะนำ”',1],['เลือกกลุ่มเป้าหมาย (ตลาด/พื้นที่)',1],['รายงานการเข้าถึง (ยอดเห็น/คลิก)',1],['ยิงโปรหาคนในระบบ 1 ครั้ง/เดือน',1]]},
+  {id:'premium',nm:'Premium · เด่นสุด',tl:'แบนเนอร์หน้าแรก + ยิงโปรไม่อั้น',price:5900,hot:false,btn:'gh',
+   feats:[['ทุกอย่างใน Growth',1],['แบนเนอร์ปักหมุดหน้าแรก (ตำแหน่งบนสุด)',1],['ยิงโปร/ประกาศ ไม่จำกัดครั้ง',1],['ขึ้นหลายจุด: ตลาด · POS · ฟิตเนส · วิน',1],['รายงานเชิงลึก + ทีมดูแลช่วยตั้งแคมเปญ',1],['สิทธิ์ร่วมแคมเปญเทศกาลของตลาด',1]]},
+];
+const ADDONS=[
+  {t:'ปักหมุดเพิ่ม 7 วัน',p:'฿790',s:'ดันร้าน/แบนเนอร์ขึ้นบนสุดชั่วคราวช่วงโปร'},
+  {t:'ยิงโปรเพิ่ม 1 ครั้ง',p:'฿490',s:'ประกาศ/คูปองถึงคนในระบบตามกลุ่มเป้าหมาย'},
+  {t:'ลงหลายตลาดพร้อมกัน',p:'+30%/ตลาด',s:'แพ็กเดียวกระจายหลายพื้นที่ในเครือ'},
+];
+
+const ENT_LS='kd_sponsor_entitlement_v1';
+function loadEnt(){ try{return JSON.parse(localStorage.getItem(ENT_LS))||null}catch(e){return null} }
+
+function App(){
+  const [cycle,setCycle]=useState('mo');
+  const [ent,setEnt]=useState(loadEnt);
+  React.useEffect(()=>{ if(!window.PLAT_API) return;
+    const s1=window.PLAT_API.attach({ biz:SPON_BIZ, type:'sponsor', key:'sponsor_entitlement',
+      read:()=>loadEnt(), write:(b)=>{try{b?localStorage.setItem(ENT_LS,JSON.stringify(b)):localStorage.removeItem(ENT_LS)}catch(e){}}, onRemote:(b)=>setEnt(b), stamp:(b)=>(b&&b.updatedAt)||0 });
+    const s2=window.PLAT_API.attach({ biz:'platform', type:'platform', key:'wallet',
+      read:()=>{try{return JSON.parse(localStorage.getItem('kd_platform_wallet_v1'))||null}catch(e){return null}}, write:(b)=>{try{if(b)localStorage.setItem('kd_platform_wallet_v1',JSON.stringify(b))}catch(e){}}, onRemote:()=>{}, stamp:(b)=>(b&&b.updatedAt)||0 });
+    window.__sponEntSync=s1; window.__platWalletSync=s2;
+    return ()=>{ try{s1.stop();s2.stop();}catch(e){} window.__sponEntSync=null; window.__platWalletSync=null; };
+  },[]);
+  const yr=(m)=>Math.round(m*10); // จ่ายรายปี = 10 เดือน (ประหยัด 2 เดือน)
+  const buy=(t)=>{
+    const amt=cycle==='yr'?yr(t.price):t.price;
+    if(!confirm('ยืนยันซื้อแพ็ก “'+t.nm+'” '+B(amt)+(cycle==='yr'?' /ปี':' /เดือน')+' ?\nจ่ายผ่านแอป → ปลดล็อกหน้าจัดการตามแพ็กทันที')) return;
+    try{ const w=JSON.parse(localStorage.getItem('kd_platform_wallet_v1'))||{ledger:[]};
+      w.ledger.unshift({id:'t'+Date.now(),date:new Date().toISOString().slice(0,10),type:'sponsor',who:'สปอนเซอร์ (เดโม)',sub:'แพค '+t.nm+(cycle==='yr'?' รายปี':' รายเดือน'),amt,method:'ในแอป'});
+      w.updatedAt=Date.now(); localStorage.setItem('kd_platform_wallet_v1',JSON.stringify(w)); if(window.__platWalletSync)window.__platWalletSync.push();
+    }catch(e){}
+    // เขียน entitlement → ปลดล็อกหน้าจัดการตามแพ็ก
+    const e={tier:t.id,cycle,boughtAt:new Date().toISOString().slice(0,10),addons:(ent&&ent.addons)||[],updatedAt:Date.now()};
+    try{ localStorage.setItem(ENT_LS,JSON.stringify(e)); }catch(err){}
+    setEnt(e); if(window.__sponEntSync)window.__sponEntSync.push();
+    if(confirm('✅ ซื้อสำเร็จ (เดโม)\nปลดล็อกหน้าจัดการของแพ็ก “'+t.nm+'” แล้ว · ยอด '+B(amt)+' เข้ากระเป๋าแพลตฟอร์ม\n\nไปที่ศูนย์จัดการสปอนเซอร์เลยไหม?')) location.href='Sponsor Console.html';
+  };
+  const owned=ent?ent.tier:null;
+  return (<>
+    <div className="toolbar">
+      <div className="tt"><img className="lg" src="assets/kaidee-logo.png" alt=""/><div>แพ็กสปอนเซอร์<small>ลงโฆษณา + เปิดร้านขายของ · KaiDee Platform</small></div></div>
+      <a href="Sponsor Console.html" style={{textDecoration:'none'}}><button className="buy pri" style={{width:'auto',padding:'9px 15px',fontSize:13,marginRight:8}}>🛠️ ศูนย์จัดการ</button></a>
+      <a href="Platform Wallet.html" style={{textDecoration:'none'}}><button className="buy gh" style={{width:'auto',padding:'9px 15px',fontSize:13}}>👛 กระเป๋าแพลตฟอร์ม</button></a>
+    </div>
+    <div className="wrap">
+      <div className="hero">
+        <span className="eb">📣 สำหรับแบรนด์ · ซัพพลายเออร์ · ร้านที่อยากโต</span>
+        <h1>ลงโฆษณา + เปิดร้านขายของ<br/>ถึงคนทั้งระบบในที่เดียว</h1>
+        <p>ร้านในตลาด · แม่ค้าวินแรงงาน · สมาชิกฟิตเนส · ร้าน POS — ทุกคนเปิดแอปแล้วเห็นร้านและโฆษณาของคุณ ยิ่งระบบมีคนมาก พื้นที่ยิ่งคุ้ม</p>
+      </div>
+      <div className="reach">
+        <div className="r"><span className="e">🏪</span><div>ร้านในตลาด<small>ใช้โปรแกรมตลาด</small></div></div>
+        <div className="r"><span className="e">🎽</span><div>แม่ค้า/วินแรงงาน<small>Labor Win</small></div></div>
+        <div className="r"><span className="e">🏋️</span><div>สมาชิกฟิตเนส<small>เปิดแอปทุกวัน</small></div></div>
+        <div className="r"><span className="e">🧾</span><div>ร้าน POS<small>KaiDee POS</small></div></div>
+      </div>
+
+      <div className="what">
+        <div className="c"><div className="ic" style={{background:'var(--blue-soft)',color:'var(--blue)'}}>📣</div><h3>พื้นที่ลงโฆษณา</h3><p>แบนเนอร์หมุนเวียนในแอป · ป้ายร้านแนะนำ · แบนเนอร์ปักหมุดหน้าแรก · ยิงโปร/คูปองถึงกลุ่มเป้าหมายตามตลาดหรือพื้นที่ พร้อมรายงานยอดเห็น–คลิก</p></div>
+        <div className="c"><div className="ic" style={{background:'var(--brand-soft)',color:'var(--brand-ink)'}}>🛒</div><h3>เปิดร้านขายของ</h3><p>หน้าร้านออนไลน์ในแอป ลงสินค้าไม่จำกัด รับออเดอร์ + เลือกจัดส่งไรเดอร์เรา/Lalamove · คนในระบบสั่งซื้อได้เลยแบบคุ้นมือ ไม่ต้องออกไปแอปอื่น</p></div>
+      </div>
+
+      <div className="sec-h">แพ็กราคา</div>
+      <div className="sec-sub">ทุกแพ็กซื้อจบในแอป → ปลดล็อกหน้าจัดการตามแพ็กทันที · <b style={{color:'var(--brand-ink)'}}>รายปีจ่าย 10 เดือน (ฟรี 2 เดือน)</b></div>
+      <div style={{display:'flex',justifyContent:'center',marginBottom:18}}>
+        <div style={{display:'inline-flex',background:'#EEF1F0',borderRadius:10,padding:3,gap:2}}>
+          {[['mo','รายเดือน'],['yr','รายปี · ประหยัด']].map(([k,l])=><button key={k} onClick={()=>setCycle(k)} style={{border:'none',borderRadius:8,padding:'8px 16px',fontSize:13,fontWeight:700,background:cycle===k?'#fff':'transparent',color:cycle===k?'var(--brand-ink)':'var(--ink-3)',boxShadow:cycle===k?'0 1px 2px rgba(0,0,0,.08)':'none'}}>{l}</button>)}
+        </div>
+      </div>
+      <div className="tiers">
+        {TIERS.map(t=>{ const amt=cycle==='yr'?yr(t.price):t.price;
+          return (<div className={'tier'+(t.hot?' hot':'')+(owned===t.id?' hot':'')} key={t.id}>
+            {owned===t.id?<div className="badge" style={{background:'var(--gold)'}}>✓ แพ็กปัจจุบันของคุณ</div>:(t.hot&&<div className="badge">แนะนำ · คุ้มสุด</div>)}
+            <div className="nm">{t.nm}</div><div className="tl">{t.tl}</div>
+            <div className="price num">{B(amt)}<small>{cycle==='yr'?' /ปี':' /เดือน'}</small></div>
+            <div className="per">{cycle==='yr'?('≈ '+B(Math.round(amt/12))+'/เดือน · ฟรี 2 เดือน'):'ยกเลิกได้ทุกเดือน'}</div>
+            <ul>{t.feats.map(([f,on],i)=><li key={i} className={on?'':'off'}><span className="ck">{on?'✓':'—'}</span><span>{f}</span></li>)}</ul>
+            {owned===t.id
+              ? <a href="Sponsor Console.html" style={{textDecoration:'none'}}><button className="buy gh" style={{width:'100%'}}>→ ไปหน้าจัดการ</button></a>
+              : <button className={'buy '+t.btn} onClick={()=>buy(t)}>{owned&&TIER_R[owned]>TIER_R[t.id]?'แพ็กนี้ต่ำกว่า':(owned?'เปลี่ยนมาแพ็กนี้':'ซื้อแพ็กนี้ในแอป')}</button>}
+          </div>);
+        })}
+      </div>
+
+      <div className="ent">
+        <div><h3>Enterprise · หลายตลาด/เครือข่าย</h3><p>สปอนเซอร์ระดับแบรนด์ที่อยากลงทั้งเครือหลายตลาด/หลายพื้นที่พร้อมกัน · ทีมดูแลจัดแคมเปญให้ · ราคาตามตกลง + ใบเสนอราคา/สัญญา</p></div>
+        <button className="cta" onClick={()=>alert('ทีมขายติดต่อกลับ (เดโม)')}>คุยกับทีมขาย →</button>
+      </div>
+
+      <div className="sec-h" style={{marginTop:30}}>แอดออนเสริม (ซื้อเพิ่มเมื่อไหร่ก็ได้)</div>
+      <div className="addons">
+        {ADDONS.map((a,i)=><div className="addon" key={i}><div className="t"><span>{a.t}</span><span className="p num">{a.p}</span></div><div className="s">{a.s}</div></div>)}
+      </div>
+
+      <p className="foot">💡 แพ็กสปอนเซอร์เห็นได้จาก <b>หน้าแอปตลาดที่ใช้โปรแกรมตลาด</b> และทุก vertical ในระบบ · ยอดค่าแพคเข้า <b>กระเป๋าแพลตฟอร์ม</b> (รายได้ของเรา) · ค่าสินค้า/ค่าส่งวิ่งตรงหาสปอนเซอร์/ไรเดอร์ ไม่ผ่านกระเป๋ากลาง (กันเกณฑ์ e-money ธปท.) · ราคาเดโม ปรับได้</p>
+    </div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#7C5CE0"/><text x="50" y="46" font-size="32" text-anchor="middle">📣</text><text x="50" y="74" font-size="12" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">Sponsor</text></svg>
+</template>
+</body>
+</html>

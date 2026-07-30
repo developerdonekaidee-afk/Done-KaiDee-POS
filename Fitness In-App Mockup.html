@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โมดูลฟิตเนสในแอป POS — Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;--gold:#E8992F;--green:#1E9E6A;--green-soft:#E4F5EC;--red:#D8452F;--red-soft:#FBEAE6;--blue:#1E73B0;--blue-soft:#E6F0F8;--ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--bg:#F4F7F6;--hair:#E9EEEC;--hair-2:#DCE4E1;--font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:#DDE6E3;color:var(--ink);-webkit-font-smoothing:antialiased;padding:34px 20px 60px;}
+  .num{font-variant-numeric:tabular-nums;}.mono{font-family:var(--mono);}
+  .head{text-align:center;max-width:900px;margin:0 auto 30px;}
+  .head .kk{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-ink);font-weight:700;}
+  .head h1{font-size:26px;font-weight:700;margin:6px 0 8px;letter-spacing:-.02em;}
+  .head p{font-size:14.5px;color:var(--ink-2);line-height:1.6;max-width:640px;margin:0 auto;}
+  .head .tag{display:inline-block;margin-top:12px;background:#fff3d9;color:#8a5a12;border:1px solid #f0d8b0;border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:700;}
+  .stage{display:flex;gap:30px;justify-content:center;flex-wrap:wrap;align-items:flex-start;}
+  .col{width:340px;}
+  .col .cap{text-align:center;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:12px;}
+  .col .cap span{display:block;font-size:11.5px;font-weight:500;color:var(--ink-3);margin-top:2px;}
+  /* phone */
+  .phone{width:340px;background:#fff;border-radius:38px;padding:11px;box-shadow:0 20px 50px rgba(14,42,42,.22);border:1px solid #cdd6d2;}
+  .screen{background:var(--bg);border-radius:29px;overflow:hidden;position:relative;height:686px;display:flex;flex-direction:column;}
+  .status{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:12px;font-weight:700;color:var(--ink);flex:0 0 auto;background:var(--bg);}
+  .appbar{background:var(--brand);color:#fff;padding:12px 18px 14px;flex:0 0 auto;}
+  .appbar .ab-top{display:flex;align-items:center;justify-content:space-between;}
+  .appbar .ab-shop{font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:7px;}
+  .appbar .ab-badge{background:rgba(255,255,255,.2);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;}
+  .appbar .ab-sub{font-size:12px;opacity:.9;margin-top:3px;}
+  .body{flex:1;overflow-y:auto;padding:14px 14px 16px;}
+  .body::-webkit-scrollbar{width:0;}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+  .kpi{background:#fff;border-radius:14px;padding:11px 13px;border:1px solid var(--hair);}
+  .kpi .l{font-size:11px;color:var(--ink-3);font-weight:600;}
+  .kpi .v{font-size:20px;font-weight:700;margin-top:3px;letter-spacing:-.02em;}
+  .kpi .f{font-size:10.5px;color:var(--ink-3);margin-top:2px;font-weight:600;}
+  .card{background:#fff;border-radius:15px;border:1px solid var(--hair);padding:13px 14px;margin-bottom:12px;}
+  .card h3{font-size:13.5px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+  .card h3 .lnk{font-size:11.5px;color:var(--brand-ink);font-weight:600;}
+  .row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--hair);}
+  .row:last-child{border-bottom:none;}
+  .av{width:32px;height:32px;border-radius:50%;background:var(--brand-soft);color:var(--brand-ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:0 0 auto;}
+  .ic{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:0 0 auto;}
+  .row .b{flex:1;min-width:0;}
+  .row .t{font-size:13px;font-weight:600;}
+  .row .s{font-size:11px;color:var(--ink-3);margin-top:1px;}
+  .pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;}
+  .pg{background:var(--green-soft);color:var(--green);}.py{background:#FCF3DE;color:#C88A12;}.pr{background:var(--red-soft);color:var(--red);}.pb{background:var(--blue-soft);color:var(--blue);}
+  .quick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:12px;}
+  .qbtn{background:#fff;border:1px solid var(--hair);border-radius:14px;padding:12px 6px;text-align:center;}
+  .qbtn .qe{font-size:21px;}
+  .qbtn .qt{font-size:11px;font-weight:600;margin-top:5px;}
+  /* hour bars */
+  .hours{display:flex;align-items:flex-end;gap:3px;height:64px;margin-top:4px;}
+  .hours .hc{flex:1;background:var(--brand-soft);border-radius:3px 3px 0 0;}
+  .hours .hc.pk{background:var(--brand);}
+  .hlbl{display:flex;justify-content:space-between;font-size:9px;color:var(--ink-3);margin-top:4px;font-family:var(--mono);}
+  /* tabbar */
+  .tabbar{flex:0 0 auto;background:#fff;border-top:1px solid var(--hair);display:flex;padding:7px 4px 9px;}
+  .tab{flex:1;text-align:center;color:var(--ink-3);}
+  .tab .te{font-size:19px;}
+  .tab .tl{font-size:10px;font-weight:600;margin-top:1px;}
+  .tab.on{color:var(--brand);}
+  .checkbig{background:#fff;border-radius:16px;border:1px solid var(--hair);padding:20px 16px;text-align:center;margin-bottom:12px;}
+  .checkbig .cnfc{width:70px;height:70px;border-radius:50%;background:var(--brand-softer);border:2px dashed var(--brand);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px;}
+  .checkbig .ct{font-size:14px;font-weight:700;}
+  .checkbig .cs{font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.5;}
+  .okres{background:var(--green-soft);border:1px solid #bfe6cf;border-radius:16px;padding:18px 16px;text-align:center;margin-bottom:12px;}
+  .okres .oi{width:52px;height:52px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 8px;}
+  .okres .on{font-size:17px;font-weight:700;}
+  .okres .osub{font-size:12px;color:var(--ink-2);margin-top:2px;}
+  .memcard{border-radius:16px;padding:15px 16px;color:#fff;background:linear-gradient(150deg,#14A886,#0A6E60);margin-bottom:12px;}
+  .memcard .mt{display:flex;justify-content:space-between;font-size:11px;opacity:.85;font-weight:600;}
+  .memcard .mn{font-size:19px;font-weight:700;margin-top:4px;}
+  .memcard .mp{font-size:12.5px;opacity:.9;}
+  .memcard .mqr{width:74px;height:74px;background:#fff;border-radius:11px;margin:12px auto 4px;padding:6px;}
+  .memcard .mqr svg{width:100%;height:100%;}
+  .memcard .mh{text-align:center;font-size:10.5px;opacity:.8;}
+  .note{border-radius:11px;padding:10px 12px;font-size:11.5px;line-height:1.5;background:var(--brand-softer);color:var(--brand-ink);border:1px solid #cfeae4;font-weight:600;margin-bottom:12px;}
+</style>
+</head>
+<body>
+<div class="head">
+  <div class="kk">Concept Mockup · ยังไม่ผูกข้อมูลจริง</div>
+  <h1>โมดูลฟิตเนส — ถ้าฝังเข้าแอป POS</h1>
+  <p>ภาพจำลองว่าโมดูลฟิตเนส (สมาชิก · เช็คอิน · คลาส · PT) จะทำงาน <b>ในแอป POS หน้าเดียว</b> อย่างไร — มีแถบล่าง (bottom tab) เปลี่ยนเลนส์เหมือนแอปจริง ไม่ต้องลิงก์ออกไป Backoffice แยก</div>
+  <div class="tag">🎨 นี่คือ mockup ให้ดูทิศทาง — กดสั่งได้เลยถ้าจะให้ลงมือฝังจริง</div>
+</div>
+<div class="stage">
+  <!-- Screen 1: หน้าแรกฟิตเนสในแอป -->
+  <div class="col">
+    <div class="cap">1 · หน้าแรกฟิตเนส (เจ้าของ)<span>KPI + เช็คอินล่าสุด + พีคชั่วโมง</span></div>
+    <div class="phone"><div class="screen">
+      <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="appbar"><div class="ab-top"><div class="ab-shop">🏋️ ฟิตโซน</div><div class="ab-badge">โหมดฟิตเนส</div></div>
+        <div class="ab-sub">ภาพรวมวันนี้ · จ. 23 ก.ค.</div></div>
+      <div class="body">
+        <div class="kpis">
+          <div class="kpi"><div class="l">สมาชิกใช้งานได้</div><div class="v">14/16</div><div class="f">สมัครใหม่ 2 คน</div></div>
+          <div class="kpi"><div class="l">เช็คอินวันนี้</div><div class="v" style="color:var(--blue)">38</div><div class="f">ปฏิเสธ 1 · พีค 18:00</div></div>
+          <div class="kpi"><div class="l">รายได้เดือนนี้</div><div class="v" style="color:var(--green)">฿82K</div><div class="f">ต่ออายุ+PT+ขาย</div></div>
+          <div class="kpi"><div class="l">ยอดค้างต่ออายุ</div><div class="v" style="color:var(--gold)">฿24K</div><div class="f">5 คนรอต่อ</div></div>
+        </div>
+        <div class="card"><h3>ช่วงเวลาคนเข้าพีค <span class="lnk">รายงาน →</span></h3>
+          <div class="hours">
+            <div class="hc" style="height:22%"></div><div class="hc" style="height:34%"></div><div class="hc" style="height:28%"></div>
+            <div class="hc" style="height:40%"></div><div class="hc" style="height:30%"></div><div class="hc" style="height:52%"></div>
+            <div class="hc" style="height:66%"></div><div class="hc pk" style="height:100%"></div><div class="hc" style="height:74%"></div>
+            <div class="hc" style="height:44%"></div></div>
+          <div class="hlbl"><span>08</span><span>12</span><span>16</span><span>18</span><span>21</span></div>
+        </div>
+        <div class="card"><h3>เช็คอินล่าสุด <span class="lnk">ดูทั้งหมด →</span></h3>
+          <div class="row"><div class="ic pg">✓</div><div class="b"><div class="t">ธนกร ว.</div><div class="s">แตะ NFC · 18:22</div></div><span class="pill pg">เข้าได้</span></div>
+          <div class="row"><div class="ic pg">✓</div><div class="b"><div class="t">ญาดา บ.</div><div class="s">สแกน QR · 18:15</div></div><span class="pill pg">เข้าได้</span></div>
+          <div class="row"><div class="ic pr">✕</div><div class="b"><div class="t">สุชานันท์ ร.</div><div class="s">แตะ NFC · 18:03 · หมดอายุ</div></div><span class="pill pr">ปฏิเสธ</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><div class="te">📊</div><div class="tl">ภาพรวม</div></div>
+        <div class="tab"><div class="te">🎫</div><div class="tl">สมาชิก</div></div>
+        <div class="tab"><div class="te">🚪</div><div class="tl">เช็คอิน</div></div>
+        <div class="tab"><div class="te">🗓️</div><div class="tl">คลาส</div></div>
+        <div class="tab"><div class="te">🏋️</div><div class="tl">PT</div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Screen 2: เช็คอินหน้าประตู -->
+  <div class="col">
+    <div class="cap">2 · เช็คอินหน้าประตู<span>แตะ NFC → เช็คสิทธิ์ → เขียว/แดง</span></div>
+    <div class="phone"><div class="screen">
+      <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="appbar"><div class="ab-top"><div class="ab-shop">🚪 เช็คอินหน้าประตู</div><div class="ab-badge">38 วันนี้</div></div>
+        <div class="ab-sub">แตะ NFC / สแกน QR ที่ประตู</div></div>
+      <div class="body">
+        <div class="okres"><div class="oi">✓</div><div class="on">ธนกร ว.</div><div class="osub">เข้าได้ · รายเดือน · เหลือ 18 วัน</div></div>
+        <div class="checkbig"><div class="cnfc">📶</div><div class="ct">รอสมาชิกแตะ NFC คนถัดไป</div><div class="cs">สติกเกอร์ NFC แปะที่ประตู<br/>ลูกค้าใช้มือถือตัวเองแตะ ไม่ต้องซื้อเครื่องสแกน</div></div>
+        <div class="card"><h3>บันทึกเข้าวันนี้</h3>
+          <div class="row"><div class="ic pg">✓</div><div class="b"><div class="t">ญาดา บ.</div><div class="s">สแกน QR · 18:15</div></div><span class="pill pg">เข้าได้</span></div>
+          <div class="row"><div class="ic pr">✕</div><div class="b"><div class="t">สุชานันท์ ร.</div><div class="s">NFC · 18:03 · แพ็กหมดอายุ</div></div><span class="pill pr">ปฏิเสธ</span></div>
+          <div class="row"><div class="ic pg">✓</div><div class="b"><div class="t">อภิสิทธิ์ ล.</div><div class="s">NFC · 17:48</div></div><span class="pill pg">เข้าได้</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><div class="te">📊</div><div class="tl">ภาพรวม</div></div>
+        <div class="tab"><div class="te">🎫</div><div class="tl">สมาชิก</div></div>
+        <div class="tab on"><div class="te">🚪</div><div class="tl">เช็คอิน</div></div>
+        <div class="tab"><div class="te">🗓️</div><div class="tl">คลาส</div></div>
+        <div class="tab"><div class="te">🏋️</div><div class="tl">PT</div></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Screen 3: แอปสมาชิก -->
+  <div class="col">
+    <div class="cap">3 · ฝั่งสมาชิก (ในแอปเดียวกัน)<span>บัตร + QR + ต่ออายุ/จองในแอป</span></div>
+    <div class="phone"><div class="screen">
+      <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+      <div class="appbar" style="background:#7a4a8c"><div class="ab-top"><div class="ab-shop">📱 สมาชิก</div><div class="ab-badge">M07</div></div>
+        <div class="ab-sub">ฟิตโซน</div></div>
+      <div class="body">
+        <div class="memcard"><div class="mt"><span>ฟิตโซน</span><span class="mono">M07</span></div>
+          <div class="mn">พิมพ์มาดา ค.</div><div class="mp">รายเดือน · ใช้ได้ถึง 30 ก.ค.</div>
+          <div class="mqr"><svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#fff"/><g fill="#0E2A2A"><rect x="6" y="6" width="22" height="22"/><rect x="12" y="12" width="10" height="10" fill="#fff"/><rect x="72" y="6" width="22" height="22"/><rect x="78" y="12" width="10" height="10" fill="#fff"/><rect x="6" y="72" width="22" height="22"/><rect x="12" y="78" width="10" height="10" fill="#fff"/><rect x="36" y="10" width="6" height="6"/><rect x="48" y="10" width="6" height="12"/><rect x="60" y="14" width="6" height="6"/><rect x="36" y="36" width="8" height="8"/><rect x="52" y="40" width="10" height="6"/><rect x="70" y="44" width="6" height="10"/><rect x="40" y="56" width="6" height="8"/><rect x="58" y="60" width="8" height="8"/><rect x="76" y="66" width="6" height="6"/><rect x="36" y="76" width="10" height="6"/><rect x="54" y="80" width="6" height="10"/><rect x="72" y="82" width="8" height="6"/></g></svg></div>
+          <div class="mh">แตะ NFC / สแกน QR นี้ที่ประตู</div></div>
+        <div class="note">แพ็กใกล้หมด — ต่ออายุจ่ายในแอปได้เลย</div>
+        <div class="card"><h3>ซื้อ / ต่อแพ็ก</h3>
+          <div class="row"><div class="b"><div class="t">รายเดือน <span class="pill py">ยอดนิยม</span></div><div class="s">ฟิตเนส + คลาสไม่จำกัด</div></div><b class="num">฿1,990</b></div>
+          <div class="row"><div class="b"><div class="t">รายปี</div><div class="s">คุ้มสุด · แช่แข็งได้ 30 วัน</div></div><b class="num">฿14,990</b></div>
+        </div>
+        <div class="quick">
+          <div class="qbtn"><div class="qe">🗓️</div><div class="qt">จองคลาส</div></div>
+          <div class="qbtn"><div class="qe">🏋️</div><div class="qt">จอง PT</div></div>
+          <div class="qbtn"><div class="qe">🕐</div><div class="qt">เข้าออก</div></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on" style="color:#7a4a8c"><div class="te">🎫</div><div class="tl">แพ็ก</div></div>
+        <div class="tab"><div class="te">🗓️</div><div class="tl">คลาส</div></div>
+        <div class="tab"><div class="te">🏋️</div><div class="tl">เทรนเนอร์</div></div>
+        <div class="tab"><div class="te">🕐</div><div class="tl">เข้าออก</div></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+</body>
+</html>

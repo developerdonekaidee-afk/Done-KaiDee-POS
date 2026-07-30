@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labor Win — เอกสารออกแบบระบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="doc-page.js?v=p2-20260730j"></script>
+<style>
+:root{--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--brand:#0E7C4E;--brand-2:#12945C;--soft:#E9F5EE;--soft-2:#F4FAF6;--gold:#F4900C;--red:#C0392B;--line:#dde5e0;--line-2:#eef2f0}
+*{box-sizing:border-box}
+doc-page{--doc-font:"IBM Plex Sans Thai",system-ui,sans-serif}
+body{margin:0;color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;line-height:1.6;font-size:11.2pt}
+h1,h2,h3,h4{line-height:1.25;margin:0;text-wrap:balance}
+p{margin:0 0 9px;text-wrap:pretty}
+a{color:var(--brand)}a:hover{color:var(--brand-2)}
+.mono{font-family:"IBM Plex Mono",monospace}
+
+/* cover */
+.cover{margin:-4px 0 30px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:9.5pt;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);background:var(--soft);padding:7px 14px;border-radius:100px}
+.cover h1{font-size:34pt;font-weight:700;letter-spacing:-.02em;margin:20px 0 8px}
+.cover .sub{font-size:13.5pt;color:var(--ink-2);font-weight:500;max-width:52ch}
+.cover-meta{display:flex;gap:26px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:2px solid var(--ink)}
+.cover-meta div{font-size:9.5pt}
+.cover-meta b{display:block;font-size:8.5pt;color:var(--ink-3);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+
+/* section heading */
+.sec{margin:30px 0 14px;break-after:avoid}
+.sec .n{font-family:"IBM Plex Mono",monospace;font-size:10pt;color:var(--brand);font-weight:500}
+.sec h2{font-size:19pt;font-weight:700;letter-spacing:-.01em;margin-top:2px}
+.sec .lead{color:var(--ink-2);font-size:11pt;margin-top:5px}
+h3{font-size:12.5pt;font-weight:700;margin:18px 0 7px;break-after:avoid}
+
+.lead-box{background:var(--soft-2);border-left:3px solid var(--brand);padding:14px 18px;border-radius:0 10px 10px 0;margin:14px 0;color:var(--ink-2)}
+.lead-box b{color:var(--ink)}
+
+/* money flow */
+.flow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+.flow .card{border:1px solid var(--line);border-radius:12px;padding:15px;break-inside:avoid}
+.flow .card .ic{font-size:20pt;line-height:1}
+.flow .card h4{font-size:11pt;font-weight:700;margin:8px 0 5px}
+.flow .card p{font-size:9.7pt;color:var(--ink-2);margin:0}
+.flow .card .tag{display:inline-block;margin-top:9px;font-size:8.5pt;font-weight:600;padding:3px 9px;border-radius:100px}
+.tag.dev{background:var(--soft);color:var(--brand)}
+.tag.cash{background:#FEF1E2;color:var(--gold)}
+.tag.win{background:#FDECEA;color:var(--red)}
+
+/* roles */
+.role{border:1px solid var(--line);border-radius:14px;padding:0;margin:12px 0;overflow:hidden;break-inside:avoid}
+.role .hd{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--soft-2);border-bottom:1px solid var(--line-2)}
+.role .hd .em{font-size:19pt}
+.role .hd h3{margin:0;font-size:13pt}
+.role .hd .who{font-size:9pt;color:var(--ink-3);margin-top:1px}
+.role .bd{padding:13px 16px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.menu.one{grid-template-columns:1fr}
+.mi{display:flex;gap:10px;padding:9px 11px;border:1px solid var(--line-2);border-radius:9px;align-items:flex-start}
+.mi .mic{font-size:14pt;flex:0 0 auto;line-height:1.3}
+.mi b{font-size:10pt;display:block}
+.mi span{font-size:9pt;color:var(--ink-2);display:block;margin-top:1px}
+.lock{font-size:8.5pt;color:var(--gold);font-weight:600;background:#FEF1E2;padding:2px 8px;border-radius:100px;white-space:nowrap}
+
+/* steps */
+.steps{counter-reset:s;margin:12px 0}
+.step{display:flex;gap:13px;padding:10px 0;border-bottom:1px dashed var(--line-2);break-inside:avoid}
+.step:last-child{border-bottom:none}
+.step .num{counter-increment:s;flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;font-size:10pt;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step .num::before{content:counter(s)}
+.step .tx b{font-size:10.5pt}
+.step .tx p{font-size:9.7pt;color:var(--ink-2);margin:2px 0 0}
+
+/* table */
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:9.7pt}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{background:var(--soft-2);font-size:8.5pt;font-weight:700;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase}
+td .mono{font-size:9pt;color:var(--brand-2)}
+.rel td{font-family:"IBM Plex Mono",monospace;font-size:9pt}
+
+/* code */
+pre{background:#12211a;color:#c8e6d5;border-radius:11px;padding:15px 17px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:8.6pt;line-height:1.55;margin:12px 0;break-inside:avoid}
+pre .c{color:#6f9c82}
+pre .k{color:#7fd1a3}
+pre .s{color:#e8c07d}
+code.inl{font-family:"IBM Plex Mono",monospace;font-size:9pt;background:var(--soft);color:var(--brand);padding:1px 6px;border-radius:5px}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.stack{border:1px solid var(--line);border-radius:11px;padding:13px 15px;break-inside:avoid}
+.stack h4{font-size:10.5pt;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.stack h4 .px{font-size:8.5pt;color:var(--brand);font-weight:600}
+.stack p{font-size:9.3pt;color:var(--ink-2);margin:5px 0 0}
+.pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{font-size:8.3pt;background:var(--soft);color:var(--brand-2);padding:3px 9px;border-radius:100px;font-weight:500}
+
+.note{font-size:9pt;color:var(--ink-3);margin-top:6px}
+.done{color:var(--brand);font-weight:600}
+.foothd{display:flex;justify-content:space-between;font-size:8pt;color:var(--ink-3);padding-top:6px;border-top:1px solid var(--line-2)}
+ul.tick{list-style:none;padding:0;margin:8px 0}
+ul.tick li{position:relative;padding:4px 0 4px 24px;font-size:10pt}
+ul.tick li::before{content:"✓";position:absolute;left:0;color:var(--brand);font-weight:700}
+.status{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.st{border:1px solid var(--line-2);border-radius:9px;padding:9px 12px;font-size:9.5pt}
+.st .b{font-weight:700;font-size:8.3pt;letter-spacing:.05em;text-transform:uppercase}
+.st.ok .b{color:var(--brand)}
+.st.next .b{color:var(--gold)}
+</style>
+</head>
+<body>
+<doc-page>
+<div slot="footer" class="foothd"><span>Labor Win — เอกสารออกแบบระบบ</span><span>ตลาดสี่มุมเมือง · ลับเฉพาะ</span></div>
+
+<!-- COVER -->
+<div class="cover">
+<span class="kicker">🏷️ ระบบบริหารวินแรงงาน · รันบน LINE OA</span>
+<h1>Labor Win</h1>
+<div class="sub">ระบบจับคู่งาน–คิว–กระเป๋าเงินสำหรับวินแรงงานต่างด้าวในตลาดค้าส่ง เอกสารออกแบบระบบ + สเปกส่งพัฒนา</div>
+<div class="cover-meta">
+<div><b>โมเดลนำร่อง</b>ตลาดสี่มุมเมือง</div>
+<div><b>แพลตฟอร์ม</b>LINE OA + LIFF</div>
+<div><b>สถานะ</b>ออกแบบ + โค้ดตัวอย่างพร้อม</div>
+<div><b>เวอร์ชัน</b>24 ก.ค. 2026</div>
+</div>
+</div>
+
+<div class="lead-box"><b>ภาพรวมหนึ่งประโยค:</b> ร้านในตลาดกดเรียกแรงงานผ่าน LINE ระบบเดินคิวหาแรงงานที่ว่างในวินสีที่ขอโดยอัตโนมัติ ยิงการ์ดงาน (ไทย+พม่า) ปุ่มเขียว/แดง ปิดงานแล้วหักค่าหัวคิวจากกระเป๋าเติมล่วงหน้าของแรงงานเข้ากระเป๋าหัวหน้าวินเต็มจำนวน — รายได้ของแอปมาจากค่าบริการรายเดือนของร้านเท่านั้น</div>
+
+<!-- 1. MONEY FLOW -->
+<div class="sec"><div class="n">01</div><h2>โมเดลรายได้ & การไหลของเงิน</h2><div class="lead">แยกกระเป๋าชัดเจน 3 ทาง — แอปไม่แตะค่าแรงและไม่แบ่งค่าหัวคิว</div></div>
+<div class="flow">
+<div class="card"><div class="ic">🏪</div><h4>ค่าบริการรายเดือน</h4><p>ร้าน/ผู้จ้างจ่าย SaaS 299 / 599 / 999 บาท/เดือน</p><span class="tag dev">→ เข้าผู้พัฒนา 100%</span></div>
+<div class="card"><div class="ic">💵</div><h4>ค่าแรงหน้างาน</h4><p>ร้านจ่ายเงินสดตรงให้แรงงานตามราคากลาง หัวหน้าวินไม่เห็นยอดรวม</p><span class="tag cash">→ แรงงานรับสด 100%</span></div>
+<div class="card"><div class="ic">🎽</div><h4>ค่าหัวคิว</h4><p>แรงงานโอนเข้า PromptPay ของหัวหน้าวินโดยตรง (เช่น 10% ของราคากลาง) ตอนจบงาน</p><span class="tag win">→ เข้าหัวหน้าวิน 100%</span></div>
+</div>
+<p>ค่าหัวคิวเข้า <b>กระเป๋า/บัญชีของหัวหน้าวินแต่ละวินโดยตรง (แยกตามสีเสื้อ)</b> — แอปไม่เข้ากองกลาง ไม่แบ่งค่าหัวคิวเลย รายได้ของแอปมาจากค่าบริการรายเดือนของร้านทางเดียว</p>
+
+<h3>หน้ารับเงิน — หัวหน้าวินตั้งค่าเอง (ไม่ต้องผูกธนาคาร/LINE bank)</h3>
+<p>หัวหน้าวินแต่ละคนตั้งค่า “หน้ารับเงิน” ของตัวเองในแอป — เลือกได้ 3 โหมด ตามความสะดวก — ตั้งต้น <b>PromptPay ของตัวเอง</b> เมื่อปิดงานระบบสร้าง QR ตามยอดค่าหัวคิวให้แรงงานสแกนโอนตรง — เงินเข้าบัญชีหัวหน้าวินโดยตรง แอปไม่เคยถือเงิน</p>
+<table>
+<thead><tr><th>โหมดรับเงิน (หัวหน้าวินเลือก)</th><th>ระบบทำอะไร</th></tr></thead>
+<tbody>
+<tr><td>💵 <b>เงินสด</b> (default ง่ายสุด)</td><td>แอปโชว์ยอดค่าคิวที่ต้องจ่าย — แรงงานจ่ายสดให้หัวหน้าวินตรง · <b>แอปไม่บันทึก/ไม่ตามยอด</b> — หรือจะกด “รับเงินสดแล้ว” ไว้ดูรายได้ตัวเองก็ได้ (ไม่บังคับ)</td></tr>
+<tr><td>💳 <b>PromptPay ตรง</b></td><td>โชว์ QR (ค่าเริ่มต้น — ไม่ต้องสมัครธนาคาร/LINE bank) · เปิด/ปิด การแนบสลิปได้</td></tr>
+<tr><td>👛 <b>กระเป๋าหักอัตโนมัติ</b></td><td>ออปชันเมื่อโต — แรงงานเติมกระเป๋าล่วงหน้า → หักเข้าวินเรียลไทม์</td></tr>
+</tbody>
+</table>
+<p class="note">โหมดเงินสด = ตอบโจทย์หัวหน้าวินที่ “ไม่อยากให้แอปรู้รายได้” — เก็บสดเองได้เลย · แต่ถ้าอยากเห็นรายได้ของตัวเองก็กดบันทึกได้ (สมัครใจ) · ทุกโหมดต้นทุน ฿0 ไม่ติดใบอนุญาตถือเงิน (e-money)</p>
+
+<!-- 2. ROADMAP / ROLES -->
+<div class="sec"><div class="n">02</div><h2>โครงสร้างโมดูล & บทบาทผู้ใช้</h2><div class="lead">โมดูลนี้ล็อกเมนูให้เห็นเฉพาะที่กำหนด — คุมเปิด/ปิดจาก Platform Control เหมือนโมดูลอื่น</div></div>
+
+<div class="role">
+<div class="hd"><span class="em">🏪</span><div><h3>ร้าน / ผู้จ้าง</h3><div class="who">เข้าผ่าน LINE LIFF · ผูกเลขแผง + เบอร์</div></div><span class="lock">🔒 ล็อก 4 เมนู</span></div>
+<div class="bd"><div class="menu">
+<div class="mi"><span class="mic">🧾</span><div><b>หน้าขาย (เรียกงาน)</b><span>เลือกชนิดงาน + วินสี + ราคากลาง → เรียกแรงงาน</span></div></div>
+<div class="mi"><span class="mic">💰</span><div><b>รายรับรายจ่าย</b><span>ค่าแรงที่จ่าย + ค่าบริการรายเดือน + ประวัติงาน</span></div></div>
+<div class="mi"><span class="mic">👤</span><div><b>หน้าของสมาชิก</b><span>ทะเบียนแรงงานที่เคยจ้าง ⭐favorite / 🚫blacklist + รีวิว</span></div></div>
+<div class="mi"><span class="mic">➕</span><div><b>หน้าที่เพิ่ม</b><span>ตั้งค่า · เอกสาร/สัญญา · เชื่อม LINE · จ่ายค่าบริการ</span></div></div>
+</div></div>
+</div>
+
+<div class="role">
+<div class="hd"><span class="em">🎽</span><div><h3>ผู้คุมวิน (หัวหน้าวิน)</h3><div class="who">Web dashboard / Rich menu · เจ้าของสีเสื้อ</div></div></div>
+<div class="bd"><div class="menu">
+<div class="mi"><span class="mic">📋</span><div><b>คิวในสังกัด</b><span>แรงงานในวิน — ทำงาน / ว่าง / พัก แบบเรียลไทม์</span></div></div>
+<div class="mi"><span class="mic">💰</span><div><b>หน้ารับเงิน (ตั้งเอง)</b><span>ใส่ PromptPay ตัวเอง + ดูงานที่จ่ายค่าคิวแล้ว/ค้าง</span></div></div>
+<div class="mi"><span class="mic">⭐</span><div><b>รีวิว & คะแนน</b><span>สรุปคะแนนแรงงานในสังกัด</span></div></div>
+<div class="mi"><span class="mic">⛔</span><div><b>สั่งพัก / Ban</b><span>override สถานะแรงงานได้ทันที</span></div></div>
+</div></div>
+</div>
+
+<div class="role">
+<div class="hd"><span class="em">👷</span><div><h3>แรงงาน TH / MY / KH</h3><div class="who">LINE OA · UI ปุ่มใหญ่ ข้อความน้อย เน้นรูป/สี/เลข</div></div></div>
+<div class="bd"><div class="menu">
+<div class="mi"><span class="mic">🟢</span><div><b>รับ / 🔴 ไม่รับงาน</b><span>2 ปุ่มใหญ่ + ตอบใน 60 วินาที</span></div></div>
+<div class="mi"><span class="mic">🌐</span><div><b>สลับภาษา TH / MY / KH</b><span>การ์ดงานแสดงไทยคู่ภาษาแรงงาน</span></div></div>
+<div class="mi"><span class="mic">💳</span><div><b>จ่ายค่าคิวง่าย</b><span>สแกน QR หัวหน้าวินโอนตรง (ออปชัน: กระเป๋าเติมล่วงหน้า)</span></div></div>
+<div class="mi"><span class="mic">🗺️</span><div><b>แผนที่ + เลขล็อกแผง</b><span>แผนที่จำลอง + เลขล็อกตัวใหญ่ อ่านง่าย</span></div></div>
+</div></div>
+</div>
+
+<!-- 3. QUEUE DISPATCH -->
+<div class="sec"><div class="n">03</div><h2>กลไกจับคู่งาน & คิวเรียลไทม์</h2><div class="lead">หมุนเวียนเป็นธรรม — ปฏิเสธหรือไม่ตอบ = ดันท้ายคิว ส่งคิวถัดไปทันที</div></div>
+<div class="steps">
+<div class="step"><div class="num"></div><div class="tx"><b>ร้านเรียกงาน</b><p>เลือกชนิดงาน + วินสี + ราคากลาง → ระบบสร้างงานสถานะ open</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>ดึงคิวที่ 1 ที่ผ่านเงื่อนไข</b><p>คิวตำแหน่งน้อยสุดของวินสีนั้น ที่ <code class="inl">available</code> และกระเป๋าพอจ่ายค่าหัวคิว</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>ยิงการ์ดงาน (LINE Flex)</b><p>ไทย + พม่า/เขมร · ปุ่ม 🟢 รับ / 🔴 ไม่รับ · จับเวลา 60 วินาที</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>ปฏิเสธ / ไม่ตอบใน 60 วิ</b><p>ดันคนเดิมไปท้ายคิวของวิน → ส่ง offer ให้คิวถัดไป (ข้ามคนเดิม)</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>รับงาน → ปิดงานด้วย QR</b><p>ร้านสแกน QR แรงงานยืนยันจบงาน → หักค่าหัวคิว + ให้รีวิว 1–5⭐ / favorite / blacklist</p></div></div>
+</div>
+<p class="note">ถ้าไม่มีแรงงานคนใดในวินสีนั้นว่างหรือกระเป๋าพอ ระบบคืนงานเป็นสถานะ open และแจ้งร้านให้เปลี่ยนสีวินหรือรอสักครู่</p>
+
+<h3>โค้ดหัวใจ — เดินคิว & offer หมดเวลา (Node.js / Express)</h3>
+<pre><span class="c">// หา "คิวถัดไป" = ตำแหน่งน้อยสุดของวินสีนั้น ที่ว่าง + wallet พอ</span>
+<span class="k">function</span> nextCandidate(winId, commissionAmt, exclude) {
+  <span class="k">return</span> db.prepare(`
+    SELECT w.*, q.position FROM queues q
+    JOIN workers w ON w.worker_id = q.worker_id
+    WHERE q.win_id = ? AND w.status = <span class="s">'available'</span>
+      AND w.wallet_balance &gt;= ? AND w.worker_id NOT IN (${exclude})
+    ORDER BY q.position ASC LIMIT 1`).get(winId, commissionAmt);
+}
+
+<span class="c">// offer หมดเวลา 60 วิ → ดันคนเดิมท้ายคิว → ส่งคิวถัดไป</span>
+<span class="k">function</span> expireOffer(jobId, workerId) {
+  <span class="k">const</span> job = getJob(jobId);
+  <span class="k">if</span> (job.status !== <span class="s">'offered'</span> || job.offered_to !== workerId) <span class="k">return</span>;
+  pushToBack(workerId, job.win_id);        <span class="c">// หมุนเวียนเป็นธรรม</span>
+  advanceQueue(jobId, [workerId]);         <span class="c">// ข้ามคนเดิม</span>
+}</pre>
+
+<h3>โค้ดหัวใจ — ปิดงาน: หัก prepaid → เข้าวิน 100%</h3>
+<pre><span class="c">// ธุรกรรมเดียว (atomic): หักกระเป๋าแรงงาน → เข้ากระเป๋าวินเต็มจำนวน</span>
+<span class="k">const</span> commission = Math.round(job.standard_price * job.commission_rate);
+<span class="k">if</span> (worker.wallet_balance &lt; commission) <span class="k">throw</span> <span class="s">'wallet_insufficient'</span>;
+
+worker.wallet_balance -= commission;        <span class="c">// 1) หักจากแรงงาน</span>
+leader.wallet_balance += commission;        <span class="c">// 2) เข้าหัวหน้าวิน 100%</span>
+logTxn(<span class="s">'worker'</span>, worker.id, <span class="s">'commission_debit'</span>, -commission);
+logTxn(<span class="s">'win'</span>, leader.id, <span class="s">'commission_credit'</span>, +commission);
+job.status = <span class="s">'done'</span>; pushToBack(worker.id, job.win_id);</pre>
+
+<!-- 4. LINE FLEX -->
+<div class="sec"><div class="n">04</div><h2>การ์ดแจ้งงาน LINE (พม่าคู่ไทย)</h2><div class="lead">ปุ่มเขียว/แดงเต็มความกว้าง · ตัวเลขค่าแรงและเลขล็อกตัวใหญ่ · นับถอยหลัง 60 วิ</div></div>
+<div class="two">
+<div>
+<p>การ์ดออกแบบสำหรับแรงงานที่อ่านไทยไม่คล่อง จึงเน้น <b>เลขล็อกแผงตัวใหญ่</b> บนแถบสี <b>ไอคอนงาน</b> และ <b>ตัวเลขค่าแรง</b> ที่มองเห็นชัด พร้อมภาษาที่สองตามสัญชาติแรงงาน (พม่า/เขมร) ใต้ชื่องานภาษาไทยทุกบรรทัด ปุ่มเป็น <code class="inl">postback</code> ยิงเข้า webhook เพื่อเรียก <code class="inl">/accept</code> หรือ <code class="inl">/decline</code></p>
+<ul class="tick">
+<li>แถบหัวสีวิน + เลขล็อก (เช่น A-12) ตัวใหญ่</li>
+<li>ชื่องาน 2 ภาษา + ไอคอน 📦</li>
+<li>ค่าแรงสีเขียวตัวโต / ค่าหัวคิวที่หักโปร่งใส</li>
+<li>ปุ่ม 🟢 รับงาน (เขียว) · 🔴 ไม่รับ (แดง)</li>
+<li>เตือน "ตอบใน 60 วิ" 2 ภาษา</li>
+</ul>
+</div>
+<pre>{
+ <span class="s">"type"</span>: <span class="s">"flex"</span>,
+ <span class="s">"altText"</span>: <span class="s">"งานใหม่ ยกของ ฿120"</span>,
+ <span class="s">"contents"</span>: { <span class="s">"type"</span>:<span class="s">"bubble"</span>,
+  <span class="s">"header"</span>: <span class="c">// แถบสีวิน + ล็อก A-12</span>
+   { <span class="s">"backgroundColor"</span>:<span class="s">"#F4900C"</span> ... },
+  <span class="s">"body"</span>: <span class="c">// ยกของลงรถ / ကုန်ချ</span>
+   <span class="c">// ค่าแรง ฿120 · หักค่าคิว -฿12</span>
+   <span class="c">// ⏱️ ตอบใน 60 วิ / ၆၀ စက္ကန့်</span>,
+  <span class="s">"footer"</span>: [
+   { <span class="s">"button"</span>:<span class="s">"🔴 ไม่รับ"</span>,
+     <span class="s">"data"</span>:<span class="s">"action=decline&job=..."</span> },
+   { <span class="s">"button"</span>:<span class="s">"🟢 รับงาน"</span>,
+     <span class="s">"data"</span>:<span class="s">"action=accept&job=..."</span> }
+  ]
+ }
+}</pre>
+</div>
+<p class="note">JSON เต็มพร้อมคัดลอกไปทดสอบใน LINE Flex Simulator อยู่ในไฟล์ <code class="inl">line-flex-new-job.js</code> (ท้ายไฟล์ STATIC_SAMPLE)</p>
+
+<!-- 5. DATA MODEL -->
+<div class="sec"><div class="n">05</div><h2>โครงสร้างฐานข้อมูล</h2><div class="lead">SQLite / Cloudflare D1 · ไฟล์เต็ม schema.sql</div></div>
+<table>
+<thead><tr><th>ตาราง</th><th>เก็บอะไร</th><th>ฟิลด์สำคัญ</th></tr></thead>
+<tbody>
+<tr><td><span class="mono">shops</span></td><td>ร้าน/ผู้จ้าง ผูก LINE + เลขแผง</td><td>saas_plan · plan_expires_at · stall_no</td></tr>
+<tr><td><span class="mono">win_leaders</span></td><td>หัวหน้าวิน + หน้ารับเงินตั้งเอง</td><td>vest_color · pay_mode · promptpay_id · require_slip</td></tr>
+<tr><td><span class="mono">workers</span></td><td>แรงงาน + prepaid wallet</td><td>nationality · lang · wallet_balance · status</td></tr>
+<tr><td><span class="mono">queues</span></td><td>ลำดับคิวหมุนเวียนต่อวิน</td><td>win_id · worker_id · position</td></tr>
+<tr><td><span class="mono">jobs</span></td><td>งาน: เรียก → จับคู่ → ปิด</td><td>standard_price · commission_rate · status · offer_expires_at</td></tr>
+<tr><td><span class="mono">wallet_txns</span></td><td>เดินบัญชีทุกกระเป๋า (polymorphic)</td><td>owner_type · type · amount · balance_after</td></tr>
+<tr><td><span class="mono">reviews</span></td><td>รีวิว / favorite / blacklist</td><td>rating · is_favorite · is_blacklist</td></tr>
+<tr><td><span class="mono">saas_payments</span></td><td>ค่าบริการรายเดือนของร้าน</td><td>plan · amount · period_start/end</td></tr>
+</tbody>
+</table>
+<h3>ความสัมพันธ์</h3>
+<table class="rel">
+<tbody>
+<tr><td>shops 1 ── N jobs</td><td>ร้านหนึ่งเรียกได้หลายงาน</td></tr>
+<tr><td>win_leaders 1 ── N workers</td><td>สีเสื้อเดียวกัน อยู่วินเดียวกัน</td></tr>
+<tr><td>win_leaders 1 ── N queues</td><td>คิวหมุนเวียนของวินนั้น</td></tr>
+<tr><td>workers 1 ── 1 queues</td><td>แต่ละคนมีตำแหน่งคิวเดียว</td></tr>
+<tr><td>jobs N ── 1 workers</td><td>งานถูกจับให้แรงงานคนเดียว</td></tr>
+<tr><td>jobs 1 ── 1 reviews</td><td>ปิดงานแล้วรีวิวได้</td></tr>
+<tr><td>wallet_txns N ── 1 (worker | win)</td><td>เดินบัญชีแบบ polymorphic</td></tr>
+</tbody>
+</table>
+
+<!-- 6. TECH STACK -->
+<div class="sec"><div class="n">06</div><h2>Tech Stack — เริ่มประหยัดที่สุดบน LINE OA</h2><div class="lead">Serverless ทั้งหมด เริ่มฟรี/หลักร้อยต่อเดือน โตแล้วค่อยขยับ</div></div>
+<div class="two">
+<div class="stack"><h4>Backend / API <span class="px">~ฟรี</span></h4><p>Cloudflare Workers — serverless เดียวกับ KaiDee POS ที่ใช้อยู่ ฟรี 100k req/วัน คิดค่าใช้ตามจริง</p><div class="pill-row"><span class="pill">Cloudflare Workers</span><span class="pill">Hono / Express</span></div></div>
+<div class="stack"><h4>ฐานข้อมูล <span class="px">~ฟรี</span></h4><p>Cloudflare D1 (SQLite) — schema นี้รันได้เลย ฟรี 5GB ไม่มีค่าเซิร์ฟเวอร์แยก</p><div class="pill-row"><span class="pill">Cloudflare D1</span><span class="pill">SQLite</span></div></div>
+<div class="stack"><h4>แชต / แจ้งเตือน <span class="px">ฟรี–หลักร้อย</span></h4><p>LINE Messaging API + LIFF — Push ฟรี 500 ข้อความ/เดือน เกินคิดเป็นแพ็ก · Rich menu สำหรับ 3 บทบาท</p><div class="pill-row"><span class="pill">LINE Messaging API</span><span class="pill">LIFF</span><span class="pill">Flex</span></div></div>
+<div class="stack"><h4>รับเงินค่าหัวคิว <span class="px">ต้นทุน ฿0</span></h4><p>PromptPay ตรงเข้าบัญชีหัวหน้าวิน + ยืนยัน/แนบสลิป — ไม่ต้องสมัคร gateway/e-money · (เติมกระเป๋า/บอทจับยอด = ออปชันเมื่อโต)</p><div class="pill-row"><span class="pill">PromptPay</span><span class="pill">แนบสลิป</span></div></div>
+</div>
+<div class="lead-box">💡 <b>คุมต้นทุนช่วงเริ่ม:</b> Workers + D1 + LINE free tier ทำให้เริ่มได้เกือบ 0 บาท/เดือน จนกว่าจะมีปริมาณงานจริง — ค่าใช้จ่ายจะโตตามจำนวนร้านที่จ่ายค่าบริการอยู่แล้ว จึงไม่ขาดทุนล่วงหน้า และเป็น stack เดียวกับที่ทีมใช้กับ KaiDee POS อยู่แล้ว ลดภาระดูแล</div>
+
+<!-- 7. PRICING -->
+<div class="sec"><div class="n">07</div><h2>ราคา & โมเดลรายได้ — เริ่มถูก โตด้วยแอดออน</h2><div class="lead">ราคาต่ำเข้าง่าย (คนใช้เยอะกว่า) · เก็บเพิ่มจากคนที่โตแล้ว ไม่ใช่กันคนเข้า</div></div>
+<div class="lead-box">🎁 <b>เดือนแรกฟรีทุกร้าน — แนะนำเต็มที่</b> ให้ลองจนติดก่อน (ไม่ต้องผูกบัตร) เหมือนฟิตเนสทดลอง 30 วัน · ตลาดใหม่ปิดดีลง่ายกว่ามาก เพราะร้านเห็นผลก่อนจ่าย · หลังเดือนแรกค่อยเก็บค่าบริการฐาน</div>
+<h3>ค่าบริการฐาน (หลังเดือนแรก) — คิดใหม่ให้ถูกลง</h3>
+<table>
+<thead><tr><th>แพ็ก</th><th>ราคา/เดือน</th><th>เหมาะกับ</th></tr></thead>
+<tbody>
+<tr><td><b>Free</b></td><td>฿0</td><td>เรียกงาน + คิว + LINE Flex พื้นฐาน (จำกัดจำนวนงาน/เดือน) — ให้ร้านเล็กติดก่อน</td></tr>
+<tr><td><b>Standard</b></td><td><b>฿99</b></td><td>เรียกงานไม่จำกัด + รีวิว/favorite + ประวัติ — ราคาที่ร้านส่วนใหญ่จ่ายไหวแน่</td></tr>
+<tr><td><b>Pro</b></td><td>฿299</td><td>หลายผู้ใช้/สาขา + รายงานเชิงลึก + จองล่วงหน้า</td></tr>
+</tbody>
+</table>
+<p class="note">💡 ฿99 ไม่ถูกไป — เป็นราคา "จ่ายแล้วไม่คิด" สำหรับร้านตลาด ทำให้ยอดคนใช้เยอะ (volume) ดีกว่าตั้ง 299–999 แล้วร้านลังเล · รายได้จริงมาจาก <b>แอดออน + สปอนเซอร์</b> ไม่ใช่ค่าฐาน</p>
+<h3>แอดออนเสริม — เปิดเฉพาะที่อยากใช้ (อัปเกรดเองในแอป)</h3>
+<div class="flow">
+<div class="card"><div class="ic">🛒</div><h4>ขายของออนไลน์ในแอป</h4><p>ร้านเปิดหน้าร้าน/แคตตาล็อกขายสินค้าผ่านแอป — ใช้เอนจิน order/POS เดิมของ KaiDee ต่อยอด</p><span class="tag dev">แอดออนรายเดือน / %ยอดขาย</span></div>
+<div class="card"><div class="ic">📦</div><h4>ระบบจองออเดอร์</h4><p>ลูกค้าจองสินค้า/สั่งล่วงหน้า + คิวรับของ — โครงเดียวกับจองแผง/คลาส ใช้ซ้ำได้</p><span class="tag cash">แอดออน</span></div>
+<div class="card"><div class="ic">📣</div><h4>พื้นที่สปอนเซอร์ (โฆษณา)</h4><p>แบรนด์/ซัพพลายเออร์ลงโฆษณา–เปิดร้านขายในแอป เก็บค่าโฆษณา/ค่าลงพื้นที่</p><span class="tag win">รายได้ค่าโฆษณา</span></div>
+</div>
+<p>โมเดลนี้คือ <b>freemium + แพลตฟอร์มโฆษณา</b>: ค่าฐานต่ำเพื่อดึงคนเข้าให้มากที่สุด (ยิ่งร้าน+แรงงานเยอะ = ข้อมูลและทราฟฟิกเยอะ) แล้วทำเงินจาก (1) แอดออนที่ร้านโตแล้วอยากใช้ (2) สปอนเซอร์ที่อยากเข้าถึงฐานร้าน/แรงงานในตลาด — เก็บทีหลังเมื่อพิสูจน์คุณค่าแล้ว ไม่กันคนเข้าตั้งแต่แรก</p>
+
+<!-- 8. SCALING -->
+<div class="sec"><div class="n">08</div><h2>แผนสเกล — ตลาดสี่มุมเมือง สู่ 500 ผู้ใช้ในปีนี้</h2><div class="lead">เป้าจริง 500 ร้าน/ผู้ใช้ ภายในปี — สถาปัตยกรรมนี้รองรับสบาย ไม่ต้องรื้อ</div></div>
+<div class="lead-box"><b>สรุป:</b> 500 ผู้ใช้ + งานหลักพัน–หมื่นรายการ/เดือน เป็นปริมาณที่ <b>Cloudflare D1 + Workers รับได้สบายในฟรี/ราคาถูก</b> — คอขวดจริงไม่ใช่ระบบ แต่คือ "ยอดคนสมัคร" กับ "โควตา LINE push" ที่วางแผนไว้แล้ว</div>
+<div class="two">
+<div class="stack"><h4>ภาระข้อมูลที่ 500 ผู้ใช้</h4><p>สมมติ 500 ร้าน + 1,000 แรงงาน + 20,000 งาน/เดือน + เดินบัญชี 40,000 แถว/เดือน → ~ครึ่งล้านแถว/ปี = หลัก <b>ร้อย MB</b> เท่านั้น (D1 ฟรีถึง 5GB) · อ่าน/เขียนต่อวินาทีต่ำมากเทียบขีดจำกัด</p></div>
+<div class="stack"><h4>จุดที่ต้องวางแผนจริง</h4><p><b>LINE push</b> (ฟรี 500 ข้อความ/เดือน) จะเป็นตัวแรกที่เต็ม → ขยับเป็นแพ็ก LINE เมื่อโต · dispatch ยิงทีละคน จึงประหยัดข้อความกว่า broadcast · <b>timer 60 วิ</b> เก็บใน DB (offer_expires_at) ไม่พึ่ง memory → รอด worker restart/หลาย instance</p></div>
+</div>
+<h3>ทำอะไรตอนไหน (โตเป็นสเต็ป ไม่ over-build)</h3>
+<div class="steps">
+<div class="step"><div class="num"></div><div class="tx"><b>0–50 ผู้ใช้ · นำร่อง</b><p>D1 + Workers ฟรี · LINE free tier · PromptPay ตรง + ยืนยันเอง · โฟกัสให้ flow จริงลื่น เก็บ feedback</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>50–200 ผู้ใช้ · เริ่มเก็บเงิน</b><p>เปิดค่าฐาน ฿99 (หลังเดือนแรกฟรี) · เพิ่ม index/รายงาน · ขยับแพ็ก LINE push · เริ่มขายแอดออนตัวแรก (ขายของ/จอง)</p></div></div>
+<div class="step"><div class="num"></div><div class="tx"><b>200–500 ผู้ใช้ · โต</b><p>เปิดพื้นที่สปอนเซอร์ · แยก read replica/queue ถ้าจำเป็น (D1 รองรับ) · เพิ่ม prepaid wallet/บอทจับยอดเฉพาะรายที่ต้องการ · ดูเมตริกคิว/เวลาตอบเฉลี่ย</p></div></div>
+</div>
+<p class="note">สถาปัตยกรรมไม่ต้องเปลี่ยนตลอดเส้นทางนี้ — D1/Workers scale ตามโหลดอัตโนมัติ · สิ่งที่เพิ่มคือ "ฟีเจอร์/แพ็ก" ไม่ใช่ "รื้อระบบ" · ออกแบบ multi-market ไว้แล้ว (แต่ละตลาดแยก tenant ได้ถ้าขยายออกนอกสี่มุมเมือง)</p>
+
+<!-- 9. STATUS -->
+<div class="sec"><div class="n">09</div><h2>สถานะงาน & ไฟล์ส่งมอบ</h2></div>
+<div class="status">
+<div class="st ok"><div class="b">✓ เสร็จแล้ว</div>โครงสร้างฐานข้อมูล — <code class="inl">schema.sql</code></div>
+<div class="st ok"><div class="b">✓ เสร็จแล้ว</div>โค้ดจับคู่/คิว + หัก wallet — <code class="inl">labor-win-api.js</code></div>
+<div class="st ok"><div class="b">✓ เสร็จแล้ว</div>LINE Flex ไทย+พม่า — <code class="inl">line-flex-new-job.js</code></div>
+<div class="st ok"><div class="b">✓ เสร็จแล้ว</div>คำแนะนำ tech stack (เอกสารนี้)</div>
+<div class="st next"><div class="b">◦ ขั้นต่อไป</div>Prototype มือถือกดได้จริง (3 บทบาท)</div>
+<div class="st next"><div class="b">◦ ขั้นต่อไป</div>Deploy Worker + D1 + ผูก LINE OA จริง</div>
+</div>
+<p class="note">ไฟล์โค้ดทั้งหมดอยู่ในโฟลเดอร์ <code class="inl">labor-win/</code> — พร้อมอ่านและส่งต่อทีมพัฒนา</p>
+
+</doc-page>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E7C4E"/><text x="50" y="44" font-size="34" text-anchor="middle" fill="#fff">🎽</text><text x="50" y="72" font-size="13" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#fff">Labor Win</text></svg>
+</template>
+</body>
+</html>

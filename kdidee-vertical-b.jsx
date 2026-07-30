@@ -1,0 +1,243 @@
+/* Vertical scenes B: Stock · Delivery · Reports · CTA (720×1280) */
+
+// ── 4 · STOCK ──
+function StockV({ progress: p }) {
+  kdSpeakScene('stock', 'ขายปุ๊บ สต็อกตัดปั๊บ เตือนก่อนของหมด ไม่ต้องมานั่งนับเอง');
+  const enter = iv(p, [0, 0.1], [0, 1], Easing.easeOutCubic);
+  const phoneY = iv(p, [0, 0.1], [50, 0], Easing.easeOutCubic);
+  const rows = [
+    { n: 'มันฝรั่งแช่แข็ง', from: 0.78, to: 0.34, low: false },
+    { n: 'ผงปรุงรสชีส', from: 0.62, to: 0.12, low: true },
+    { n: 'ไก่ป๊อป', from: 0.7, to: 0.48, low: false },
+    { n: 'แก้ว 22 oz', from: 0.55, to: 0.4, low: false },
+  ];
+  const drain = iv(p, [0.24, 0.6], [0, 1], Easing.easeInOutCubic);
+  const alert = iv(p, [0.62, 0.72], [0, 1], Easing.easeOutBack);
+  const W = 384;
+  return (
+    <VShell from="#EAF3EF" to="#E6EEF6" p={p} idx={3} total={7} cap="สต็อกตัดอัตโนมัติทุกครั้งที่ขาย · เตือนก่อนของหมด" accent={PC.blue}>
+      <div style={{ position: 'absolute', top: 84, left: 0, right: 0, textAlign: 'center', opacity: iv(p, [0.08, 0.2], [0, 1], Easing.easeOutCubic) }}>
+        <Pill bg={PC.blue} style={{ fontSize: 20, padding: '11px 24px' }}>จัดการสต็อก</Pill>
+        <div style={{ fontFamily: DP, fontSize: 44, fontWeight: 700, color: PC.ink, marginTop: 14 }}>สต็อกตัดอัตโนมัติ</div>
+      </div>
+      <div style={{ position: 'absolute', top: 232, left: '50%', transform: `translateX(-50%) translateY(${phoneY}px)`, opacity: enter }}>
+        <Phone w={W}>
+          <StatusBar label="สต็อกวันนี้" />
+          <div style={{ padding: '6px 20px 0' }}>
+            <div style={{ fontFamily: DP, fontSize: 23, fontWeight: 700, color: PC.ink }}>คลังวัตถุดิบ</div>
+            <div style={{ fontFamily: TH, fontSize: 15, color: PC.muted, marginBottom: 18 }}>อัปเดตล่าสุด เมื่อครู่</div>
+            {rows.map((r, i) => {
+              const val = r.from + (r.to - r.from) * drain;
+              const reached = r.low && val <= 0.2;
+              const barC = reached ? PC.red : (val < 0.3 ? PC.amber : PC.green);
+              return (
+                <div key={i} style={{ marginBottom: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontFamily: TH, fontSize: 17, fontWeight: 600, color: PC.ink }}>{r.n}</span>
+                    <span style={{ fontFamily: MO, fontSize: 16, color: barC, fontWeight: 600 }}>{Math.round(val * 100)}%</span>
+                  </div>
+                  <div style={{ height: 13, borderRadius: 999, background: '#EEF2F0', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${val * 100}%`, background: barC, borderRadius: 999 }} />
+                  </div>
+                  {reached && <div style={{ fontFamily: TH, fontSize: 14, color: PC.red, marginTop: 6, fontWeight: 600, opacity: alert }}>● ใกล้หมด ควรสั่งเพิ่ม</div>}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ position: 'absolute', left: 18, right: 18, bottom: 26, background: '#fff', border: `2px solid ${PC.red}`, borderRadius: 16, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 14px 30px -14px rgba(219,92,78,0.5)', transform: `scale(${alert})`, opacity: alert }}>
+            <span style={{ width: 42, height: 42, borderRadius: '50%', background: '#FBE7E3', color: PC.red, display: 'grid', placeItems: 'center', fontWeight: 800, fontFamily: TH, fontSize: 22, flexShrink: 0 }}>!</span>
+            <div>
+              <div style={{ fontFamily: TH, fontSize: 17, fontWeight: 700, color: PC.ink }}>ผงปรุงรสชีสใกล้หมด</div>
+              <div style={{ fontFamily: TH, fontSize: 14, color: PC.muted }}>แตะเพื่อสั่งซื้อเพิ่ม</div>
+            </div>
+          </div>
+        </Phone>
+      </div>
+    </VShell>
+  );
+}
+
+// ── 5 · DELIVERY ──
+const CHV = [
+  { n: 'Grab', bg: '#00B14F' },
+  { n: 'LINE MAN', bg: '#06C755' },
+  { n: 'ShopeeFood', bg: '#EE4D2D' },
+  { n: 'Robinhood', bg: '#5B2E90' },
+];
+function DeliveryV({ progress: p }) {
+  kdSpeakScene('delivery', 'แกร็บ ไลน์แมน ช้อปปี้ฟู้ด โรบินฮู้ด คีย์บันทึกยอดทุกช่องทางไว้ในจอเดียว ครบทุกยอดขาย');
+  const enter = iv(p, [0, 0.1], [0, 1], Easing.easeOutCubic);
+  const phoneY = iv(p, [0, 0.1], [50, 0], Easing.easeOutCubic);
+  const orders = [
+    { ch: 0, id: '#GR-4821', items: '2 รายการ', total: 128 },
+    { ch: 1, id: '#LM-9033', items: '1 รายการ', total: 84 },
+    { ch: 2, id: '#SP-1177', items: '3 รายการ', total: 205 },
+    { ch: 3, id: '#RH-0640', items: '2 รายการ', total: 96 },
+  ];
+  const W = 384;
+  return (
+    <VShell from="#EAF3EF" to="#E6EEF6" p={p} idx={4} total={7} cap="คีย์บันทึกยอดทุกช่องทางไว้ในจอเดียว" accent={PC.teal}>
+      <div style={{ position: 'absolute', top: 84, left: 0, right: 0, textAlign: 'center', opacity: iv(p, [0.08, 0.2], [0, 1], Easing.easeOutCubic) }}>
+        <Pill bg={PC.teal} style={{ fontSize: 20, padding: '11px 24px' }}>เดลิเวอรี</Pill>
+        <div style={{ fontFamily: DP, fontSize: 44, fontWeight: 700, color: PC.ink, marginTop: 14 }}>คีย์ยอดทุกช่องทางไว้ที่เดียว</div>
+      </div>
+      <div style={{ position: 'absolute', top: 232, left: '50%', transform: `translateX(-50%) translateY(${phoneY}px)`, opacity: enter }}>
+        <Phone w={W}>
+          <StatusBar label="ออเดอร์เข้า" />
+          <div style={{ padding: '6px 20px 0' }}>
+            <div style={{ fontFamily: DP, fontSize: 23, fontWeight: 700, color: PC.ink }}>ออเดอร์เดลิเวอรี</div>
+            <div style={{ fontFamily: TH, fontSize: 15, color: PC.muted, marginBottom: 14 }}>คีย์บันทึกยอดเอง · ครบทุกช่องทาง</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+              {CHV.map((c, i) => {
+                const a = iv(p, [0.12 + i * 0.05, 0.24 + i * 0.05], [0, 1], Easing.easeOutBack);
+                return <span key={i} style={{ opacity: a, transform: `scale(${a})`, fontFamily: TH, fontSize: 14, fontWeight: 700, color: '#fff', background: c.bg, padding: '7px 14px', borderRadius: 999 }}>{c.n}</span>;
+              })}
+            </div>
+            {orders.map((o, i) => {
+              const st = 0.34 + i * 0.11;
+              const a = iv(p, [st, st + 0.1], [0, 1], Easing.easeOutCubic);
+              const y = iv(p, [st, st + 0.1], [-18, 0], Easing.easeOutCubic);
+              const ch = CHV[o.ch];
+              return (
+                <div key={i} style={{ opacity: a, transform: `translateY(${y}px)`, background: '#fff', borderRadius: 15, padding: '14px 16px', marginBottom: 11, display: 'flex', alignItems: 'center', gap: 13, boxShadow: '0 7px 16px -10px rgba(20,50,40,0.25)' }}>
+                  <span style={{ width: 9, height: 48, borderRadius: 999, background: ch.bg, flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontFamily: TH, fontSize: 14, fontWeight: 700, color: ch.bg }}>{ch.n}</span>
+                      <span style={{ fontFamily: MO, fontSize: 13, color: PC.muted }}>{o.id}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                      <span style={{ fontFamily: TH, fontSize: 15, color: PC.muted }}>{o.items}</span>
+                      <span style={{ fontFamily: MO, fontSize: 17, fontWeight: 700, color: PC.ink }}>฿{o.total}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Phone>
+      </div>
+    </VShell>
+  );
+}
+
+// ── 6 · REPORTS ──
+function ReportsV({ progress: p }) {
+  kdSpeakScene('reports', 'ยอดขาย กำไร ดูได้ทุกวัน รู้เลยว่าเมนูไหนขายดี ไม่ต้องเดา');
+  const enter = iv(p, [0, 0.12], [0, 1], Easing.easeOutCubic);
+  const days = [42, 58, 51, 70, 64, 88, 96];
+  const countUp = (t) => Math.round(t * iv(p, [0.14, 0.5], [0, 1], Easing.easeOutCubic));
+  const kpis = [
+    { l: 'ยอดขายวันนี้', v: '฿' + countUp(12480).toLocaleString(), d: '+18%', c: PC.green },
+    { l: 'จำนวนบิล', v: countUp(86), d: '+12%', c: PC.blue },
+    { l: 'เฉลี่ย/บิล', v: '฿' + countUp(145), d: '+5%', c: PC.teal },
+  ];
+  return (
+    <VShell from="#EAF6F0" to="#E5EFF7" p={p} idx={5} total={7} cap="เห็นทุกยอดขาย รู้กำไรทันที · รู้ว่าเมนูไหนขายดี" accent={PC.blueDk}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: enter, padding: '0 40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 30 }}>
+          <Pill bg={PC.blueDk} style={{ fontSize: 20, padding: '11px 24px' }}>รายงาน &amp; ยอดขาย</Pill>
+          <div style={{ fontFamily: DP, fontSize: 46, fontWeight: 700, color: PC.ink, marginTop: 16, lineHeight: 1.15 }}>เห็นทุกยอดขาย<br />รู้กำไรทันที</div>
+        </div>
+        <div style={{ width: '100%', maxWidth: 600, background: '#fff', borderRadius: 26, padding: 30, boxShadow: '0 40px 80px -40px rgba(20,50,40,0.4)' }}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 26 }}>
+            {kpis.map((k, i) => (
+              <div key={i} style={{ flex: 1, background: PC.gradSoft, borderRadius: 16, padding: '16px 14px' }}>
+                <div style={{ fontFamily: TH, fontSize: 14, color: PC.muted, marginBottom: 6 }}>{k.l}</div>
+                <div style={{ fontFamily: MO, fontSize: 26, fontWeight: 700, color: PC.ink }}>{k.v}</div>
+                <div style={{ fontFamily: TH, fontSize: 13, fontWeight: 700, color: k.c, marginTop: 4 }}>▲ {k.d}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
+            <span style={{ fontFamily: DP, fontSize: 20, fontWeight: 700, color: PC.ink }}>ยอดขาย 7 วันล่าสุด</span>
+            <span style={{ fontFamily: TH, fontSize: 15, color: PC.green, fontWeight: 600 }}>▲ โตต่อเนื่อง</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, height: 210, padding: '0 4px' }}>
+            {days.map((d, i) => {
+              const h = (d / 100) * 200 * (0.2 + 0.8 * clamp(iv(p, [0.2 + i * 0.05, 0.4 + i * 0.05], [0, 1], Easing.easeOutCubic), 0, 1));
+              const last = i === days.length - 1;
+              return (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: '100%', height: h, borderRadius: '11px 11px 4px 4px', background: last ? PC.grad : '#CFE3D8' }} />
+                  <span style={{ fontFamily: TH, fontSize: 15, color: last ? PC.green : PC.muted, fontWeight: last ? 700 : 500 }}>{['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'][i]}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </VShell>
+  );
+}
+
+// ── 7 · CTA ──
+function FauxQR({ s = 150 }) {
+  const N = 11, cell = s / N;
+  const seed = [0, 3, 4, 7, 9, 10, 12, 15, 18, 21, 23, 26, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58, 60, 63, 66, 70, 73, 76, 79, 82, 85, 88, 91, 94, 97, 100, 103, 106, 109, 112, 115, 118];
+  const on = (i) => seed.includes((i * 7) % 121) || seed.includes((i * 13) % 121);
+  const finder = (r, c) => (r < 3 && c < 3) || (r < 3 && c > N - 4) || (r > N - 4 && c < 3);
+  const cells = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    if (finder(r, c)) continue;
+    const i = r * N + c;
+    if (on(i)) cells.push(<rect key={i} x={c * cell} y={r * cell} width={cell} height={cell} fill={PC.ink} />);
+  }
+  const FP = ({ x, y }) => (<g transform={`translate(${x},${y})`}><rect width={cell * 3} height={cell * 3} fill={PC.ink} /><rect x={cell * 0.55} y={cell * 0.55} width={cell * 1.9} height={cell * 1.9} fill="#fff" /><rect x={cell} y={cell} width={cell} height={cell} fill={PC.green} /></g>);
+  return (
+    <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} style={{ display: 'block' }}>
+      <rect width={s} height={s} fill="#fff" />
+      {cells}
+      <FP x={0} y={0} /><FP x={(N - 3) * cell} y={0} /><FP x={0} y={(N - 3) * cell} />
+    </svg>
+  );
+}
+
+function CtaV({ progress: p }) {
+  kdSpeakScene('cta', 'เริ่มใช้ฟรีวันนี้ สแกนคิวอาร์ แอดไลน์ สมัครเปิดร้านฟรี ทดลองใช้ สามสิบวัน');
+  const enter = iv(p, [0, 0.12], [0, 1], Easing.easeOutCubic);
+  const phoneY = iv(p, [0, 0.12], [46, 0], Easing.easeOutCubic);
+  const steps = ['สแกน QR แอด LINE สมัครเปิดร้านฟรี', 'เริ่มขายได้ทันที ทดลองฟรี 30 วัน'];
+  const pulse = 1 + Math.sin(p * Math.PI * 4) * 0.02;
+  return (
+    <VShell from="#EAF6F0" to="#E5EFF7" p={p} idx={6} total={7} cap="">
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 50px' }}>
+        <div style={{ textAlign: 'center', opacity: iv(p, [0.08, 0.22], [0, 1], Easing.easeOutCubic), marginBottom: 30 }}>
+          <Logo h={86} style={{ margin: '0 auto 20px' }} />
+          <div style={{ fontFamily: DP, fontSize: 62, fontWeight: 700, color: PC.ink, lineHeight: 1.1 }}>เริ่มใช้ <span style={{ color: PC.green }}>ฟรี</span> วันนี้</div>
+        </div>
+        <div style={{ position: 'relative', opacity: enter, transform: `translateY(${phoneY}px)`, marginBottom: 30 }}>
+          <Phone w={330} screenBg="#FFFFFF">
+            <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 58 }}>
+              <div style={{ width: 92, height: 92, borderRadius: 26, background: PC.gradSoft, display: 'grid', placeItems: 'center', marginBottom: 18, boxShadow: '0 12px 30px -12px rgba(20,50,40,0.25)' }}>
+                <Logo h={48} />
+              </div>
+              <div style={{ fontFamily: DP, fontSize: 25, fontWeight: 700, color: PC.ink }}>KaiDee POS</div>
+              <div style={{ fontFamily: TH, fontSize: 15, color: PC.muted, marginBottom: 24 }}>LINE Official Account</div>
+              <div style={{ background: '#fff', borderRadius: 24, padding: 18, transform: `scale(${pulse})`, boxShadow: '0 20px 44px -18px rgba(20,50,40,0.28)', border: `1px solid ${PC.line}` }}>
+                <FauxQR s={190} />
+              </div>
+              <div style={{ marginTop: 22, background: PC.grad, borderRadius: 999, padding: '13px 40px', fontFamily: TH, fontSize: 19, fontWeight: 700, color: '#fff', boxShadow: '0 12px 26px -12px rgba(30,158,110,0.6)' }}>+ เพิ่มเพื่อน</div>
+              <div style={{ marginTop: 16, fontFamily: TH, fontSize: 16, fontWeight: 600, color: PC.green, letterSpacing: 0.3 }}>แอดผ่าน QR · ฟรี</div>
+            </div>
+          </Phone>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 13, width: '100%', maxWidth: 560 }}>
+          {steps.map((s, i) => {
+            const st = 0.3 + i * 0.13;
+            const a = iv(p, [st, st + 0.12], [0, 1], Easing.easeOutCubic);
+            const x = iv(p, [st, st + 0.12], [-18, 0], Easing.easeOutCubic);
+            return (
+              <div key={i} style={{ opacity: a, transform: `translateX(${x}px)`, display: 'flex', alignItems: 'center', gap: 15 }}>
+                <span style={{ width: 38, height: 38, borderRadius: '50%', background: PC.grad, color: '#fff', display: 'grid', placeItems: 'center', fontFamily: MO, fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ fontFamily: TH, fontSize: 22, color: PC.ink, fontWeight: 600 }}>{s}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </VShell>
+  );
+}
+
+Object.assign(window, { StockV, DeliveryV, ReportsV, CtaV });

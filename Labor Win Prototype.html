@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labor Win — เดโมกดจริง 3 บทบาท</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E9F5EE;--gold:#F4900C;--gold-soft:#FEF1E2;--red:#C0392B;--red-soft:#FDECEA;--green:#1DB954;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--bg:#eef2f0;--line:#dde5e0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(140% 100% at 50% 0%,#f6f9f7,#e4ebe7);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+a{color:var(--brand)}
+.top{padding:18px 20px 12px;text-align:center;flex:0 0 auto}
+.top .kick{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);background:var(--brand-soft);padding:6px 13px;border-radius:100px}
+.top h1{font-size:23px;font-weight:800;margin:9px 0 2px;letter-spacing:-.01em}
+.top p{margin:0;color:var(--ink-2);font-size:13.5px}
+/* guide bar */
+.guide{max-width:940px;margin:8px auto 0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 22px rgba(20,60,40,.07)}
+.guide .badge{flex:0 0 auto;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--brand-soft)}
+.guide .g-tx{flex:1;min-width:0;text-align:left}
+.guide .g-step{font-size:11.5px;font-weight:700;color:var(--brand);letter-spacing:.06em;text-transform:uppercase}
+.guide .g-tip{font-size:15px;font-weight:600;margin-top:2px;line-height:1.4;text-wrap:pretty}
+.guide .g-nav{flex:0 0 auto;display:flex;gap:8px}
+.gbtn{border:none;cursor:pointer;font-family:inherit;font-weight:700;border-radius:11px;padding:11px 16px;font-size:14px}
+.gbtn.prev{background:#fff;border:1.5px solid var(--line);color:var(--ink-2)}
+.gbtn.next{background:var(--brand);color:#fff}
+.gbtn:disabled{opacity:.4;cursor:default}
+.prog{max-width:940px;margin:10px auto 0;height:5px;background:#dbe4df;border-radius:100px;overflow:hidden}
+.prog > i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2));border-radius:100px;transition:width .35s}
+/* stage */
+.stage{flex:1;display:flex;gap:26px;justify-content:center;align-items:flex-start;padding:22px 18px 30px;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;align-items:center;gap:9px;transition:.3s;opacity:.5;filter:saturate(.6)}
+.col.active{opacity:1;filter:none;transform:translateY(-2px)}
+.col .role{font-size:14px;font-weight:800}
+.col .role small{display:block;font-size:11px;font-weight:600;color:var(--ink-3);margin-top:1px}
+.phone{width:286px;height:576px;background:#0f1720;border-radius:38px;padding:11px;box-shadow:0 22px 48px rgba(0,0,0,.22);transition:.3s}
+.col.active .phone{box-shadow:0 26px 60px rgba(14,124,78,.30)}
+.screen{width:100%;height:100%;background:#F3F6F4;border-radius:28px;overflow:hidden;display:flex;flex-direction:column}
+.hd{color:#fff;padding:17px 16px 14px;flex:0 0 auto}
+.hd .s1{font-size:13.5px;opacity:.85}
+.hd .s2{font-size:20px;font-weight:800;line-height:1.15;margin-top:1px}
+.body{padding:13px;display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.row{display:flex;gap:8px}
+.chip{flex:1;background:#fff;border:2px solid transparent;border-radius:12px;padding:11px 6px;text-align:center;font-size:13.5px;cursor:pointer;transition:.15s}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);font-weight:700}
+.chip.red.on{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.card{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.price{display:flex;justify-content:space-between;align-items:center}
+.price b{font-size:20px;color:var(--brand)}
+.btn{border:none;cursor:pointer;font-family:inherit;border-radius:13px;padding:14px;text-align:center;font-size:16px;font-weight:800;width:100%;color:#fff;background:var(--brand)}
+.btn.big{padding:15px}
+.btn2{display:flex;gap:9px}
+.btn2 .b{flex:1;border-radius:13px;padding:15px;text-align:center;font-size:16px;font-weight:800;color:#fff;cursor:pointer}
+.status{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px}
+.status .big{font-size:44px}
+.status .t{font-size:18px;font-weight:800}
+.status .s{font-size:14px;color:var(--ink-2);line-height:1.5}
+.spin{width:44px;height:44px;border:4px solid #d8e6df;border-top-color:var(--brand);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.qrow{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:11px;padding:10px 12px;font-size:13.5px}
+.qrow b{font-weight:700}
+.tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px}
+.tag.work{background:var(--red-soft);color:var(--red)}
+.tag.free{background:var(--brand-soft);color:var(--brand)}
+.paybox{border:2px dashed var(--brand);background:var(--brand-soft);border-radius:12px;padding:11px 12px}
+.paybox .h{font-size:12.5px;font-weight:700;color:var(--brand)}
+.myanmar{font-size:15px;color:var(--ink-3)}
+.timer{text-align:center;font-size:12.5px;font-weight:700;color:var(--gold)}
+/* pulse highlight on the element to tap */
+.pulse{position:relative;animation:pl 1.2s ease-in-out infinite;box-shadow:0 0 0 0 rgba(14,124,78,.55);border-radius:13px}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(14,124,78,.5)}70%{box-shadow:0 0 0 12px rgba(14,124,78,0)}100%{box-shadow:0 0 0 0 rgba(14,124,78,0)}}
+.hint{position:absolute;z-index:5;background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:6px 11px;border-radius:9px;white-space:nowrap;pointer-events:none;transform:translate(-50%,-140%);left:50%;animation:bob 1.1s ease-in-out infinite}
+.hint::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+@keyframes bob{0%,100%{transform:translate(-50%,-140%)}50%{transform:translate(-50%,-160%)}}
+.foot{text-align:center;font-size:12px;color:var(--ink-3);padding:0 20px 18px}
+@media(max-width:980px){.stage{gap:16px}.phone{width:250px;height:510px}}
+</style>
+</head>
+<body>
+<div class="top">
+<span class="kick">🎽 Labor Win · เดโมกดจริง</span>
+<h1>แม่ค้าเรียกงาน → แรงงานรับ → หัวหน้าวินเก็บค่าคิว</h1>
+<p>กดปุ่มที่ <b>ไฮไลต์</b> บนจอ หรือกด “ถัดไป” เพื่อดูวิธีใช้ทีละขั้น</p>
+</div>
+<div class="guide">
+<div class="badge" id="g-badge">🏪</div>
+<div class="g-tx"><div class="g-step" id="g-step">ขั้นที่ 1 / 9</div><div class="g-tip" id="g-tip">—</div></div>
+<div class="g-nav"><button class="gbtn prev" id="g-prev">← ก่อนหน้า</button><button class="gbtn next" id="g-next">ถัดไป →</button></div>
+</div>
+<div class="prog"><i id="prog"></i></div>
+
+<div class="stage">
+  <div class="col" id="col-shop">
+    <div class="role">1 · แม่ค้า / ร้าน 🏪<small>เข้าผ่าน LINE · ผูกเลขแผง</small></div>
+    <div class="phone"><div class="screen" id="scr-shop"></div></div>
+  </div>
+  <div class="col" id="col-worker">
+    <div class="role">2 · แรงงาน 👷<small>ไทย + พม่า · ปุ่มใหญ่</small></div>
+    <div class="phone"><div class="screen" id="scr-worker"></div></div>
+  </div>
+  <div class="col" id="col-win">
+    <div class="role">3 · หัวหน้าวิน 🎽<small>คิว · รายได้ค่าคิว</small></div>
+    <div class="phone"><div class="screen" id="scr-win"></div></div>
+  </div>
+</div>
+<div class="foot">เดโมสำหรับนำเสนอ — ค่าแรงจ่ายสดตรงแรงงาน · ค่าหัวคิวเข้าหัวหน้าวิน 100% · แอปเก็บแค่ค่าบริการรายเดือนของร้าน</div>
+
+<script>
+var M; // model
+function reset(){ M={ job:null, win:null, call:'idle', worker:'idle', winIncome:840, done:false }; }
+reset();
+
+// steps: actor(col to activate), badge, tip, focus(selector inside stage to pulse), hint text
+var STEPS=[
+ {actor:'shop',badge:'🏪',tip:'แม่ค้าต้องการคนช่วยงาน — เริ่มที่เลือก “ประเภทงาน” (แตะ ยกของ)',focus:'#j-lift',hint:'แตะเลือก'},
+ {actor:'shop',badge:'🏪',tip:'เลือก “วิน” (สีเสื้อ) ที่อยากเรียก — ค่าหัวคิวจะเข้าหัวหน้าวินสีนี้',focus:'#w-red',hint:'แตะเลือกวินแดง'},
+ {actor:'shop',badge:'🏪',tip:'ยอดค่าแรงกลางคือ ฿120 — กด “เรียกแรงงาน” เพื่อส่งงานเข้าคิว',focus:'#call-btn',hint:'กดเรียก'},
+ {actor:'worker',badge:'👷',tip:'แรงงานคิวแรกของวินแดงได้การ์ดงาน (ไทย+พม่า) — กด “รับงาน” ภายใน 60 วิ (ถ้าไม่รับ/หมดเวลา ระบบส่งคิวถัดไป)',focus:'#acc-btn',hint:'กดรับงาน'},
+ {actor:'shop',badge:'🏪',tip:'แม่ค้าเห็นทันทีว่าแรงงานรับงานแล้ว กำลังเดินทางมาที่แผง',focus:null},
+ {actor:'win',badge:'🎽',tip:'หัวหน้าวินเห็นลูกน้องกำลังทำงาน + ใครว่างในคิว แบบเรียลไทม์',focus:null},
+ {actor:'shop',badge:'🏪',tip:'งานเสร็จ แม่ค้าจ่ายค่าแรงสด ฿120 ให้แรงงาน แล้วกด “จบงาน” (สแกน QR ยืนยัน + ให้ดาว)',focus:'#fin-btn',hint:'กดจบงาน'},
+ {actor:'win',badge:'🎽',tip:'ค่าหัวคิว ฿12 เข้าหัวหน้าวินอัตโนมัติ (ตาม “หน้ารับเงิน” ที่ตั้งเอง) — รายได้อัปเดตทันที กดถอนเข้าบัญชีได้',focus:'#wd-btn',hint:'กดถอนเงิน'},
+ {actor:'win',badge:'✅',tip:'จบครบวงจร! ค่าแรงถึงแรงงานสด · ค่าคิวเข้าหัวหน้าวิน · แอปเก็บแค่ค่าบริการรายเดือน — กด “เริ่มใหม่” เพื่อสาธิตอีกครั้ง',focus:null}
+];
+var step=0;
+
+function applyTo(i){ // set model state appropriate for entering step i (idempotent-ish forward)
+  reset();
+  if(i>=1) M.job='lift';
+  if(i>=2) M.win='red';
+  if(i>=3){ M.call='calling'; M.worker='offer'; }
+  if(i>=4){ M.worker='accepted'; M.call='accepted'; }
+  if(i>=5){ M.worker='working'; M.call='working'; }
+  if(i>=6){ M.call='working'; }
+  if(i>=7){ M.call='done'; M.worker='done'; M.winIncome=852; M.done=true; }
+  if(i>=8){ }
+}
+
+function shopHTML(){
+  if(M.call==='idle'||M.call==='calling'){
+    var calling = M.call==='calling';
+    return hd('var(--brand)','หน้าขาย · เรียกแรงงาน','ต้องการคนช่วยงาน')+
+    '<div class="body">'+
+      (calling?'<div class="status"><div class="spin"></div><div class="t">กำลังหาแรงงานวินแดง…</div><div class="s">ส่งการ์ดงานให้คิวแรกที่ว่าง<br>รอตอบภายใน 60 วินาที</div></div>':
+      ('<div class="lbl">เลือกงาน</div>'+
+       '<div class="row"><div class="chip'+(M.job==="lift"?" on":"")+'" id="j-lift">📦 ยกของ</div><div class="chip">🛒 แบก</div><div class="chip">📦 แพ็ก</div></div>'+
+       '<div class="lbl">เลือกวิน (สีเสื้อ)</div>'+
+       '<div class="row"><div class="chip red'+(M.win==="red"?" on":"")+'" id="w-red">🔴 แดง</div><div class="chip">🔵 น้ำเงิน</div><div class="chip">🟢 เขียว</div></div>'+
+       '<div class="card price"><span style="color:var(--ink-3);font-size:14px">ราคากลาง</span><b>฿120</b></div>'+
+       '<button class="btn big" id="call-btn"'+(M.win?'':' style="opacity:.45"')+'>เรียกแรงงาน →</button>'))+
+    '</div>';
+  }
+  if(M.call==='accepted') return hd('var(--brand)','งานกำลังมา','หม่อง กำลังมาที่แผง')+
+    '<div class="body"><div class="status"><div class="big">🛵</div><div class="t">✅ แรงงานรับงานแล้ว</div><div class="s">หม่อง (วินแดง) กำลังเดินทาง<br>มาที่ล็อก A-12</div></div></div>';
+  if(M.call==='working') return hd('var(--brand)','กำลังทำงาน','ยกของลงรถ · ล็อก A-12')+
+    '<div class="body"><div class="card"><b>👷 หม่อง</b><div style="font-size:13px;color:var(--ink-3);margin-top:3px">วินแดง · ยกของลงรถ · ฿120</div></div>'+
+    '<div class="status" style="flex:1"><div class="big">💪</div><div class="s">งานกำลังดำเนินการ<br>เสร็จแล้วจ่ายเงินสด + กดจบงาน</div></div>'+
+    '<button class="btn" id="fin-btn">จ่าย ฿120 + จบงาน (สแกน QR)</button></div>';
+  return hd('var(--brand)','จบงาน','เสร็จเรียบร้อย')+
+    '<div class="body"><div class="status"><div class="big">✅</div><div class="t">จบงานแล้ว</div><div class="s">จ่ายค่าแรงสด ฿120 ✓<br>ให้ดาว ⭐⭐⭐⭐⭐ · หม่อง = ร้านโปรด</div></div></div>';
+}
+function workerHTML(){
+  if(M.worker==='idle') return hd('#1f2a24','แรงงาน · วินแดง','รอรับงาน')+
+    '<div class="body"><div class="qrow"><b>สถานะ</b><span class="tag free">🟢 ว่าง · คิว 1</span></div><div class="status" style="flex:1"><div class="big">⏳</div><div class="s">รองานเข้า…<br>สลับภาษา TH / MY / KH ได้</div></div></div>';
+  if(M.worker==='offer') return hd('var(--gold)','🔔 งานใหม่ / အလုပ်အသစ်','ล็อก A-12')+
+    '<div class="body">'+
+      '<div style="display:flex;align-items:center;gap:11px"><div style="font-size:32px">📦</div><div><div style="font-size:19px;font-weight:800">ยกของลงรถ</div><div class="myanmar">ကုန်ချ</div></div></div>'+
+      '<div class="card price"><span style="color:var(--ink-3);font-size:13px">ค่าแรง / လုပ်ခ</span><b style="font-size:24px">฿120</b></div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--ink-3)">หักค่าคิว / ကော်မရှင်</span><span style="color:var(--red)">-฿12</span></div>'+
+      '<div class="timer">⏱️ ตอบใน 60 วิ / ၆၀ စက္ကန့်</div>'+
+      '<div class="btn2" style="margin-top:auto"><div class="b" style="background:var(--red)">🔴 ไม่รับ</div><div class="b" id="acc-btn" style="background:var(--green)">🟢 รับงาน</div></div>'+
+    '</div>';
+  if(M.worker==='accepted') return hd('var(--green)','รับงานแล้ว','ไปที่ล็อก A-12')+
+    '<div class="body"><div class="status"><div class="big">🗺️</div><div class="t">✅ รับงานแล้ว</div><div class="s">ไปที่ <b>ล็อก A-12</b><br>ยกของลงรถ · ฿120</div><div class="card" style="width:100%">แผนที่จำลอง → ล็อก <b>A-12</b></div></div></div>';
+  if(M.worker==='working') return hd('var(--green)','กำลังทำงาน','ล็อก A-12')+
+    '<div class="body"><div class="status"><div class="big">💪</div><div class="t">กำลังทำงาน</div><div class="s">ยกของลงรถ<br>เสร็จแล้วรับเงินสดจากแม่ค้า</div></div></div>';
+  return hd('var(--green)','จบงาน','รับเงินแล้ว')+
+    '<div class="body"><div class="status"><div class="big">💵</div><div class="t">รับเงินสด ฿120</div><div class="s">จ่ายค่าคิว ฿12 ให้หัวหน้าวิน<br>(ตามหน้ารับเงินที่วินตั้งไว้)</div><span class="tag free">🟢 กลับเข้าคิว · รอบถัดไป</span></div></div>';
+}
+function winHTML(){
+  var working = M.call==='working';
+  var done = M.done;
+  return hd('#1f2a24','วินแดง · คิวในสังกัด','รายได้ค่าหัวคิววันนี้')+
+    '<div class="hd" style="background:#1f2a24;padding-top:0"><div style="font-size:30px;font-weight:800;color:#5fe0a0">฿'+M.winIncome+(done?' <span style="font-size:14px;color:#8fe6b8">(+12)</span>':'')+'</div></div>'+
+    '<div class="body">'+
+      '<div class="lbl">แรงงานในวิน</div>'+
+      '<div class="qrow"><b>👷 หม่อง</b>'+(working?'<span class="tag work">ทำงาน · A-12</span>':(done?'<span class="tag free">🟢 ว่าง</span>':'<span class="tag free">🟢 ว่าง · คิว 1</span>'))+'</div>'+
+      '<div class="qrow"><b>👷 จอ</b><span class="tag free">🟢 ว่าง · คิว 2</span></div>'+
+      '<div class="paybox"><div class="h">หน้ารับเงิน · ตั้งเอง</div><div style="font-size:13.5px;margin-top:5px">💵 เงินสด · 💳 PromptPay ตรง · 👛 กระเป๋า</div></div>'+
+      (done?'<button class="btn" id="wd-btn" style="background:var(--ink)">💳 ถอน ฿852 เข้าบัญชี</button>':'<div class="card" style="text-align:center;font-size:13px;color:var(--ink-3)">ค่าคิวเข้าอัตโนมัติเมื่อจบงาน</div>')+
+    '</div>';
+}
+function hd(bg,s1,s2){ return '<div class="hd" style="background:'+bg+'"><div class="s1">'+s1+'</div><div class="s2">'+s2+'</div></div>'; }
+
+function render(){
+  applyTo(step);
+  document.getElementById('scr-shop').innerHTML=shopHTML();
+  document.getElementById('scr-worker').innerHTML=workerHTML();
+  document.getElementById('scr-win').innerHTML=winHTML();
+  var st=STEPS[step];
+  document.getElementById('col-shop').classList.toggle('active',st.actor==='shop');
+  document.getElementById('col-worker').classList.toggle('active',st.actor==='worker');
+  document.getElementById('col-win').classList.toggle('active',st.actor==='win');
+  document.getElementById('g-badge').textContent=st.badge;
+  document.getElementById('g-step').textContent='ขั้นที่ '+(step+1)+' / '+STEPS.length;
+  document.getElementById('g-tip').textContent=st.tip;
+  document.getElementById('prog').style.width=((step+1)/STEPS.length*100)+'%';
+  document.getElementById('g-prev').disabled=step===0;
+  var nx=document.getElementById('g-next');
+  nx.textContent = step===STEPS.length-1 ? '↻ เริ่มใหม่' : 'ถัดไป →';
+  // pulse + hint on focus element
+  if(st.focus){ var el=document.querySelector(st.focus); if(el){ el.classList.add('pulse'); el.onclick=function(){ next(); }; var h=document.createElement('div'); h.className='hint'; h.textContent=st.hint||'แตะ'; el.style.position='relative'; el.appendChild(h); } }
+}
+function next(){ if(step===STEPS.length-1){ step=0; } else { step++; } render(); }
+function prev(){ if(step>0){ step--; render(); } }
+document.getElementById('g-next').onclick=next;
+document.getElementById('g-prev').onclick=prev;
+document.addEventListener('keydown',function(e){ if(e.key==='ArrowRight')next(); if(e.key==='ArrowLeft')prev(); });
+render();
+</script>
+</body>
+</html>

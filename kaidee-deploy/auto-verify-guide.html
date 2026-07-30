@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คู่มือ: จับคู่ยอดเงินเข้าอัตโนมัติ — KaiDee</title>
+<meta name="omelette-owns-print" content="1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;
+    --blue:#1E73B0;--blue-ink:#155a8c;--blue-soft:#E6F0F8;
+    --gold:#E8992F;--gold-soft:#FDF0E2;--red:#D8452F;--red-soft:#FBEAE6;--green:#1E9E6A;
+    --ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--bg:#F4F7F6;--card:#fff;--hair:#E9EEEC;--hair-2:#DCE4E1;
+    --line-green:#06C755;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'IBM Plex Sans Thai',sans-serif}
+  body{background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .num{font-family:'IBM Plex Mono',monospace}
+  .wrap{max-width:900px;margin:0 auto;padding:32px 22px 60px}
+  .hero{background:linear-gradient(152deg,#14A886 0%,#1E73B0 100%);border-radius:22px;padding:34px 32px;color:#fff;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.12)}
+  .hero .tag{display:inline-block;background:rgba(255,255,255,.2);border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:600;margin-bottom:14px}
+  .hero h1{font-size:29px;font-weight:700;letter-spacing:-.3px;line-height:1.25}
+  .hero p{font-size:15px;opacity:.94;margin-top:10px;max-width:620px}
+  .sec{margin-top:30px}
+  .sec-h{font-size:13px;font-weight:700;color:var(--brand-ink);letter-spacing:.4px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .sec-h::before{content:"";width:22px;height:3px;border-radius:2px;background:var(--brand)}
+  .card{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:22px 24px}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .fstep{flex:1;min-width:150px;background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:16px 15px;text-align:center;position:relative}
+  .fstep .ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:23px;margin:0 auto 9px}
+  .fstep b{font-size:14px;display:block}
+  .fstep span{font-size:12px;color:var(--ink-3);display:block;margin-top:3px}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--brand);font-size:22px;font-weight:700;padding:0 4px;flex:0 0 auto}
+  @media(max-width:680px){.arrow{transform:rotate(90deg);width:100%;padding:6px 0}.fstep{min-width:100%}}
+  /* phone */
+  .demo{display:grid;grid-template-columns:270px 1fr;gap:26px;align-items:center}
+  @media(max-width:680px){.demo{grid-template-columns:1fr}}
+  .phone{background:#0E2A2A;border-radius:30px;padding:12px;box-shadow:0 22px 50px rgba(10,40,35,.28)}
+  .screen{background:#DCE7E3;border-radius:20px;overflow:hidden;min-height:400px;display:flex;flex-direction:column}
+  .lhead{background:var(--line-green);color:#fff;padding:13px 15px;display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px}
+  .lhead .g{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .chat{padding:16px 13px;display:flex;flex-direction:column;gap:12px;flex:1}
+  .who{font-size:11px;color:#5a6b64;margin:0 0 -6px 6px}
+  .bub{background:#fff;border-radius:4px 15px 15px 15px;padding:11px 13px;max-width:84%;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .bub .amt{font-size:19px;font-weight:700;color:var(--brand-ink);font-family:'IBM Plex Mono',monospace}
+  .bub small{color:var(--ink-3);font-size:11px}
+  .sysbub{align-self:center;background:var(--brand-ink);color:#fff;border-radius:999px;padding:7px 15px;font-size:12px;font-weight:600;max-width:92%}
+  .demo-txt li{margin:0 0 12px 0;list-style:none;padding-left:30px;position:relative;font-size:14.5px;color:var(--ink-2)}
+  .demo-txt li b{color:var(--ink)}
+  .demo-txt li::before{content:attr(data-n);position:absolute;left:0;top:1px;width:21px;height:21px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  /* steps */
+  .steps{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:18px 18px 18px 20px;position:relative;overflow:hidden}
+  .step::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+  .step .n{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--brand);background:var(--brand-soft);border-radius:8px;padding:3px 9px;display:inline-block;margin-bottom:8px}
+  .step h4{font-size:15.5px;font-weight:700;margin-bottom:5px}
+  .step p{font-size:13.5px;color:var(--ink-2)}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--brand-soft);color:var(--brand-ink);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;margin:4px 6px 0 0}
+  .note{border-radius:13px;padding:15px 17px;font-size:13.5px;line-height:1.65}
+  .note.warn{background:var(--gold-soft);border:1px solid #F0DFB0;color:#8A5A12}
+  .note.info{background:var(--blue-soft);border:1px solid #cfe1f0;color:var(--blue-ink)}
+  .note b{font-weight:700}
+  .alt{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:680px){.alt{grid-template-columns:1fr}}
+  .altc{background:var(--brand-softer);border-radius:13px;padding:15px 16px}
+  .altc .ic{font-size:22px}
+  .altc b{display:block;font-size:14px;margin:6px 0 3px}
+  .altc span{font-size:12.5px;color:var(--ink-2)}
+  .foot{margin-top:34px;text-align:center;color:var(--ink-3);font-size:12.5px}
+  .logo{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--brand-ink);font-size:15px}
+  .logo .d{width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+  a{color:var(--brand-ink)}a:hover{color:var(--brand)}
+  @media print{body{background:#fff}.hero{box-shadow:none}.phone{box-shadow:none}}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <span class="tag">คู่มือร้านค้า · KaiDee POS</span>
+    <h1>จับคู่ยอด “เงินเข้าบัญชี” กับบิลให้อัตโนมัติ</h1>
+    <p>ไม่ต้องนั่งไล่เช็คสลิปทีละใบ — เมื่อธนาคารแจ้งเตือนเงินเข้า ระบบจะจับคู่กับบิลพร้อมเพย์ที่ค้างตรวจให้เอง แล้วยืนยันยอดเข้าบัญชีทันที</p>
+  </div>
+
+  <!-- FLOW -->
+  <div class="sec">
+    <div class="sec-h">ภาพรวมการทำงาน</div>
+    <div class="flow">
+      <div class="fstep"><div class="ic" style="background:var(--blue-soft)">🏦</div><b>ธนาคารแจ้งเงินเข้า</b><span>บริการแจ้งเตือนที่ร้านสมัคร</span></div>
+      <div class="arrow">→</div>
+      <div class="fstep"><div class="ic" style="background:#E4F7EC">💬</div><b>เข้ากลุ่ม LINE</b><span>ธนาคาร + บอทอยู่กลุ่มเดียวกัน</span></div>
+      <div class="arrow">→</div>
+      <div class="fstep"><div class="ic" style="background:var(--brand-soft)">☁️</div><b>ระบบ KaiDee</b><span>อ่านยอด + เวลา (บน cloud)</span></div>
+      <div class="arrow">→</div>
+      <div class="fstep"><div class="ic" style="background:var(--brand-soft)">✅</div><b>บิลถูกยืนยัน</b><span>ตรงยอด/แจ้งส่วนต่างให้</span></div>
+    </div>
+    <div class="note info" style="margin-top:14px">📱 ทำงานบน cloud — <b>ไม่ต้องเปิดเครื่องค้าง</b> และใช้ได้ทุกเครื่อง iPhone / iPad / Android / คอมพิวเตอร์</div>
+  </div>
+
+  <!-- DEMO -->
+  <div class="sec">
+    <div class="sec-h">เห็นภาพจริง</div>
+    <div class="card demo">
+      <div class="phone"><div class="screen">
+        <div class="lhead"><span class="g">💬</span><div>เงินเข้าร้าน<br><span style="font-size:11px;opacity:.85;font-weight:400">ธนาคาร · บอท KaiDee</span></div></div>
+        <div class="chat">
+          <div class="who">ธนาคาร (แจ้งเตือน)</div>
+          <div class="bub">เงินเข้าบัญชี xxx-x-x1234<br><span class="amt">+250.00</span> <small>บาท</small><br><small>23/07 14:05 · พร้อมเพย์</small></div>
+          <div class="sysbub">✓ จับคู่บิล #A-041 · ฿250 — ยืนยันแล้ว</div>
+          <div class="who">ธนาคาร (แจ้งเตือน)</div>
+          <div class="bub">เงินเข้าบัญชี xxx-x-x1234<br><span class="amt">+180.00</span> <small>บาท</small><br><small>23/07 14:22 · พร้อมเพย์</small></div>
+          <div class="sysbub">✓ จับคู่บิล #W-018 · ฿180 — ยืนยันแล้ว</div>
+        </div>
+      </div></div>
+      <ol class="demo-txt">
+        <li data-n="1"><b>ธนาคารเด้งข้อความเงินเข้า</b>ในกลุ่ม LINE ที่มีบอท KaiDee อยู่</li>
+        <li data-n="2"><b>บอทอ่านยอดและเวลา</b> แล้วส่งเข้าระบบทันที</li>
+        <li data-n="3"><b>ระบบหาบิลพร้อมเพย์ที่ค้างตรวจ</b>ที่ยอดตรงกัน (และเวลาใกล้สุด)</li>
+        <li data-n="4"><b>ยืนยันให้อัตโนมัติ</b> — ถ้ายอดไม่ตรงจะทำเครื่องหมาย “ขาด/เกิน” ให้ตรวจเอง</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="sec">
+    <div class="sec-h">ตั้งค่าครั้งเดียว (4 ขั้นตอน)</div>
+    <div class="steps">
+      <div class="step"><span class="n">ขั้นที่ 1</span><h4>สมัครแจ้งเตือนกับธนาคาร</h4><p>เปิดบริการแจ้งเตือนเงินเข้าของธนาคารที่ร้านใช้ (เช่น SCB Connect) ให้ส่งเข้า LINE ได้</p></div>
+      <div class="step"><span class="n">ขั้นที่ 2</span><h4>สร้างกลุ่ม LINE ของร้าน</h4><p>ตั้งกลุ่มใหม่ เช่น “เงินเข้าร้าน” ไว้รวมข้อความแจ้งเตือนโดยเฉพาะ</p></div>
+      <div class="step"><span class="n">ขั้นที่ 3</span><h4>เชิญบอท + วางรหัสจับคู่</h4><p>ในแอป: <b>ตรวจยอดพร้อมเพย์ → เชื่อมต่อแจ้งเตือน</b> จะได้ QR เพิ่มบอท KaiDee เป็นเพื่อน + <b>รหัสจับคู่ของร้าน</b> → เชิญบอทและ LINE ธนาคารเข้ากลุ่ม แล้ว<b>พิมพ์รหัสจับคู่ในกลุ่ม 1 ครั้ง</b> เพื่อผูกกลุ่มนี้กับร้าน</p></div>
+      <div class="step"><span class="n">ขั้นที่ 4</span><h4>เสร็จ — ใช้งานได้เลย</h4><p>ต่อจากนี้เงินเข้าปุ๊บ ระบบจับคู่บิลให้เอง ดูผลได้ที่หน้า “ตรวจยอดพร้อมเพย์” และ “รายงานเงินเข้า”</p></div>
+    </div>
+  </div>
+
+  <!-- FALLBACK -->
+  <div class="sec">
+    <div class="sec-h">ถ้าธนาคารไม่ส่งเข้ากลุ่ม LINE</div>
+    <div class="alt">
+      <div class="altc"><div class="ic">📋</div><b>วางข้อความ</b><span>คัดลอกข้อความแจ้งเงินเข้าจาก SMS/แอปธนาคารมาวางในระบบ — จับคู่ให้เหมือนกัน</span></div>
+      <div class="altc"><div class="ic">📄</div><b>อัปโหลด PDF / CSV</b><span>มีไฟล์สเตทเมนท์ก็อัปโหลดได้ ระบบตรวจจับคอลัมน์ให้จับคู่</span></div>
+      <div class="altc"><div class="ic">📱</div><b>เครื่อง Android เสริม</b><span>ใช้ Android เก่าอีกเครื่องเป็น “ตัวส่งต่อ” อ่านแจ้งเตือนยิงเข้าระบบ (POS เป็น iPhone/iPad ได้)</span></div>
+    </div>
+  </div>
+
+  <!-- CAVEATS -->
+  <div class="sec">
+    <div class="sec-h">ข้อควรรู้</div>
+    <div class="note warn">
+      <b>• อ่านเฉพาะข้อความในกลุ่มที่มีบอทเท่านั้น</b> — ระบบอ่านแชทส่วนตัว 1:1 ของคุณไม่ได้ (LINE ไม่อนุญาต) ข้อความแจ้งเตือนจึงต้องอยู่ในกลุ่มที่เชิญบอทเข้าไป<br>
+      <b>• iOS ใช้ได้ปกติ</b> — วิธีนี้ทำงานบน cloud ไม่พึ่งเครื่อง · เฉพาะ “ตัวส่งต่อ notification” เท่านั้นที่ต้องเป็น Android (iPhone อ่านแจ้งเตือนแอปอื่นไม่ได้)<br>
+      <b>• ยอดซ้ำกันหลายบิลเวลาใกล้กัน</b> อาจจับคู่สลับได้ — ตรวจทานในหน้ารายงานก่อนปิดวันได้เสมอ
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="logo"><span class="d">:D</span> KaiDee POS</div>
+    <div style="margin-top:6px">คู่มือการจับคู่ยอดเงินเข้าอัตโนมัติ · สำหรับร้านค้า</div>
+  </div>
+</div>
+</body>
+</html>

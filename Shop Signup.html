@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สมัครร้าน — Have a Good Day POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#12A56E; --brand-ink:#0B7A50; --brand-soft:#E7F6EF; --brand-softer:#F1FAF5;
+    --line-green:#06C755; --ink:#1B2420; --ink-2:#57635C; --ink-3:#8A948E;
+    --bg:#F5F7F5; --card:#fff; --hair:#EAEFEA; --hair-2:#DDE5DF;
+    --shadow:0 1px 2px rgba(20,40,30,.05), 0 6px 20px rgba(20,40,30,.06);
+    --r:18px; --font:"IBM Plex Sans Thai",system-ui,sans-serif; --mono:"IBM Plex Mono",monospace;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{ font-family:var(--font); background:var(--bg); color:var(--ink);
+    -webkit-font-smoothing:antialiased; min-height:100vh; }
+  a{color:var(--brand-ink);} a:hover{color:var(--brand);}
+  .wrap{ max-width:560px; margin:0 auto; padding:32px 20px 60px; }
+  .logo{ display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .logo-mark{ width:44px; height:44px; border-radius:13px; background:var(--brand);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; }
+  h1{ font-size:26px; margin:18px 0 4px; letter-spacing:-.02em; }
+  .sub{ color:var(--ink-2); font-size:15px; margin-bottom:26px; line-height:1.5; }
+  .card{ background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:22px; margin-bottom:16px; }
+  label{ display:block; font-size:13.5px; font-weight:600; margin:14px 0 6px; }
+  label:first-child{ margin-top:0; }
+  .hint{ font-size:12.5px; color:var(--ink-3); font-weight:400; margin-top:4px; }
+  input,select{ width:100%; border:1.5px solid var(--hair-2); border-radius:12px; padding:12px 14px;
+    font-size:15px; font-family:var(--font); background:#fff; color:var(--ink); outline:none; transition:border .15s; }
+  input:focus,select:focus{ border-color:var(--brand); }
+  .row{ display:flex; gap:12px; } .row>*{ flex:1; }
+  .btn{ width:100%; border:none; cursor:pointer; border-radius:14px; padding:15px; font-size:16px;
+    font-weight:700; font-family:var(--font); background:var(--brand); color:#fff; margin-top:22px;
+    transition:filter .15s, transform .1s; }
+  .btn:hover{ filter:brightness(1.05); } .btn:active{ transform:scale(.98); }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .emoji-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .emoji-btn{ width:44px; height:44px; border-radius:12px; border:1.5px solid var(--hair-2);
+    background:#fff; font-size:22px; cursor:pointer; }
+  .emoji-btn.on{ border-color:var(--brand); background:var(--brand-soft); }
+  .step{ display:flex; gap:13px; margin-bottom:16px; }
+  .step-n{ width:28px; height:28px; border-radius:999px; background:var(--brand); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0; }
+  .step-b{ font-size:14.5px; line-height:1.55; color:var(--ink-2); }
+  .step-b b{ color:var(--ink); }
+  .urlbox{ display:flex; align-items:center; gap:8px; background:var(--brand-softer); border:1px solid var(--hair);
+    border-radius:12px; padding:10px 12px; margin-top:8px; }
+  .urlbox code{ font-family:var(--mono); font-size:12.5px; color:var(--brand-ink); word-break:break-all; flex:1; }
+  .copy{ border:none; background:var(--brand); color:#fff; border-radius:9px; padding:7px 12px;
+    font-size:12.5px; font-weight:700; cursor:pointer; font-family:var(--font); white-space:nowrap; }
+  .err{ color:#C0392B; font-size:13.5px; margin-top:10px; }
+  .ok-badge{ width:74px; height:74px; border-radius:999px; background:var(--brand-soft); color:var(--brand);
+    display:flex; align-items:center; justify-content:center; font-size:40px; margin:0 auto 14px; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="#12A56E"/>
+      <rect x="28" y="30" width="44" height="40" rx="6" fill="#fff"/>
+      <path d="M38 42h24M38 50h24M38 58h14" stroke="#12A56E" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  </template>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="kaidee-api.jsx?v=p2-20260730j"></script>
+  <script type="text/babel" src="kaidee-signup.jsx?v=p2-20260730j"></script>
+  <script type="text/babel">
+    ReactDOM.createRoot(document.getElementById('root')).render(<ShopSignup/>);
+  </script>
+</body>
+</html>

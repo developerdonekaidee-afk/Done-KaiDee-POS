@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>แผงของฉัน — KaiDee ตลาด</title>
+<script src="gate.js?v=p2-20260730j"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0E7C4E;--brand-ink:#0A5B39;--brand-soft:#E7F1EA;--brand-softer:#F3F8F5;--gold:#F4900C;--gold-soft:#FEF1E2;--red:#C0392B;--red-soft:#FBECEA;--green:#12805A;--green-soft:#E9F7F1;--blue:#1a56db;--blue-soft:#E8EEFB;--blue-ink:#1a3fa0;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#e3e9e5;--hair-2:#cfd8d3;--bg:#F6F8F7;--bg-soft:#F1F5F3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+#root{max-width:560px;margin:0 auto;min-height:100vh;background:var(--bg);padding-bottom:86px}
+.hd{background:linear-gradient(135deg,#0E7C4E,#12945C);color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 20px;border-radius:0 0 20px 20px}
+.hd .greet{font-size:12.5;opacity:.85;font-size:12.5px}
+.hd h1{margin:2px 0 2px;font-size:21px;font-weight:700}
+.hd .per{font-size:12.5px;opacity:.85}
+.wrap{padding:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}
+.card.panel{padding:16px}
+.card h3{margin:0 0 10px;font-size:15px;font-weight:700}
+.sub{font-size:12px;color:var(--ink-3);line-height:1.55}
+.grow{flex:1}
+.note{background:var(--bg-soft);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.note.g,.note.green{background:var(--green-soft);color:#14584a}
+.note.gold{background:var(--gold-soft);color:#8a5a08}
+.note.red{background:var(--red-soft);color:#8f2b21}
+.note.blue{background:var(--blue-soft);color:var(--blue-ink)}
+.seg{display:flex;gap:6px;background:var(--bg-soft);border-radius:12px;padding:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.seg button{flex:0 0 auto;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-3);padding:9px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.seg button.on{background:#fff;color:var(--brand-ink);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.btn{border:1.6px solid var(--line);background:#fff;color:var(--ink);font-family:inherit;font-size:14px;font-weight:700;padding:12px 16px;border-radius:12px;cursor:pointer}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.gh{background:#fff;color:var(--brand-ink);border-color:var(--hair-2)}
+.btn.sm{font-size:12.5px;padding:8px 12px;border-radius:10px}
+.btn:disabled{opacity:.5}
+.field{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;font-size:14.5px;font-family:inherit;background:#fff;margin-bottom:2px}
+textarea.field{line-height:1.6}
+.lb{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin:12px 0 5px}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:99px}
+.p-g{background:var(--green-soft);color:var(--green)}.p-y{background:var(--gold-soft);color:#8a5a08}.p-r{background:var(--red-soft);color:var(--red)}.p-b{background:var(--blue-soft);color:var(--blue-ink)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--ink-2)}.kv .v{font-weight:600}
+.kv.total{border-top:2px solid var(--ink);border-bottom:none;font-weight:700;font-size:15px;margin-top:4px}
+.num{font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11.5px;color:var(--ink-3);font-weight:600;padding:7px 6px;border-bottom:1px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid var(--bg-soft)}
+th.r,td.r{text-align:right}th.c,td.c{text-align:center}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 13px}
+.kpi .l{font-size:11.5px;color:var(--ink-3)}
+.kpi .v{font-size:20px;font-weight:700;margin:2px 0}
+.kpi .f{font-size:11px;color:var(--ink-3)}
+.feed{display:flex;flex-direction:column;gap:8px}
+.feeditem{display:flex;gap:11px;align-items:center;background:var(--bg-soft);border-radius:12px;padding:10px 12px}
+.fi-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto;background:#fff}
+.fi-b{flex:1;min-width:0}
+.fi-t{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi-s{font-size:11px;color:var(--ink-3)}
+.fi-v{font-size:13.5px;font-weight:700}
+.tabbar{position:fixed;bottom:0;left:0;right:0;max-width:560px;margin:0 auto;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:10}
+.tabbar button{flex:1;border:none;background:none;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;color:var(--ink-3);font-size:10.5px;font-weight:600;cursor:pointer;border-radius:10px}
+.tabbar button.on{color:var(--brand-ink);background:var(--brand-softer)}
+.tabbar .ic{font-size:19px;line-height:1}
+.dot{display:inline-block;width:7px;height:7px;border-radius:99px;margin-right:4px}
+a,a:link{color:var(--brand-ink)}a:hover{color:var(--brand)}
+.fade{animation:fi .22s ease}@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.picker{display:flex;flex-direction:column;gap:9px}
+.pick{display:flex;gap:11px;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 13px;text-align:left;font-family:inherit;cursor:pointer;width:100%}
+.pick b{font-size:14.5px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel">const { useState, useEffect } = React; Object.assign(window,{useState,useEffect});</script>
+<script src="market-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="platform-api.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="kd-wallet.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="kd-sponsor-feed.jsx?v=p2-20260730j"></script>
+<script type="text/babel" src="market-vendor.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const {B,monthTH,thDate,thDateTime,periodKey,UNIT_TYPES,qrSVG}=MK;
+const P0=periodKey(0);
+const LSK='kd_market_vendor_me';
+window.Kpi=function Kpi({label,value,foot,tone}){ return (<div className="kpi"><div className="l">{label}</div>
+  <div className="v" style={tone?{color:tone}:null}>{value}</div>{foot?<div className="f">{foot}</div>:null}</div>); };
+window.openDoc=function(q){ window.open('Market Doc.html?'+q,'_blank'); };
+
+/* ── เลือก/ผูกแผงของฉัน (เดโม: เลือกจากทะเบียนผู้เช่า · จริง: ผูกด้วยเบอร์/OTP) ── */
+function Picker({data,onPick}){
+  const [q,setQ]=useState('');
+  const rows=(data.stalls||[]).filter(s=>s.status==='occupied'&&(!q||(s.code+' '+(s.vendor||'')).toLowerCase().includes(q.toLowerCase())));
+  return (<div className="fade">
+    <div className="hd"><div className="greet">แอปผู้เช่าแผง</div><h1>เข้าใช้งานแผงของฉัน</h1><div className="per">{data.market.name}</div></div>
+    <div className="wrap">
+      <div className="note blue" style={{marginBottom:12}}>เวอร์ชันทดลอง: เลือกแผงของคุณจากทะเบียนผู้เช่า · ระบบจริงยืนยันตัวตนด้วยเบอร์โทร + OTP (1 คนถือได้หลายแผง)</div>
+      <input className="field" value={q} onChange={e=>setQ(e.target.value)} placeholder="ค้นหาเลขแผง หรือชื่อร้าน"/>
+      <div className="picker" style={{marginTop:12}}>
+        {rows.slice(0,40).map(s=>(<button key={s.id} className="pick" onClick={()=>onPick(s.id)}>
+          <span className="fi-ic" style={{background:'var(--brand-soft)'}}>🏪</span>
+          <span style={{flex:1,minWidth:0}}><b>{s.code} · {s.vendor}</b>
+            <span className="sub" style={{display:'block'}}>{UNIT_TYPES[s.unitType]} · {s.area} ตร.ม.{s.locked?' · ถูกล็อก':''}</span></span>
+          <span style={{color:'var(--ink-3)'}}>›</span></button>))}
+        {!rows.length&&<div className="note">ไม่พบแผงที่ค้นหา</div>}
+      </div>
+    </div>
+  </div>);
+}
+
+/* ── หน้าแรกฝั่งผู้เช่า: สถานะแผง + กระเป๋า + บิลรอบนี้ + ดีลสปอนเซอร์ ── */
+function VendorMobileHome({data,setData,stallId,onQr,onTopup}){
+  const st=(data.stalls||[]).find(s=>s.id===stallId); const market=data.market;
+  const my=(data.bills||[]).filter(b=>b.stallId===stallId).sort((a,b)=>b.period<a.period?-1:1);
+  const cur=my.find(b=>b.period===P0)||my[0];
+  const mode=MK.payMode(market);
+  const w=(data.wallets||[]).find(x=>x.stallId===stallId)||{balance:0,ledger:[]};
+  const overdue=my.filter(b=>b.status==='overdue');
+  const payWallet=()=>{ if(!cur)return; if(w.balance<cur.total){ alert('ยอดกระเป๋าไม่พอ — เติมเงินก่อน'); return; }
+    setData(d=>{ const ww=(d.wallets=d.wallets||[]).find(x=>x.stallId===stallId)||(d.wallets.push({stallId,balance:0,ledger:[]}),d.wallets[d.wallets.length-1]);
+      ww.balance-=cur.total; (ww.ledger=ww.ledger||[]).push({ts:new Date().toISOString(),type:'bill',amount:-cur.total,bal:ww.balance,note:'จ่ายบิล '+monthTH(cur.period)});
+      const bb=d.bills.find(x=>x.id===cur.id); bb.status='paid'; bb.method='wallet'; bb.paidAt=Date.now();
+      const s=d.stalls.find(x=>x.id===stallId); if(!d.bills.some(x=>x.stallId===stallId&&x.status==='overdue'&&x.id!==bb.id)) s.locked=false; return {...d}; }); };
+  return (<div className="fade">
+    {st.locked&&<div className="note red" style={{marginBottom:12}}>⚠ แผงถูก<b>ระงับสิทธิ์ชั่วคราว</b>จากการค้างชำระ — เคลียร์บิลค้างเพื่อปลดล็อก</div>}
+    <div className="card panel" style={{marginBottom:12}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
+        <div><div className="sub">แผงของฉัน</div><div style={{fontSize:19,fontWeight:700}}>{st.code} · {st.vendor}</div>
+          <div className="sub">{UNIT_TYPES[st.unitType]} · {st.area} ตร.ม. · {st.rentModel==='gp'?('GP '+st.gpRate+'%'):(st.rentModel==='per_sqm'?(B(st.rentPerSqm)+'/ตร.ม.'):(B(st.rent)+'/เดือน'))}</div></div>
+        {st.locked?<span className="pill p-r">ถูกล็อก</span>:<span className="pill p-g">ปกติ</span>}</div>
+      <div style={{display:'flex',gap:8,marginTop:12,flexWrap:'wrap'}}>
+        <button className="btn gh sm" onClick={()=>window.openDoc('type=contract&stall='+encodeURIComponent(st.id))}>📄 สัญญาเช่า</button>
+        {overdue.length?<span className="pill p-r" style={{alignSelf:'center'}}>ค้าง {overdue.length} รอบ · {B(overdue.reduce((a,b)=>a+b.total,0))}</span>:null}
+      </div>
+    </div>
+    {mode!=='promptpay'&&<div className="card panel" style={{marginBottom:12}}>
+      <h3>👛 กระเป๋าเงินร้าน</h3>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'var(--brand-softer)',borderRadius:12,padding:'13px 14px',gap:10}}>
+        <div><div className="sub">ยอดคงเหลือ</div><div style={{fontSize:26,fontWeight:700,color:'var(--brand-ink)'}}>{B(w.balance)}</div></div>
+        <button className="btn pri sm" onClick={onTopup}>+ เติมเงิน</button></div>
+      <div className="kv" style={{marginTop:8}}><span className="k">เลขบัญชีเติมเงิน (VA)</span><span className="v num">{st.va||'— ตลาดยังไม่ผูก VA —'}</span></div>
+      <div className="sub">โอนเข้าเลขนี้ = เข้ากระเป๋าอัตโนมัติ · ระบบหักค่าเช่าให้เอง · ใช้จ่ายในระบบเท่านั้น ถอนเป็นเงินสดไม่ได้</div>
+    </div>}
+    {cur&&<div className="card panel" style={{marginBottom:12}}>
+      <h3>บิลรอบ {monthTH(cur.period)} {cur.status==='paid'?<span className="pill p-g">จ่ายแล้ว</span>:cur.status==='overdue'?<span className="pill p-r">เกินกำหนด</span>:<span className="pill p-y">รอชำระ</span>}</h3>
+      <div style={{background:'var(--brand-softer)',borderRadius:12,padding:'4px 14px'}}>
+        <div className="kv"><span className="k">{cur.rentModel==='gp'?('ค่าเช่า GP '+cur.gpRate+'%'):'ค่าเช่า'}</span><span className="v num">{B(cur.rent)}</span></div>
+        {cur.service>0&&<div className="kv"><span className="k">ค่าส่วนกลาง</span><span className="v num">{B(cur.service)}</span></div>}
+        <div className="kv"><span className="k">ค่าไฟ {cur.elecUnits} หน่วย</span><span className="v num">{B(cur.elecAmt)}</span></div>
+        <div className="kv"><span className="k">ค่าน้ำ {cur.waterUnits} หน่วย</span><span className="v num">{B(cur.waterAmt)}</span></div>
+        <div className="kv total"><span className="k">รวม</span><span className="v num" style={{color:'var(--brand-ink)'}}>{B(cur.total)}</span></div>
+      </div>
+      <div style={{display:'flex',gap:8,marginTop:12,flexWrap:'wrap'}}>
+        <button className="btn gh sm" onClick={()=>window.openDoc('type=invoice&bill='+encodeURIComponent(cur.id))}>🧾 ใบแจ้งหนี้</button>
+        {cur.status==='paid'&&<button className="btn gh sm" onClick={()=>window.openDoc('type='+(market.vat?'tax':'receipt')+'&bill='+encodeURIComponent(cur.id))}>📄 ใบเสร็จ</button>}
+      </div>
+      {cur.status!=='paid'?<div style={{display:'flex',flexDirection:'column',gap:8,marginTop:10}}>
+        {mode!=='promptpay'&&<button className="btn pri" onClick={payWallet} disabled={w.balance<cur.total}>{w.balance>=cur.total?('👛 จ่ายจากกระเป๋า '+B(cur.total)):'ยอดกระเป๋าไม่พอ — เติมก่อน'}</button>}
+        {mode!=='wallet'&&<button className="btn gh" onClick={onQr}>สแกน QR พร้อมเพย์จ่ายบิล</button>}
+        <div className="sub" style={{textAlign:'center'}}>โอนแล้วแนบสลิปได้ที่แท็บ “แนบสลิป”</div>
+      </div>:<div className="note g" style={{marginTop:10}}>✓ ชำระแล้ว · {thDateTime(cur.paidAt)}{cur.method==='wallet'?' (หักจากกระเป๋า)':''}</div>}
+    </div>}
+    <div className="card panel" style={{marginBottom:12}}><h3>ประวัติบิล</h3>
+      <table><thead><tr><th>รอบ</th><th className="r">ค่าเช่า</th><th className="r">น้ำ+ไฟ</th><th className="r">รวม</th><th className="c">สถานะ</th></tr></thead>
+        <tbody>{my.slice(0,8).map(b=><tr key={b.id}><td>{monthTH(b.period)}</td><td className="r num">{B(b.rent)}</td>
+          <td className="r num">{B(b.elecAmt+b.waterAmt+(b.service||0))}</td><td className="r num" style={{fontWeight:700}}>{B(b.total)}</td>
+          <td className="c">{b.status==='paid'?<span className="pill p-g">จ่าย</span>:b.status==='overdue'?<span className="pill p-r">ค้าง</span>:<span className="pill p-y">รอ</span>}</td></tr>)}</tbody></table></div>
+    {window.KDSponsorFeed&&<window.KDSponsorFeed mod="market" limit={3} title="🎁 ดีลค้าส่ง/ของใช้สำหรับร้านคุณ"/>}
+  </div>);
+}
+
+/* ── QR จ่ายบิล + เติมกระเป๋า (mobile sheet ย่อ) ── */
+function QrSheet({title,ref1,amount,promptpay,name,onClose,onConfirm,confirmLabel}){
+  return (<div style={{position:'fixed',inset:0,background:'rgba(10,25,22,.45)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:30}} onClick={onClose}>
+    <div style={{background:'#fff',width:'100%',maxWidth:560,borderRadius:'22px 22px 0 0',padding:'18px 18px calc(24px + env(safe-area-inset-bottom))'}} onClick={e=>e.stopPropagation()}>
+      <div style={{width:40,height:4,borderRadius:3,background:'var(--hair-2)',margin:'0 auto 14px'}}/>
+      <div style={{fontSize:17,fontWeight:700,marginBottom:10}}>{title}</div>
+      <div style={{textAlign:'center'}}><div dangerouslySetInnerHTML={{__html:qrSVG(ref1)}} style={{display:'inline-block',width:170}}/></div>
+      <div className="kv"><span className="k">พร้อมเพย์</span><span className="v num">{promptpay}</span></div>
+      <div className="kv"><span className="k">ชื่อบัญชี</span><span className="v">{name}</span></div>
+      <div className="kv total"><span className="k">ยอดชำระ</span><span className="v num" style={{color:'var(--brand-ink)'}}>{B(amount)}</span></div>
+      <div className="sub" style={{marginTop:6}}>อ้างอิง {ref1} · ระบบจริงจับยอดเข้าอัตโนมัติ (VA/webhook) — เดโมกดยืนยันเอง</div>
+      <button className="btn pri" style={{width:'100%',marginTop:14}} onClick={onConfirm}>{confirmLabel||'✓ ยืนยันว่าโอนแล้ว'}</button>
+    </div></div>);
+}
+
+function App(){
+  const [,bump]=useState(0);
+  const [stallId,setStallId]=useState(()=>{ try{ return localStorage.getItem(LSK)||''; }catch(e){ return ''; } });
+  const [tab,setTab]=useState('me'); const [qr,setQr]=useState(false); const [topup,setTopup]=useState(false); const [amt,setAmt]=useState(2000);
+  useEffect(()=>{ if(!window.PLAT_API) return;
+    const p=new URLSearchParams(location.search);
+    const biz=p.get('market')||(MK.load().markets[0]||{}).id||'demo-market';
+    const sync=window.PLAT_API.attach({biz,type:'market',key:'market',read:()=>MK.load(),write:(b)=>MK.save(b),onRemote:()=>bump(x=>x+1),stamp:(b)=>(b&&b.updatedAt)||0});
+    return ()=>{ try{sync.stop();}catch(e){} };
+  },[]);
+  const all=MK.load();
+  const qsStall=new URLSearchParams(location.search).get('stall');
+  const sid=qsStall||stallId;
+  const st=(all.stalls||[]).find(s=>s.id===sid);
+  const market=(all.markets||[]).find(m=>m.id===(st?st.marketId:null))||all.markets[0];
+  const setData=(fn)=>{ const nx=fn(MK.load()); nx.updatedAt=Date.now(); MK.save(nx); if(window.__mkSync)window.__mkSync.push(); bump(x=>x+1); };
+  if(!market) return <div className="wrap"><div className="note">ยังไม่มีข้อมูลตลาด</div></div>;
+  const data={...all,market,stalls:(all.stalls||[]).filter(s=>s.marketId===market.id),bills:(all.bills||[]).filter(b=>b.marketId===market.id)};
+  if(!st) return <Picker data={data} onPick={(id)=>{ try{ localStorage.setItem(LSK,id); }catch(e){} setStallId(id); }}/>;
+
+  const my=(all.bills||[]).filter(b=>b.stallId===st.id).sort((a,b)=>b.period<a.period?-1:1);
+  const cur=my.find(b=>b.period===P0)||my[0];
+  const w=(all.wallets||[]).find(x=>x.stallId===st.id)||{balance:0};
+  const payQr=()=>{ setData(d=>{ const bb=d.bills.find(x=>x.id===cur.id); bb.status='paid'; bb.method='promptpay'; bb.paidAt=Date.now();
+    const s=d.stalls.find(x=>x.id===st.id); if(!d.bills.some(x=>x.stallId===st.id&&x.status==='overdue'&&x.id!==bb.id)) s.locked=false; return {...d}; }); setQr(false); };
+  const doTopup=()=>{ const v=+amt||0; if(v<=0)return; setData(d=>{ d.wallets=d.wallets||[]; let ww=d.wallets.find(x=>x.stallId===st.id);
+    if(!ww){ ww={stallId:st.id,balance:0,ledger:[]}; d.wallets.push(ww); }
+    ww.balance+=v; (ww.ledger=ww.ledger||[]).push({ts:new Date().toISOString(),type:'topup',amount:v,bal:ww.balance,note:'เติมเงินกระเป๋า · พร้อมเพย์'}); return {...d}; }); setTopup(false); };
+
+  const TABS=[['me','🏪','แผงของฉัน'],['slip','📎','แนบสลิป'],['fix','🛠️','แจ้งซ่อม'],['news','📣','ประกาศ'],['doc','📄','สัญญา'],['meter','💧','น้ำ-ไฟ']];
+  const VA=window.VendorApp;
+  return (<>
+    <div className="hd">
+      <div className="greet">สวัสดีครับ {st.vendor} 👋</div>
+      <h1>แผง {st.code}</h1>
+      <div className="per">{market.name} · รอบ {monthTH(P0)}{cur&&cur.status!=='paid'?' · ค้างชำระ '+B(cur.total):' · ชำระครบ'}</div>
+    </div>
+    <div className="wrap">
+      {tab==='me'
+        ? <VendorMobileHome data={data} setData={setData} stallId={st.id} onQr={()=>setQr(true)} onTopup={()=>setTopup(true)}/>
+        : (VA
+            ? <div key={tab}>{React.createElement(window[{slip:'VendorSlipTab',fix:'VendorFixTab',news:'VendorNewsTab',doc:'VendorDocTab',meter:'VendorMeterTab'}[tab]], tabProps(tab,{data,setData,st,market}))}</div>
+            : <div className="note">ยังไม่ได้โหลด market-vendor.jsx</div>)}
+      <button className="btn gh sm" style={{marginTop:14,width:'100%'}} onClick={()=>{ try{ localStorage.removeItem(LSK); }catch(e){} setStallId(''); }}>เปลี่ยนแผง / ออกจากแผงนี้</button>
+    </div>
+    <div className="tabbar">{TABS.map(([k,ic,l])=>(
+      <button key={k} className={tab===k?'on':''} onClick={()=>setTab(k)}><span className="ic">{ic}</span>{l}</button>))}</div>
+    {qr&&cur&&<QrSheet title={'จ่ายบิล '+monthTH(cur.period)} ref1={'BILL'+cur.id.slice(-6).toUpperCase()} amount={cur.total} promptpay={market.promptpay} name={market.name} onClose={()=>setQr(false)} onConfirm={payQr}/>}
+    {topup&&<div style={{position:'fixed',inset:0,background:'rgba(10,25,22,.45)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:30}} onClick={()=>setTopup(false)}>
+      <div style={{background:'#fff',width:'100%',maxWidth:560,borderRadius:'22px 22px 0 0',padding:'18px 18px calc(24px + env(safe-area-inset-bottom))'}} onClick={e=>e.stopPropagation()}>
+        <div style={{width:40,height:4,borderRadius:3,background:'var(--hair-2)',margin:'0 auto 14px'}}/>
+        <div style={{fontSize:17,fontWeight:700}}>เติมเงินเข้ากระเป๋าร้าน</div>
+        <div className="sub" style={{marginBottom:8}}>คงเหลือ {B(w.balance)} · เติมแล้วระบบหักค่าเช่าอัตโนมัติ</div>
+        <div style={{display:'flex',gap:8,margin:'10px 0',flexWrap:'wrap'}}>{[500,1000,2000,5000].map(v=>
+          <button key={v} className={'btn sm '+(+amt===v?'pri':'gh')} style={{flex:'1 1 70px'}} onClick={()=>setAmt(v)}>{B(v)}</button>)}</div>
+        <input className="field num" type="number" value={amt} onChange={e=>setAmt(e.target.value)}/>
+        <div style={{textAlign:'center',marginTop:12}}><div dangerouslySetInnerHTML={{__html:qrSVG('TOPUP'+st.code)}} style={{display:'inline-block',width:150}}/></div>
+        <div className="sub" style={{textAlign:'center'}}>สแกนพร้อมเพย์ {market.promptpay} · หรือโอนเข้า VA {st.va||'—'}</div>
+        <button className="btn pri" style={{width:'100%',marginTop:12}} onClick={doTopup}>✓ ยืนยันเติมเงิน {B(+amt||0)}</button>
+      </div></div>}
+  </>);
+}
+function tabProps(tab,{data,setData,st,market}){
+  const mine=(arr)=>(data[arr]||[]).filter(x=>x.stallId===st.id).sort((a,b)=>(b.at||0)-(a.at||0));
+  const push=(arr,row)=>setData(d=>{ d[arr]=d[arr]||[]; d[arr].push(row); return {...d}; });
+  const patch=(arr,id,fn)=>setData(d=>{ const x=(d[arr]||[]).find(y=>y.id===id); if(x)fn(x); return {...d}; });
+  if(tab==='slip')  return {data,st,rows:mine('slips'),push};
+  if(tab==='fix')   return {st,market,rows:mine('tickets'),push,patch};
+  if(tab==='news')  return {data,market};
+  if(tab==='doc')   return {data,st,rows:mine('vreqs'),push};
+  return {data,st};
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

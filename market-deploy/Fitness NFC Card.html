@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ป้าย NFC เช็คอิน — ฟิตเนส</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js?v=p2-20260730j"></script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js?v=p2-20260730j"></script>
+<style>
+  :root{--brand:#0E9C88;--brand-d:#0A6E60;--ink:#123b30;--bg:#eef5f0;--gold:#E8992F;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"IBM Plex Sans Thai",sans-serif;background:var(--bg);color:var(--ink);padding:26px 16px 70px;}
+  .num{font-variant-numeric:tabular-nums;}
+  .wrap{max-width:760px;margin:0 auto;}
+  .apphead{display:flex;align-items:center;gap:11px;margin-bottom:18px;}
+  .bi{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--brand),var(--brand-d));display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .apphead b{font-size:20px;color:var(--brand-d);font-weight:700;}
+  .apphead span{display:block;font-size:12.5px;color:#5a726a;}
+  .card{background:#fff;border-radius:16px;padding:18px 18px 20px;box-shadow:0 2px 10px rgba(18,59,48,.07);margin-bottom:18px;}
+  .card h2{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+  .card .n{width:24px;height:24px;border-radius:8px;background:var(--brand);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  .desc{font-size:13px;color:#5a726a;line-height:1.55;margin-bottom:12px;}
+  label{display:block;font-size:12.5px;font-weight:600;margin:10px 0 5px;}
+  input,select{width:100%;font-family:inherit;font-size:14.5px;padding:11px 13px;border:1.5px solid #d5e3db;border-radius:11px;color:var(--ink);background:#fff;}
+  input:focus,select:focus{outline:none;border-color:var(--brand);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .toolbar{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px;}
+  .btn{font-family:inherit;font-size:13.5px;font-weight:700;border:none;border-radius:11px;padding:11px 16px;cursor:pointer;}
+  .btn-p{background:var(--brand);color:#fff;}
+  .btn-g{background:#e4efe9;color:var(--brand-d);}
+  .radio-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+  .radio-row button{flex:1;min-width:100px;border:1.5px solid #d5e3db;background:#fff;border-radius:11px;padding:9px;font-size:13px;font-weight:600;color:#5a726a;cursor:pointer;}
+  .radio-row button.on{border-color:var(--brand);background:#eafaf4;color:var(--brand-d);}
+  .cards{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;margin-top:8px;}
+  /* ── NFC standee card 360px ── */
+  .fcard{width:360px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 6px 22px rgba(18,59,48,.14);border:1px solid #dce7e0;}
+  .fc-head{position:relative;height:150px;background:linear-gradient(150deg,#14A886,#0A6E60);overflow:hidden;display:flex;align-items:flex-end;}
+  .fc-head .cover{position:absolute;inset:0;background-size:cover;background-position:center;}
+  .fc-head .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,60,48,.05),rgba(10,60,48,.72));}
+  .fc-head .hd{position:relative;z-index:1;padding:16px 20px;color:#fff;width:100%;}
+  .fc-head .logo{width:46px;height:46px;border-radius:13px;background:#fff;padding:5px;margin-bottom:auto;display:none;align-items:center;justify-content:center;position:absolute;top:16px;left:20px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+  .fc-head .logo img{width:100%;height:100%;object-fit:contain;border-radius:8px;}
+  .fc-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.9;}
+  .fc-shop{font-size:24px;font-weight:700;line-height:1.15;margin-top:3px;}
+  .fc-body{padding:22px 22px 8px;text-align:center;}
+  .fc-tap{font-size:22px;font-weight:700;color:var(--ink);}
+  .fc-tap .em{font-size:26px;vertical-align:-3px;margin-right:4px;}
+  .fc-sub{font-size:13px;color:#5a726a;margin-top:4px;line-height:1.5;}
+  .nfc-zone{width:190px;height:190px;margin:16px auto 6px;border:3px dashed var(--brand);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--brand-d);background:#f4fbf9;position:relative;}
+  .nfc-zone .wave{font-size:52px;line-height:1;}
+  .nfc-zone .zt{font-size:13.5px;font-weight:700;margin-top:8px;}
+  .nfc-zone .zs{font-size:11px;color:#7c9089;margin-top:2px;padding:0 14px;line-height:1.4;}
+  .nfc-zone .corner{position:absolute;width:16px;height:16px;border:2px solid var(--brand);}
+  .c1{top:8px;left:8px;border-right:none;border-bottom:none;border-radius:6px 0 0 0;}
+  .c2{top:8px;right:8px;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
+  .c3{bottom:8px;left:8px;border-right:none;border-top:none;border-radius:0 0 0 6px;}
+  .c4{bottom:8px;right:8px;border-left:none;border-top:none;border-radius:0 0 6px 0;}
+  .fc-or{display:flex;align-items:center;gap:10px;color:#9aada5;font-size:11.5px;font-weight:600;margin:14px 4px 10px;}
+  .fc-or::before,.fc-or::after{content:"";flex:1;height:1px;background:#e0e9e4;}
+  .qrmini{width:118px;height:118px;margin:0 auto;background:#fff;border:2px solid #eef5f0;border-radius:14px;padding:7px;}
+  .qrmini img,.qrmini canvas{width:100%!important;height:100%!important;}
+  .qrcap{font-size:11.5px;color:#5a726a;margin-top:6px;}
+  .fc-foot{margin-top:14px;padding:13px 20px;background:#f3f8f5;font-size:12px;color:#5a726a;display:flex;align-items:center;justify-content:center;gap:7px;text-align:center;line-height:1.4;}
+  .hint{font-size:11.5px;color:#7c9089;align-self:center;}
+  .note{background:#FDF0E2;color:#8a5a12;border:1px solid #f0d8b0;border-radius:11px;padding:11px 13px;font-size:12.5px;line-height:1.55;margin-top:10px;}
+  .gstep{display:flex;gap:11px;margin-top:13px;}
+  .gn{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:0 0 auto;}
+  .gb{flex:1;font-size:13px;line-height:1.5;color:var(--ink);} .gb b{display:block;margin-bottom:2px;} .gb div{color:#5a726a;font-size:12.5px;}
+  @media print{
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+    @page{margin:14mm;}
+    body{background:#fff;padding:0;}
+    .noprint{display:none!important;}
+    .cards{gap:0;display:block;}
+    .fcard{width:360px;max-width:360px;margin:0 auto;box-shadow:none;page-break-inside:avoid;break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="apphead noprint">
+    <div class="bi">🏋️</div>
+    <div><b>ป้าย NFC เช็คอิน</b><span>สำหรับฟิตเนส — ใส่รูปร้าน เว้นช่องแปะสติกเกอร์ NFC · ปริ้นท์/ดาวน์โหลดการ์ด</span></div>
+  </div>
+
+  <div class="card noprint">
+    <h2><span class="n">1</span> ใส่ข้อมูลฟิตเนส</h2>
+    <div class="desc">กรอกชื่อ + อัปโหลดรูป → การ์ดอัปเดตอัตโนมัติ · ช่อง NFC จะเว้นไว้ให้แปะสติกเกอร์จริง · มี QR สำรองให้คนไม่มี NFC สแกนได้</div>
+    <div class="grid">
+      <div><label>ชื่อฟิตเนส</label><input id="iName" placeholder="เช่น ฟิตโซน"></div>
+      <div><label>รหัสร้าน (shop id)</label><input id="iShop" placeholder="เช่น fitzone"></div>
+    </div>
+    <label>ลิงก์เช็คอิน (ปล่อยว่าง = สร้างจากรหัสร้าน)</label>
+    <input id="iUrl" placeholder="https://... (หน้าเช็คอินสมาชิก)">
+    <label>รูปฟิตเนส / ปกการ์ด (พื้นหลังหัวการ์ด)<span class="hint"> · แนะนำ 1080×450 px · แนวนอน · PNG/JPG</span></label>
+    <input id="iCover" type="file" accept="image/*" style="padding:8px 10px;">
+    <label>โลโก้ (ไม่บังคับ — โผล่มุมบนซ้าย)<span class="hint"> · แนะนำ 512×512 px · สี่เหลี่ยมจัตุรัส</span></label>
+    <input id="iLogo" type="file" accept="image/*" style="padding:8px 10px;">
+    <label>ธีมสี</label>
+    <div class="radio-row" id="themeRow">
+      <button data-th="teal" class="on">เขียวฟิตเนส</button>
+      <button data-th="dark">ดำพรีเมียม</button>
+      <button data-th="plum">ม่วง</button>
+    </div>
+    <div class="note">💡 <b>วิธีใช้:</b> เขียนลิงก์เช็คอินลงสติกเกอร์ NFC (ด้วยแอป "NFC Tools") → ปริ้นท์การ์ดนี้ → แปะสติกเกอร์ลงช่องประ (⬡) → ตั้งที่เคาน์เตอร์/ประตู · สมาชิกแตะมือถือเพื่อเช็คอิน</div>
+  </div>
+
+  <div class="card noprint">
+    <h2><span class="n">2</span> การ์ด NFC</h2>
+    <div class="toolbar">
+      <button class="btn btn-p" id="dl">⬇ ดาวน์โหลดการ์ด (PNG)</button>
+      <button class="btn btn-g" onclick="window.print()">🖨️ ปริ้นท์การ์ด</button>
+      <span class="hint">ขนาดการ์ดเท่าการ์ด QR พร้อมเพย์ (360px · ~9×15 ซม.)</span>
+    </div>
+  </div>
+
+  <div class="card noprint" id="guide">
+    <h2><span class="n">?</span> คู่มือใช้งาน NFC (สำหรับฟิตเนส)</h2>
+    <div class="desc">ทำครั้งเดียวจบ · ใช้ได้ตลอด ไม่มีค่ารายเดือน</div>
+    <div class="gstep"><div class="gn">1</div><div class="gb"><b>ซื้อสติกเกอร์ NFC</b><div>ชนิด <b>NTAG213</b> (ค้น "NFC sticker NTAG213" ใน Shopee/Lazada · ~5–20฿/ชิ้น) · ถ้าจะติดบน<b>ประตูเหล็ก</b> เลือกรุ่น <b>on-metal / anti-metal</b> ไม่งั้นแตะไม่ติด</div></div></div>
+    <div class="gstep"><div class="gn">2</div><div class="gb"><b>เขียนลิงก์ลงสติกเกอร์</b><div>โหลดแอป <b>"NFC Tools"</b> (ฟรี) → Write → Add record → <b>URL</b> → วางลิงก์เช็คอิน (ปุ่ม "คัดลอกลิงก์เช็คอิน" ด้านล่าง) → แตะมือถือกับสติกเกอร์</div></div></div>
+    <div class="gstep"><div class="gn">3</div><div class="gb"><b>ปริ้นท์การ์ด + แปะสติกเกอร์</b><div>ปริ้นท์/ดาวน์โหลดการ์ดนี้ → แปะสติกเกอร์ NFC ลงในช่องประ (⬡) → ตั้งที่เคาน์เตอร์/ประตู</div></div></div>
+    <div class="gstep"><div class="gn">4</div><div class="gb"><b>ทดสอบ</b><div>iPhone รุ่นใหม่แตะได้เลย · Android เปิด NFC ก่อน · แตะแล้วเด้งหน้าเช็คอิน = ใช้ได้ · ไม่มีสติกเกอร์ก็ให้สมาชิก<b>สแกน QR สำรอง</b>บนการ์ดแทนได้</div></div></div>
+    <div style="display:flex;gap:8;flex-wrap:wrap;margin-top:12px;">
+      <button class="btn btn-g" id="copyLink">📋 คัดลอกลิงก์เช็คอิน</button>
+      <a class="btn btn-g" href="https://apps.apple.com/app/nfc-tools/id1252962749" target="_blank" style="text-decoration:none;">iOS: NFC Tools</a>
+      <a class="btn btn-g" href="https://play.google.com/store/apps/details?id=com.wakdev.wdnfc" target="_blank" style="text-decoration:none;">Android: NFC Tools</a>
+    </div>
+    <div class="note" style="margin-top:12px;background:#FBEAE6;color:#a3352a;border-color:#f3cfc7;">⚠️ สติกเกอร์ต้องเป็นชนิด<b>มีชิป (NTAG)</b> เท่านั้น — "แผ่นกันคลื่น/กันโลหะ" ใช้ไม่ได้ · และ NFC นี้ใช้<b>เช็คอินเท่านั้น ไม่ใช่แตะจ่ายเงิน</b> (รับเงินใช้ PromptPay QR)</div>
+  </div>
+
+  <div class="cards">
+    <div class="fcard" id="fcard">
+      <div class="fc-head" id="fcHead">
+        <div class="cover" id="fcCover"></div><div class="shade"></div>
+        <div class="logo" id="fcLogo"><img id="fcLogoImg" alt=""></div>
+        <div class="hd"><div class="fc-eyebrow">Member Check-in</div><div class="fc-shop" id="fcShop">ฟิตเนสของคุณ</div></div>
+      </div>
+      <div class="fc-body">
+        <div class="fc-tap"><span class="em">📲</span>แตะเพื่อเช็คอิน</div>
+        <div class="fc-sub">นำมือถือแตะที่สัญลักษณ์ NFC ด้านล่าง</div>
+        <div class="nfc-zone">
+          <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
+          <div class="wave">〰️</div>
+          <div class="zt">แปะสติกเกอร์ NFC ตรงนี้</div>
+          <div class="zs">Stick NFC tag here · เว้นว่างไว้ตอนปริ้นท์</div>
+        </div>
+        <div class="fc-or">ไม่มี NFC? สแกน QR</div>
+        <div class="qrmini"><div id="qr"></div></div>
+        <div class="qrcap">เปิดกล้อง / LINE สแกนเพื่อเช็คอิน</div>
+      </div>
+      <div class="fc-foot" id="fcFoot">🚪 สมาชิกเช็คอินเองหน้าประตู · ระบบตัดสิทธิ์อัตโนมัติเมื่อแพ็กหมดอายุ</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function qp(k){return new URLSearchParams(location.search).get(k)||'';}
+var els={name:document.getElementById('iName'),shop:document.getElementById('iShop'),url:document.getElementById('iUrl')};
+els.name.value=qp('name'); els.shop.value=qp('shop'); els.url.value=qp('url');
+var THEMES={ teal:{g:'linear-gradient(150deg,#14A886,#0A6E60)',c:'#0A6E60',qr:'#0A6E60'},
+  dark:{g:'linear-gradient(150deg,#2b2f33,#111417)',c:'#111417',qr:'#111417'},
+  plum:{g:'linear-gradient(150deg,#8e5aa0,#5c3369)',c:'#5c3369',qr:'#5c3369'} };
+var theme='teal', cover='', logo='';
+function checkUrl(){ var v=els.url.value.trim(); if(v)return v; var s=encodeURIComponent(els.shop.value.trim()||'fitness'); return location.href.replace(/[^/]*$/,'')+'Fitness Checkin.html?shop='+s; }
+function mkQR(){ var el=document.getElementById('qr'); el.innerHTML=''; new QRCode(el,{text:checkUrl(),width:300,height:300,colorDark:THEMES[theme].qr,colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M}); }
+function render(){
+  document.getElementById('fcShop').textContent=els.name.value.trim()||'ฟิตเนสของคุณ';
+  var t=THEMES[theme];
+  var head=document.getElementById('fcHead'); head.style.background=t.g;
+  document.querySelectorAll('.nfc-zone').forEach(function(z){ z.style.borderColor=t.c; z.style.color=t.c; });
+  document.querySelectorAll('.nfc-zone .corner').forEach(function(c){ c.style.borderColor=t.c; });
+  document.querySelector('.fc-tap .em');
+  var cov=document.getElementById('fcCover'); cov.style.backgroundImage=cover?('url('+cover+')'):'none';
+  var lg=document.getElementById('fcLogo'); lg.style.display=logo?'flex':'none'; if(logo)document.getElementById('fcLogoImg').src=logo;
+  mkQR();
+}
+['name','shop','url'].forEach(function(k){els[k].addEventListener('input',render);});
+document.getElementById('themeRow').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b)return;
+  theme=b.dataset.th; document.querySelectorAll('#themeRow button').forEach(function(x){x.classList.toggle('on',x===b);}); render(); });
+function readImg(input,cb){ input.addEventListener('change',function(e){ var f=e.target.files&&e.target.files[0]; if(!f)return; var r=new FileReader(); r.onload=function(){cb(r.result);}; r.readAsDataURL(f); }); }
+readImg(document.getElementById('iCover'),function(d){cover=d;render();});
+readImg(document.getElementById('iLogo'),function(d){logo=d;render();});
+render();
+document.getElementById('copyLink').onclick=function(){ var b=this; navigator.clipboard&&navigator.clipboard.writeText(checkUrl()).then(function(){ b.textContent='✓ คัดลอกแล้ว'; setTimeout(function(){ b.textContent='📋 คัดลอกลิงก์เช็คอิน'; },1500); }); };
+document.getElementById('dl').onclick=async function(){
+  var node=document.getElementById('fcard');
+  try{ var url=await htmlToImage.toPng(node,{pixelRatio:3,cacheBust:true,backgroundColor:'#ffffff'});
+    var a=document.createElement('a'); a.download='nfc-เช็คอิน-'+(els.shop.value||els.name.value||'fitness')+'.png'; a.href=url; a.click();
+  }catch(e){ alert('ดาวน์โหลดไม่สำเร็จ ลองใหม่'); console.error(e); }
+};
+</script>
+</body>
+</html>

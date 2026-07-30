@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="omelette-owns-print" content="1">
+<title>เอกสาร — KaiDee ตลาด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--brand:#0E9C88;--brand-ink:#0A6E60;--hair:#D8E0DD;--hair-2:#E9EEEC;--font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:#E7ECEA;color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .mono{font-family:var(--mono);} .num{font-variant-numeric:tabular-nums;}
+  .toolbar{position:sticky;top:0;z-index:10;background:#0E2A2A;color:#dbeee7;padding:12px 20px;display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .toolbar .tb{border:none;border-radius:9px;padding:9px 16px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;}
+  .toolbar .pri{background:var(--brand);color:#fff;} .toolbar .gh{background:rgba(255,255,255,.1);color:#dbeee7;}
+  .toolbar .tt{font-weight:700;color:#fff;margin-right:auto;}
+  .sheet-wrap{padding:26px 16px 60px;display:flex;justify-content:center;}
+  .sheet{background:#fff;width:210mm;min-height:297mm;padding:20mm 18mm;box-shadow:0 4px 30px rgba(0,0,0,.14);}
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:2.5px solid var(--ink);padding-bottom:16px;}
+  .issuer{max-width:60%;}
+  .issuer .logo{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .issuer .logo img{width:34px;height:34px;object-fit:contain;}
+  .issuer .logo .kd{font-size:11px;font-weight:700;color:var(--brand-ink);letter-spacing:.03em;}
+  .issuer .nm{font-size:19px;font-weight:700;line-height:1.25;}
+  .issuer .meta{font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:6px;}
+  .doc-title{text-align:right;flex:0 0 auto;}
+  .doc-title .th{font-size:22px;font-weight:700;}
+  .doc-title .en{font-size:12px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+  .doc-title .copy{font-size:11.5px;color:var(--ink-3);margin-top:6px;}
+  .doc-title .docno{margin-top:10px;font-size:12.5px;}
+  .doc-title .docno b{font-family:var(--mono);}
+  .parties{display:flex;justify-content:space-between;gap:24px;margin-top:18px;font-size:13px;}
+  .parties .blk{flex:1;}
+  .parties .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+  .parties .nm{font-weight:700;font-size:14.5px;}
+  .parties .dt{color:var(--ink-2);line-height:1.5;margin-top:3px;}
+  table.items{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px;}
+  table.items th{background:#F1F5F4;text-align:left;font-size:11.5px;font-weight:700;color:var(--ink-2);padding:10px 12px;border-bottom:1.5px solid var(--hair);}
+  table.items th.r,table.items td.r{text-align:right;}
+  table.items th.c,table.items td.c{text-align:center;}
+  table.items td{padding:11px 12px;border-bottom:1px solid var(--hair-2);vertical-align:top;}
+  table.items td .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px;}
+  .totals{display:flex;justify-content:flex-end;margin-top:16px;}
+  .totals .box{width:290px;}
+  .totals .rw{display:flex;justify-content:space-between;padding:7px 0;font-size:13.5px;border-bottom:1px dashed var(--hair);}
+  .totals .rw .k{color:var(--ink-2);}
+  .totals .rw.grand{border-bottom:none;border-top:2px solid var(--ink);margin-top:4px;padding-top:11px;font-size:16px;font-weight:700;}
+  .totals .rw.grand .v{color:var(--brand-ink);}
+  .baht{margin-top:14px;background:#F1F5F4;border-radius:8px;padding:11px 14px;font-size:13px;font-weight:600;text-align:center;}
+  .paybar{margin-top:20px;display:flex;gap:18px;align-items:center;border:1px solid var(--hair);border-radius:12px;padding:14px 16px;}
+  .paybar .qr{width:96px;height:96px;flex:0 0 auto;} .paybar .qr svg{width:100%;height:100%;}
+  .paybar .pi{font-size:13px;line-height:1.6;} .paybar .pi b{font-family:var(--mono);}
+  .stamp{margin-left:auto;text-align:center;color:#1E9E6A;border:2.5px solid #1E9E6A;border-radius:12px;padding:8px 16px;transform:rotate(-6deg);font-weight:700;font-size:15px;}
+  .clauses{margin-top:20px;font-size:12.5px;line-height:1.75;color:var(--ink-2);}
+  .clauses h4{font-size:13.5px;color:var(--ink);margin:14px 0 4px;}
+  .clauses ol{padding-left:20px;} .clauses li{margin-bottom:5px;}
+  .sign{display:flex;justify-content:space-between;gap:40px;margin-top:44px;}
+  .sign .col{flex:1;text-align:center;}
+  .sign .line{border-top:1px dotted var(--ink-2);margin:40px 12px 8px;}
+  .sign .rl{font-size:12.5px;color:var(--ink-2);}
+  .foot-note{margin-top:26px;font-size:11px;color:var(--ink-3);text-align:center;border-top:1px solid var(--hair-2);padding-top:12px;line-height:1.5;}
+  .badbox{padding:80px 30px;text-align:center;color:var(--ink-2);}
+  @media print{ body{background:#fff;} .toolbar{display:none;} .sheet-wrap{padding:0;} .sheet{box-shadow:none;width:auto;min-height:auto;padding:14mm 12mm;} }
+  @media (max-width:760px){ .sheet{width:100%;padding:20px 16px;} .doc-head{flex-direction:column;} .doc-title{text-align:left;} .parties{flex-direction:column;gap:12px;} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="market-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { B, B1, monthTH, thDate, bahtText, vatBreak, calcRent, calcService, qrSVG, UNIT_TYPES, RENT_MODELS, fillDoc } = MK;
+const Q = new URLSearchParams(location.search);
+const docNo=(prefix,seed)=>{ let h=0; for(let i=0;i<seed.length;i++)h=(h*31+seed.charCodeAt(i))>>>0; return prefix+new Date().getFullYear()+'-'+String(h%9000+1000); };
+
+function Issuer({m}){ return (<div className="issuer">
+  <div className="logo"><img src="assets/kaidee-logo.png" alt="KaiDee"/><span className="kd">KAIDEE · โปรแกรมตลาด</span></div>
+  <div className="nm">{m.registered?(m.account||m.name):m.name}</div>
+  <div className="meta">{m.address||''}<br/>
+    {m.taxId?('เลขประจำตัวผู้เสียภาษี '+m.taxId):(m.registered?'':'(ไม่ได้จดทะเบียนนิติบุคคล)')}{m.phone?(' · โทร '+m.phone):''}{m.email?(' · '+m.email):''}</div>
+</div>); }
+
+function Contract({m,st}){
+  const no=docNo('CT',st.id); const rentTxt = st.rentModel==='gp'?('ค่าเช่าคิดจาก GP '+st.gpRate+'% ของยอดขาย โดยรับประกันขั้นต่ำ '+B(st.minG)+' ต่อเดือน')
+    : st.rentModel==='per_sqm'?('ค่าเช่า '+B(st.rentPerSqm)+' ต่อ ตร.ม. ต่อเดือน (พื้นที่ '+st.area+' ตร.ม. = '+B(calcRent(st))+' ต่อเดือน)')
+    : ('ค่าเช่าเหมาจ่าย '+B(st.rent)+' ต่อเดือน');
+  return (<div className="sheet">
+    <div className="doc-head"><Issuer m={m}/>
+      <div className="doc-title"><div className="th">สัญญาเช่าพื้นที่</div><div className="en">Lease Agreement</div><div className="docno">เลขที่ <b>{no}</b><br/>วันที่ {thDate(MK.todayISO())}</div></div></div>
+    <div className="parties">
+      <div className="blk"><div className="lbl">ผู้ให้เช่า (ตลาด)</div><div className="nm">{m.registered?(m.account||m.name):m.name}</div><div className="dt">{m.address}<br/>{m.taxId&&('เลขผู้เสียภาษี '+m.taxId)}</div></div>
+      <div className="blk"><div className="lbl">ผู้เช่า (ร้านค้า)</div><div className="nm">{st.contact||st.vendor}</div><div className="dt">ร้าน {st.vendor}<br/>โทร {st.phone||'—'}</div></div>
+    </div>
+    <table className="items"><thead><tr><th>รายการ</th><th>รายละเอียด</th></tr></thead><tbody>
+      <tr><td>ยูนิต/แผงที่เช่า</td><td><b>{st.code}</b> · {UNIT_TYPES[st.unitType]} · พื้นที่ {st.area} ตร.ม. · {st.zoneName}</td></tr>
+      <tr><td>ประเภทกิจการ</td><td>{st.cat}</td></tr>
+      <tr><td>รูปแบบและอัตราค่าเช่า</td><td>{rentTxt}</td></tr>
+      {st.camPerSqm>0 && <tr><td>ค่าบริการส่วนกลาง (CAM)</td><td>{B(st.camPerSqm)} ต่อ ตร.ม. ต่อเดือน = {B(calcService(st))} ต่อเดือน</td></tr>}
+      <tr><td>ค่าน้ำ / ค่าไฟ</td><td>ตามหน่วยที่ใช้จริง (ไฟ {B(m.elecRate)}/หน่วย · น้ำ {B(m.waterRate)}/หน่วย)</td></tr>
+      <tr><td>เงินประกัน</td><td>{B(st.deposit)} ({bahtText(st.deposit)})</td></tr>
+      <tr><td>ระยะเวลาเช่า</td><td>{thDate(st.contractStart)} ถึง {thDate(st.contractEnd)}</td></tr>
+      <tr><td>กำหนดชำระ</td><td>ภายในวันที่ 10 ของทุกเดือน ผ่าน PromptPay บัญชีกลาง {m.promptpay}</td></tr>
+    </tbody></table>
+    <div className="clauses">
+      <h4>ข้อตกลงและเงื่อนไข</h4>
+      {m.contractTemplate ? (()=>{ const vars={
+          'ตลาด':m.registered?(m.account||m.name):m.name,'เลขผู้เสียภาษีตลาด':m.taxId||'-','ที่อยู่ตลาด':m.address||'',
+          'ผู้เช่า':st.contact||st.vendor,'ร้าน':st.vendor,'เบอร์':st.phone||'-','ยูนิต':st.code,'ประเภทยูนิต':UNIT_TYPES[st.unitType],
+          'พื้นที่':st.area+' ตร.ม.','ค่าเช่า':B(calcRent(st)),'ค่าส่วนกลาง':B(calcService(st)),'ประกัน':B(st.deposit),
+          'เริ่ม':thDate(st.contractStart),'หมด':thDate(st.contractEnd),'วันที่':thDate(MK.todayISO()),'พร้อมเพย์':m.promptpay };
+        return fillDoc(m.contractTemplate,vars).split('\n').map((ln,i)=>ln.trim()?<p key={i} style={{margin:'0 0 5px'}}>{ln}</p>:null); })()
+        : <ol>
+        <li>ผู้เช่าตกลงชำระค่าเช่า ค่าบริการส่วนกลาง และค่าสาธารณูปโภคตามอัตราข้างต้นภายในกำหนดทุกเดือน</li>
+        <li>กรณีค้างชำระเกินกำหนด ผู้ให้เช่ามีสิทธิ์ระงับการใช้พื้นที่/สิทธิ์การขายชั่วคราวจนกว่าจะชำระครบ</li>
+        <li>เงินประกันจะคืนเมื่อสิ้นสุดสัญญาและส่งมอบพื้นที่ในสภาพเรียบร้อย หักค่าเสียหาย (ถ้ามี)</li>
+        <li>ผู้เช่าต้องใช้พื้นที่ตามประเภทกิจการที่ระบุ และปฏิบัติตามระเบียบของตลาด</li>
+        {st.rentModel==='gp' && <li>ผู้เช่าตกลงบันทึกยอดขายผ่านระบบ KaiDee POS เพื่อคำนวณค่าเช่าตามส่วนแบ่ง (GP)</li>}
+      </ol>}
+    </div>
+    <div className="sign"><div className="col"><div className="line"></div><div className="rl">ผู้ให้เช่า (ตลาด)</div></div>
+      <div className="col"><div className="line"></div><div className="rl">ผู้เช่า ({st.contact||st.vendor})</div></div></div>
+    <div className="foot-note">เอกสารนี้สร้างจากทะเบียนร้านค้าและข้อมูลนิติบุคคลของตลาดโดยอัตโนมัติ · KaiDee Platform — โปรแกรมตลาด<br/>แม่แบบสัญญาเพื่อความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย ควรตรวจทานก่อนใช้จริง</div>
+  </div>);
+}
+
+function BillDoc({m,st,bill,kind}){
+  // kind: invoice | tax | receipt
+  const title = kind==='invoice'?'ใบแจ้งหนี้':(kind==='tax'?'ใบกำกับภาษี/ใบเสร็จรับเงิน':'ใบเสร็จรับเงิน');
+  const en = kind==='invoice'?'INVOICE':(kind==='tax'?'TAX INVOICE / RECEIPT':'RECEIPT');
+  const prefix = kind==='invoice'?'INV':(kind==='tax'?'TX':'RC');
+  const no=docNo(prefix,bill.id);
+  const lines=[
+    {n:'ค่าเช่าพื้นที่'+(bill.rentModel==='gp'?(' (GP '+bill.gpRate+'% ของยอดขาย '+B(bill.gpSales)+')'):''), q:'1 เดือน', amt:bill.rent},
+  ];
+  if(bill.service>0) lines.push({n:'ค่าบริการส่วนกลาง (CAM)',q:st.area+' ตร.ม.',amt:bill.service});
+  lines.push({n:'ค่าไฟฟ้า', q:bill.elecUnits+' หน่วย ('+bill.elecPrev+'→'+bill.elecCur+')', amt:bill.elecAmt});
+  lines.push({n:'ค่าน้ำประปา', q:bill.waterUnits+' หน่วย ('+bill.waterPrev+'→'+bill.waterCur+')', amt:bill.waterAmt});
+  const vb=vatBreak(bill.total,m); const paid=kind!=='invoice'&&bill.status==='paid';
+  return (<div className="sheet">
+    <div className="doc-head"><Issuer m={m}/>
+      <div className="doc-title"><div className="th">{title}</div><div className="en">{en}</div>
+        {m.vat && kind==='tax' && <div className="copy">(ต้นฉบับ)</div>}
+        <div className="docno">เลขที่ <b>{no}</b><br/>วันที่ {thDate(paid?new Date(bill.paidAt).toISOString().slice(0,10):MK.todayISO())}<br/>รอบบิล {monthTH(bill.period)}</div></div></div>
+    <div className="parties">
+      <div className="blk"><div className="lbl">ลูกค้า / ผู้เช่า</div><div className="nm">{st.contact||st.vendor}</div><div className="dt">ร้าน {st.vendor} · ยูนิต {st.code}<br/>โทร {st.phone||'—'}</div></div>
+      <div className="blk" style={{textAlign:'right'}}><div className="lbl">กำหนดชำระ</div><div className="nm">{thDate(bill.due)}</div><div className="dt">อ้างอิง {bill.ref}</div></div>
+    </div>
+    <table className="items"><thead><tr><th style={{width:'46%'}}>รายการ</th><th>จำนวน/หน่วย</th><th className="r">จำนวนเงิน</th></tr></thead>
+      <tbody>{lines.map((l,i)=><tr key={i}><td>{l.n}</td><td>{l.q}</td><td className="r num">{B1(l.amt)}</td></tr>)}</tbody></table>
+    <div className="totals"><div className="box">
+      {vb.vat?<>
+        <div className="rw"><span className="k">มูลค่าสินค้า/บริการ (ก่อน VAT)</span><span className="v num">{B1(vb.base)}</span></div>
+        <div className="rw"><span className="k">ภาษีมูลค่าเพิ่ม {vb.rate}%</span><span className="v num">{B1(vb.vatAmt)}</span></div>
+        <div className="rw grand"><span className="k">รวมทั้งสิ้น</span><span className="v num">{B(vb.grand)}</span></div>
+      </>:<>
+        <div className="rw"><span className="k">รวมค่าใช้จ่าย</span><span className="v num">{B1(bill.total)}</span></div>
+        {!m.vat && m.registered && <div className="rw"><span className="k" style={{fontSize:11.5,color:'var(--ink-3)'}}>ไม่คิดภาษีมูลค่าเพิ่ม</span><span></span></div>}
+        <div className="rw grand"><span className="k">รวมทั้งสิ้น</span><span className="v num">{B(bill.total)}</span></div>
+      </>}
+    </div></div>
+    <div className="baht">({bahtText(bill.total)})</div>
+    <div className="paybar">
+      <div className="qr" dangerouslySetInnerHTML={{__html:qrSVG(bill.ref)}}/>
+      <div className="pi"><b style={{fontFamily:'var(--font)',fontWeight:700}}>ชำระผ่าน PromptPay</b><br/>บัญชี {m.account||m.name}<br/>พร้อมเพย์ <b>{m.promptpay}</b><br/>จำนวน <b>{B(bill.total)}</b></div>
+      {paid && <div className="stamp">ชำระแล้ว<br/><span style={{fontSize:11,fontWeight:600}}>{thDate(new Date(bill.paidAt).toISOString().slice(0,10))}</span></div>}
+    </div>
+    {kind==='tax' && <div className="sign"><div className="col"><div className="line"></div><div className="rl">ผู้รับเงิน / ผู้มีอำนาจลงนาม</div></div><div className="col"><div className="line"></div><div className="rl">ผู้รับสินค้า/บริการ</div></div></div>}
+    <div className="foot-note">{kind==='invoice'?'กรุณาชำระภายในกำหนด · เอกสารออกจากระบบ ไม่ต้องลงนามก็มีผล':'เอกสารนี้เป็นหลักฐานการรับเงิน'}{m.vat?' · ผู้ประกอบการจดทะเบียนภาษีมูลค่าเพิ่ม':''}<br/>สร้างโดย KaiDee Platform — โปรแกรมตลาด · ดึงข้อมูลจากทะเบียนร้าน+นิติบุคคลอัตโนมัติ</div>
+  </div>);
+}
+
+function App(){
+  const type=Q.get('type'); const data=MK.load();
+  let content=null, m=null;
+  if(type==='contract'){ const st=data.stalls.find(s=>s.id===Q.get('stall')); m=st&&data.markets.find(x=>x.id===st.marketId); content=st&&m?<Contract m={m} st={st}/>:null; }
+  else { const bill=data.bills.find(b=>b.id===Q.get('bill')); const st=bill&&data.stalls.find(s=>s.id===bill.stallId); m=bill&&data.markets.find(x=>x.id===bill.marketId);
+    content=bill&&st&&m?<BillDoc m={m} st={st} bill={bill} kind={type==='tax'?'tax':(type==='receipt'?'receipt':'invoice')}/>:null; }
+  const label = type==='contract'?'สัญญาเช่า':(type==='invoice'?'ใบแจ้งหนี้':(type==='tax'?'ใบกำกับภาษี/ใบเสร็จ':'ใบเสร็จ'));
+  return (<>
+    <div className="toolbar"><span className="tt">📄 {label}{m?(' · '+m.name):''}</span>
+      <button className="tb gh" onClick={()=>window.close()}>ปิด</button>
+      <button className="tb pri" onClick={()=>window.print()}>🖨 พิมพ์ / บันทึก PDF</button></div>
+    <div className="sheet-wrap">{content||<div className="sheet"><div className="badbox"><h2>ไม่พบเอกสาร</h2><p style={{marginTop:10}}>ข้อมูลอ้างอิงไม่ถูกต้อง — กรุณาเปิดจากหน้า Backoffice อีกครั้ง</p></div></div>}</div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

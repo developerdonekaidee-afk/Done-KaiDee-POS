@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เทมเพลต Rich Menu ร้าน — KaiDee POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Sriracha&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+<style>
+  :root{
+    --brand:#0E9C88; --brand-ink:#0A6E60; --brand-soft:#E3F5F1; --brand-softer:#EFFAF7;
+    --accent:#2E6FB0; --hero:linear-gradient(152deg,#14A886 0%,#1E73B0 100%);
+    --ink:#1B2420; --ink-2:#57635C; --ink-3:#8A948E; --bg:#EEF1EF; --card:#fff;
+    --hair:#E4EAE6; --hair-2:#D3DBD6; --r:16px;
+    --font:"IBM Plex Sans Thai",system-ui,sans-serif; --mono:"IBM Plex Mono",monospace;
+    --shadow:0 1px 2px rgba(20,40,30,.05),0 8px 26px rgba(20,40,30,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.5;padding:32px 20px 64px;-webkit-font-smoothing:antialiased;}
+  a{color:var(--brand-ink);} a:hover{color:var(--brand);}
+  .wrap{max-width:1000px;margin:0 auto;}
+  .head{margin-bottom:26px;}
+  .kicker{font-size:13px;font-weight:700;color:var(--brand-ink);letter-spacing:.02em;text-transform:uppercase;}
+  h1{font-size:30px;font-weight:700;letter-spacing:-.01em;margin:6px 0 8px;}
+  .lead{font-size:15px;color:var(--ink-2);max-width:640px;}
+  .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin-bottom:22px;}
+  .card h2{font-size:18px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:9px;}
+  .card h2 .n{width:27px;height:27px;border-radius:999px;background:var(--brand);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .card .desc{font-size:13.5px;color:var(--ink-3);margin-bottom:16px;}
+  /* controls */
+  .fields{display:flex;gap:14px;flex-wrap:wrap;}
+  .fields label{flex:1;min-width:180px;font-size:13px;font-weight:600;color:var(--ink-2);}
+  .fields input{width:100%;margin-top:6px;font-family:var(--font);font-size:14px;border:1.5px solid var(--hair-2);border-radius:11px;padding:11px 13px;color:var(--ink);}
+  .fields input:focus{outline:none;border-color:var(--brand);}
+  .emojis{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;}
+  .emojis button{width:40px;height:40px;border-radius:11px;font-size:20px;cursor:pointer;border:2px solid var(--hair);background:#fff;}
+  .emojis button.on{border-color:var(--brand);background:var(--brand-soft);}
+  /* preview */
+  .stagewrap{background:#333 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="12" height="12" fill="%23404040"/><rect x="12" y="12" width="12" height="12" fill="%23404040"/></svg>');border-radius:14px;padding:18px;overflow:auto;}
+  #menu{width:1250px;height:843px;position:relative;overflow:hidden;background:#e7f0ea;color:#123f36;font-family:var(--font);
+    transform-origin:top left;}
+  .m-head{position:absolute;top:0;left:0;right:0;height:150px;display:flex;align-items:center;gap:24px;padding:0 50px;
+    background:#17805e;color:#fff;z-index:2;}
+  .m-logo{width:92px;height:92px;border-radius:24px;flex-shrink:0;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:50px;overflow:hidden;background-size:cover;background-position:center;}
+  .m-name{font-family:"Sriracha",cursive;font-size:44px;letter-spacing:-.01em;line-height:1.05;}
+  .m-tag{font-size:23px;opacity:.92;margin-top:4px;font-weight:500;}
+  .m-grid{position:absolute;top:150px;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;}
+  .tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    border-right:2px dashed rgba(23,128,94,.30);border-bottom:2px dashed rgba(23,128,94,.30);}
+  .tile:nth-child(odd){background:#dcebe0;} .tile:nth-child(even){background:#cbddd0;}
+  .tile:nth-child(3n){border-right:none;} .tile:nth-child(n+4){border-bottom:none;}
+  .tile .ic{width:118px;height:118px;display:flex;align-items:center;justify-content:center;font-size:62px;}
+  .tile .lb{font-family:"Sriracha",cursive;font-size:37px;color:#123f36;}
+  .tile .sb{display:inline-flex;align-items:center;gap:9px;background:#15311f;color:#fff;border-radius:999px;padding:9px 24px;font-family:"Sriracha",cursive;font-size:22px;}
+  .tile .sb:before{content:"";width:9px;height:9px;border-radius:50%;background:#eab63f;flex-shrink:0;}
+  .tile .z{position:absolute;top:14px;left:16px;font-family:var(--mono);font-size:18px;font-weight:600;color:#17805e;opacity:.55;}
+  /* map table */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--hair);vertical-align:top;}
+  th{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.03em;font-weight:700;}
+  td .zn{display:inline-flex;align-items:center;gap:7px;font-weight:700;}
+  td .dot{width:22px;height:22px;border-radius:7px;background:var(--brand-soft);display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  code{font-family:var(--mono);font-size:12px;background:var(--brand-softer);color:var(--brand-ink);padding:2px 6px;border-radius:6px;word-break:break-all;}
+  .coord{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap;}
+  /* buttons */
+  .btn{border:none;cursor:pointer;font-family:var(--font);font-weight:700;font-size:14px;border-radius:12px;padding:12px 18px;display:inline-flex;align-items:center;gap:8px;}
+  .btn-p{background:var(--brand);color:#fff;} .btn-p:hover{filter:brightness(1.06);}
+  .btn-g{background:var(--brand-soft);color:var(--brand-ink);}
+  .toolbar{display:flex;gap:11px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+  .hint{font-size:12.5px;color:var(--ink-3);}
+  .steps{counter-reset:s;list-style:none;}
+  .steps li{position:relative;padding:0 0 15px 42px;font-size:14px;color:var(--ink-2);}
+  .steps li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:-2px;width:28px;height:28px;border-radius:999px;background:var(--brand-soft);color:var(--brand-ink);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .steps li b{color:var(--ink);}
+  .jsonbox{position:relative;}
+  pre{background:#10201B;color:#CDEBE0;border-radius:12px;padding:16px 16px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.55;}
+  .copyj{position:absolute;top:10px;right:10px;}
+  .note{background:var(--brand-softer);border-radius:12px;padding:13px 15px;font-size:13px;color:var(--brand-ink);margin-top:14px;}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="kicker">KaiDee POS · Rich Menu</div>
+    <h1>เทมเพลต Rich Menu ร้านสำเร็จรูป</h1>
+    <p class="lead">ใส่ชื่อร้าน + รหัสร้าน → ดาวน์โหลดรูป Rich menu (2500×1686) แล้วอัปโหลดเข้า LINE OA ของร้านคุณเอง ไม่ต้องออกแบบเอง · ด้านล่างมีตารางบอกว่าปุ่มไหนลิงก์ไปไหน + วิธีตั้งค่าใน LINE OA Manager ทีละขั้น</p>
+  </div>
+
+  <div class="card" style="background:var(--brand-softer,#EAF7F1);border:1px solid var(--brand-soft,#CDEBE0)">
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px">📌 หน้านี้สำหรับร้านที่ใช้ LINE OA</div>
+    <div style="font-size:13.5px;color:var(--ink-2);line-height:1.6">ใช้ทำ“ปุ่มเมนู”ในแชท LINE ของร้าน (LINE Official Account) — ลูกค้าแอดเพื่อนร้านแล้วกดสั่งได้เลย<br><b>ถ้ายังไม่มี LINE OA → ข้ามหน้านี้ได้เลย</b> — ใช้แค่ลิงก์/QR โปสเตอร์วางหน้าร้านก็ขายได้เหมือนกัน</div>
+  </div>
+
+  <!-- 1. customize -->
+  <div class="card">
+    <h2><span class="n">1</span> ปรับแต่งร้านของคุณ</h2>
+    <div class="desc">พิมพ์ชื่อร้าน สโลแกน และรหัสร้าน (shop ID) ที่ได้ตอนสมัคร — รูปด้านล่างจะอัปเดตทันที</div>
+    <div class="fields">
+      <label>ชื่อร้าน<input id="fName" value="ครัวขายดี" maxlength="22"></label>
+      <label>สโลแกน / คำโปรย<input id="fTag" value="สั่งง่าย ส่งไว อร่อยทุกจาน" maxlength="30"></label>
+      <label>รหัสร้าน (shop ID)<input id="fShop" value="S1024" maxlength="24"></label>
+      <label>เบอร์โทรร้าน (ปุ่มติดต่อ)<input id="fPhone" value="081-234-5678" maxlength="16"></label>
+    </div>
+    <label style="display:block;margin-top:14px;font-size:13px;font-weight:600;color:var(--ink-2)">โลโก้ / ไอคอนร้าน
+      <div class="emojis" id="emojis"></div>
+    </label>
+  </div>
+
+  <!-- 2. preview -->
+  <div class="card">
+    <h2><span class="n">2</span> ตัวอย่าง Rich menu</h2>
+    <div class="desc">ขนาดมาตรฐาน LINE แบบใหญ่ 2500×1686 (6 ปุ่ม · 3 คอลัมน์ × 2 แถว) — เส้นประคือขอบเขตปุ่มที่แตะได้ (ตอนดาวน์โหลดเส้นประจะถูกซ่อน)</div>
+    <div class="stagewrap">
+      <div id="menu">
+        <div class="m-head" id="mHead">
+          <div class="m-logo" id="mLogo">🍳</div>
+          <div><div class="m-name" id="mName">ครัวขายดี</div><div class="m-tag" id="mTag">สั่งง่าย ส่งไว อร่อยทุกจาน</div></div>
+        </div>
+        <div class="m-grid" id="mGrid"></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-p" id="dl">⬇ ดาวน์โหลดรูป Rich menu (PNG)</button>
+      <button class="btn btn-g" id="dlPlain">ดาวน์โหลดแบบไม่มีเส้นแบ่ง</button>
+      <span class="hint">ไฟล์ที่ได้: 2500×1686 px · PNG · ใช้อัปโหลดใน LINE OA ได้เลย</span>
+    </div>
+  </div>
+
+  <!-- 3. mapping -->
+  <div class="card">
+    <h2><span class="n">3</span> ปุ่มไหน ลิงก์ไปไหน (Mapping)</h2>
+    <div class="desc">แต่ละปุ่มตั้ง action เป็น <b>Link (URI)</b> ตามนี้ · พิกัด (X, Y, กว้าง, สูง) อ้างอิงภาพจริง 2500×1686 — ใส่ตรงกับ area ใน LINE ได้เลย</div>
+    <table id="mapTbl"><thead><tr><th style="width:150px">ปุ่ม</th><th>ลิงก์ปลายทาง (URI)</th><th style="width:180px">พิกัดพื้นที่ (px)</th></tr></thead><tbody></tbody></table>
+    <div class="note" id="linkNote"></div>
+  </div>
+
+  <!-- 4. LINE setup -->
+  <div class="card">
+    <h2><span class="n">4</span> ตั้งค่าใน LINE OA (ประมาณ 5 นาที)</h2>
+    <ol class="steps">
+      <li>เข้า <b>LINE Official Account Manager</b> (manager.line.biz) → เลือก OA ของร้าน → เมนู <b>Rich menus</b> → <b>Create</b></li>
+      <li>ตั้งชื่อ + ช่วงเวลาแสดง → เลือกเทมเพลตเป็นแบบ <b>“ใหญ่ · 6 ช่อง” (Large, 3×2)</b></li>
+      <li>ที่ <b>Background image</b> → <b>Upload</b> รูปที่ดาวน์โหลดจากขั้นตอนที่ 2</li>
+      <li>แตะแต่ละช่อง แล้วตั้ง <b>Action = Link</b> → วาง URL ตามตาราง “ปุ่มไหนลิงก์ไปไหน” ด้านบน (ช่องติดต่อใช้ <code>tel:</code> หรือลิงก์ LINE ก็ได้)</li>
+      <li>กด <b>Save</b> → เปิดใช้งาน (Display) → เสร็จ! ลูกค้ากดสั่งได้ทันที 🎉</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+const LIFF_ID='2010720123-HXe3iZJD';
+const el=id=>document.getElementById(id);
+const L=`https://liff.line.me/${LIFF_ID}`;
+// ── แต่ละ vertical: หัวสี + ชื่อ/โลโก้ตั้งต้น + ชุดปุ่ม 6 ช่อง (3×2) ──
+const TYPES={
+  shop:{head:'#17805e',kicker:'KaiDee POS · Rich Menu',title:'เทมเพลต Rich Menu ร้าน',emoji:'🍳',name:'ครัวขายดี',tag:'สั่งง่าย ส่งไว อร่อยทุกจาน',
+    emojis:['🍳','🍜','☕','🍔','🍦','🥗','🍱','🧋','🍗','🍕','🐟','🍰'],
+    zones:[
+      {id:'A',ic:'📋',lb:'ดูเมนู',sb:'ราคา/รูป',link:s=>`${L}?shop=${s}`},
+      {id:'B',ic:'🛒',lb:'สั่งอาหาร',sb:'ทานที่ร้าน/รับกลับ',link:s=>`${L}?shop=${s}`},
+      {id:'C',ic:'🛵',lb:'เดลิเวอรี',sb:'ส่งถึงบ้าน',link:s=>`${L}?shop=${s}&mode=delivery`},
+      {id:'D',ic:'🏷️',lb:'โปรโมชัน',sb:'ส่วนลด/ของแถม',link:s=>`${L}?shop=${s}&tab=promo`},
+      {id:'E',ic:'🎫',lb:'บัตรสมาชิก',sb:'สะสมแต้ม',link:s=>`${L}?shop=${s}&tab=member`},
+      {id:'F',ic:'☎️',lb:'ติดต่อร้าน',sb:'โทร/สอบถาม',link:(s,p)=>`tel:${(p||'').replace(/[^0-9+]/g,'')}`},
+    ]},
+  market:{head:'#1C5E94',kicker:'Market OS · Rich Menu',title:'เทมเพลต Rich Menu ตลาด',emoji:'🏬',name:'ตลาดสี่มุมเมือง',tag:'จองแผง · จ่ายค่าเช่า · ระบบวิน',
+    emojis:['🏬','🏪','🛒','🥬','🐟','🍎','🧺','🏢'],
+    zones:[
+      {id:'A',ic:'📋',lb:'จองแผง',sb:'สมัครขาย',link:s=>`${L}?market=${s}&go=vendor`},
+      {id:'B',ic:'🧾',lb:'ร้านของฉัน',sb:'บิล/จ่ายค่าเช่า',link:s=>`${L}?market=${s}&role=vendor`},
+      {id:'C',ic:'🗺️',lb:'ผังตลาด',sb:'ดูแผงว่าง',link:s=>`${L}?market=${s}&tab=plan`},
+      {id:'D',ic:'📢',lb:'ประกาศ/ข่าว',sb:'จากสำนักงาน',link:s=>`${L}?market=${s}&tab=news`},
+      {id:'E',ic:'👷',lb:'เรียกแรงงาน',sb:'ระบบวิน',link:s=>`${L}?market=${s}&app=labor`},
+      {id:'F',ic:'☎️',lb:'ติดต่อสำนักงาน',sb:'โทร/สอบถาม',link:(s,p)=>`tel:${(p||'').replace(/[^0-9+]/g,'')}`},
+    ]},
+  fitness:{head:'#6E4AA6',kicker:'Fitness · Rich Menu',title:'เทมเพลต Rich Menu ฟิตเนส',emoji:'🏋️',name:'ฟิตเนสของฉัน',tag:'สมาชิก · คลาส · เช็คอิน',
+    emojis:['🏋️','💪','🧘','🥊','🚴','🏃','⛹️','🤸'],
+    zones:[
+      {id:'A',ic:'🎟️',lb:'สมัคร/ต่ออายุ',sb:'แพ็กสมาชิก',link:s=>`${L}?shop=${s}&app=fitness&tab=join`},
+      {id:'B',ic:'🗓️',lb:'ตารางคลาส',sb:'จองคลาส',link:s=>`${L}?shop=${s}&app=fitness&tab=classes`},
+      {id:'C',ic:'✅',lb:'เช็คอิน',sb:'เข้ายิม',link:s=>`${L}?shop=${s}&app=fitness&tab=checkin`},
+      {id:'D',ic:'🧑‍🏫',lb:'เทรนเนอร์/PT',sb:'จองเทรนเนอร์',link:s=>`${L}?shop=${s}&app=fitness&tab=pt`},
+      {id:'E',ic:'🏷️',lb:'โปรโมชัน',sb:'ส่วนลด/แพ็ก',link:s=>`${L}?shop=${s}&app=fitness&tab=promo`},
+      {id:'F',ic:'☎️',lb:'ติดต่อ',sb:'โทร/สอบถาม',link:(s,p)=>`tel:${(p||'').replace(/[^0-9+]/g,'')}`},
+    ]},
+};
+const COLW=2500/3, ROWH=(1686-300)/2, HEAD=300; // header band 300px tall in real px
+const _q=new URLSearchParams(location.search);
+const TYPE=TYPES[_q.get('type')]||TYPES.shop;
+const ZONES=TYPE.zones;
+let hasLogo=false;
+const state={name:TYPE.name,tag:TYPE.tag,shop:'S1024',phone:'081-234-5678',emoji:TYPE.emoji};
+// apply type theme + defaults
+el('mHead').style.background=TYPE.head;
+document.querySelector('.kicker').textContent=TYPE.kicker;
+document.querySelector('h1').textContent=TYPE.title;
+el('fName').value=TYPE.name; el('fTag').value=TYPE.tag;
+
+// emoji picker
+const ep=el('emojis');
+TYPE.emojis.forEach(e=>{const b=document.createElement('button');b.textContent=e;b.onclick=()=>{state.emoji=e;hasLogo=false;el('mLogo').style.backgroundImage='none';render();};ep.appendChild(b);});
+
+// build tiles once
+const grid=el('mGrid');
+ZONES.forEach(z=>{const d=document.createElement('div');d.className='tile';
+  d.innerHTML=`<span class="z">${z.id}</span><div class="ic">${z.ic}</div><div style="text-align:center"><div class="lb">${z.lb}</div><div class="sb">${z.sb}</div></div>`;
+  grid.appendChild(d);});
+
+function areaFor(i){
+  // grid 3x2 within 2500 x (1686-300), offset y by HEAD
+  const col=i%3, row=Math.floor(i/3);
+  return {x:Math.round(col*COLW), y:Math.round(HEAD+row*ROWH), w:Math.round(COLW), h:Math.round(ROWH)};
+}
+function render(){
+  state.name=el('fName').value; state.tag=el('fTag').value; state.shop=el('fShop').value.trim(); state.phone=el('fPhone').value;
+  el('mName').textContent=state.name||'ชื่อร้าน';
+  el('mTag').textContent=state.tag||'';
+  if(!hasLogo) el('mLogo').textContent=state.emoji;
+  [...ep.children].forEach(b=>b.classList.toggle('on',b.textContent===state.emoji));
+  // mapping table
+  const tb=el('mapTbl').querySelector('tbody'); tb.innerHTML='';
+  ZONES.forEach((z,i)=>{const a=areaFor(i); const url=z.link(state.shop||'SHOP_ID',state.phone);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="zn"><span class="dot">${z.id}</span>${z.ic} ${z.lb}</span></td>
+      <td><code>${url}</code></td>
+      <td class="coord">x:${a.x} y:${a.y}<br>w:${a.w} h:${a.h}</td>`;
+    tb.appendChild(tr);});
+  el('linkNote').innerHTML=`ลิงก์ทั้งหมดชี้ไปที่ร้าน <b>${state.shop||'(ใส่รหัสร้าน)'}</b> ผ่าน LIFF ของ KaiDee — ลูกค้าเปิดในแอป LINE แล้วสั่งได้เลย · ปุ่มติดต่อใช้เบอร์ <b>${state.phone||'—'}</b>`;
+}
+['fName','fTag','fShop','fPhone'].forEach(id=>el(id).addEventListener('input',render));
+
+// fit preview to container width
+function fit(){const wrapW=el('menu').parentElement.clientWidth-36;const sc=Math.min(1,wrapW/1250);
+  el('menu').style.transform=`scale(${sc})`; el('menu').parentElement.style.height=(843*sc+36)+'px';}
+window.addEventListener('resize',fit);
+
+// prefill from query (?type=&name=&shop=&emoji=&logo=&tag=&phone=)
+(function(){try{const q=_q;
+  if(q.get('name'))el('fName').value=q.get('name');
+  if(q.get('tag'))el('fTag').value=q.get('tag');
+  if(q.get('shop'))el('fShop').value=q.get('shop');
+  if(q.get('phone'))el('fPhone').value=q.get('phone');
+  if(q.get('emoji'))state.emoji=q.get('emoji');
+  const logo=q.get('logo');
+  if(logo){ el('mLogo').style.backgroundImage=`url("${logo}")`; el('mLogo').textContent=''; hasLogo=true; }
+}catch(e){}})();
+
+async function download(plain){
+  const node=el('menu');
+  const prevT=node.style.transform; node.style.transform='scale(1)';
+  if(plain)node.classList.add('noguide');
+  const css=document.createElement('style');
+  if(plain)css.textContent='.tile{border:none!important}';
+  document.head.appendChild(css);
+  try{
+    const url=await htmlToImage.toPng(node,{width:1250,height:843,pixelRatio:2,cacheBust:true});
+    const a=document.createElement('a');a.download=`richmenu-${(state.shop||'shop')}${plain?'-plain':''}.png`;a.href=url;a.click();
+  }catch(e){alert('ดาวน์โหลดไม่สำเร็จ ลองใหม่อีกครั้ง');console.error(e);}
+  document.head.removeChild(css); node.classList.remove('noguide'); node.style.transform=prevT;
+}
+el('dl').onclick=()=>download(false);
+el('dlPlain').onclick=()=>download(true);
+
+render(); fit();
+</script>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#12A56E"/>
+    <rect x="20" y="26" width="60" height="20" rx="4" fill="#fff" opacity=".9"/>
+    <rect x="20" y="52" width="27" height="22" rx="4" fill="#fff" opacity=".7"/>
+    <rect x="53" y="52" width="27" height="22" rx="4" fill="#fff" opacity=".7"/>
+  </svg>
+</template>
+</body>
+</html>

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โปรแกรมตลาด — แผนนำเสนอระบบ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+  deck-stage:not(:defined){visibility:hidden}
+  :root{--brand:#0E9C88;--brand-ink:#0A6E60;--brand-2:#14A886;--blue:#1E73B0;--gold:#E8992F;--plum:#7a4a8c;--ink:#12211E;--ink-2:#4C5B55;--ink-3:#8A968F;--soft:#E3F5F1;--softer:#F0FAF7;--paper:#FBFDFC;--line:#E4EEEA;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  section{font-family:"IBM Plex Sans Thai",system-ui,sans-serif;background:var(--paper);color:var(--ink);padding:92px 110px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
+  .mono{font-family:"IBM Plex Mono",monospace;}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:24px;font-weight:700;color:var(--brand-ink);letter-spacing:.02em;margin-bottom:26px;}
+  .eyebrow::before{content:"";width:34px;height:3px;background:var(--brand);border-radius:2px;}
+  h1{font-size:82px;font-weight:700;line-height:1.05;letter-spacing:-.02em;}
+  h2{font-size:52px;font-weight:700;line-height:1.12;letter-spacing:-.015em;margin-bottom:14px;}
+  .sub{font-size:26px;color:var(--ink-2);line-height:1.5;font-weight:500;}
+  .fill{flex:1;}
+  .brandbar{display:flex;align-items:center;gap:16px;}
+  .brandbar .lg{width:66px;height:66px;border-radius:18px;background:#fff;box-shadow:0 4px 16px rgba(14,156,136,.18);display:flex;align-items:center;justify-content:center;padding:9px;}
+  .brandbar .lg img{width:100%;height:100%;object-fit:contain;}
+  .brandbar .tx{font-size:26px;font-weight:700;color:var(--brand-ink);line-height:1.2;}
+  .brandbar .tx small{display:block;font-weight:500;font-size:24px;color:var(--ink-3);}
+  .hero{background:linear-gradient(150deg,#0F3D36 0%,#0A6E60 55%,#14A886 130%);color:#fff;justify-content:flex-start;}
+  .hero h1{color:#fff;} .hero .eyebrow{color:#8fe6d3;} .hero .eyebrow::before{background:#8fe6d3;}
+  .hero .sub{color:#c6 efe4;color:#cdeee6;}
+  .hero .brandbar .tx{color:#fff;} .hero .brandbar .tx small{color:#9fd3c8;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:32px 30px;box-shadow:0 2px 14px rgba(20,50,40,.05);}
+  .card .ic{font-size:38px;margin-bottom:14px;display:block;}
+  .card h3{font-size:27px;font-weight:700;margin-bottom:10px;}
+  .card p{font-size:24px;color:var(--ink-2);line-height:1.5;}
+  .tag{display:inline-block;font-size:24px;font-weight:700;color:var(--brand-ink);background:var(--soft);border-radius:999px;padding:5px 16px;margin-bottom:14px;}
+  .big-num{font-family:"IBM Plex Mono",monospace;font-size:30px;font-weight:600;color:var(--brand);}
+  ul.chk{list-style:none;display:flex;flex-direction:column;gap:16px;margin-top:8px;}
+  ul.chk li{font-size:25px;color:var(--ink-2);padding-left:42px;position:relative;line-height:1.45;}
+  ul.chk li::before{content:"→";position:absolute;left:0;color:var(--brand);font-weight:700;}
+  .killer{border-left:6px solid var(--brand);padding:22px 28px;background:var(--softer);border-radius:0 18px 18px 0;}
+  .killer .n{font-family:"IBM Plex Mono",monospace;font-size:24px;color:var(--brand-ink);font-weight:600;}
+  .killer h3{font-size:29px;font-weight:700;margin:6px 0 8px;}
+  .killer p{font-size:24px;color:var(--ink-2);line-height:1.4;}
+  .flywheel{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:10px;}
+  .fw{background:#fff;border:2px solid var(--brand);border-radius:16px;padding:16px 20px;font-size:24px;font-weight:600;color:var(--brand-ink);}
+  .fw small{display:block;font-size:24px;font-weight:500;color:var(--ink-3);margin-top:3px;}
+  .fw-arr{font-size:30px;color:var(--brand);}
+  .road{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:20px;}
+  .road .ph{position:relative;padding:28px 26px;border-radius:20px;}
+  .road .ph.on{background:var(--brand);color:#fff;} .road .ph.next{background:#fff;border:1px solid var(--line);}
+  .road .ph .p{font-family:"IBM Plex Mono",monospace;font-size:24px;font-weight:600;opacity:.8;}
+  .road .ph h3{font-size:26px;font-weight:700;margin:6px 0 10px;}
+  .road .ph p{font-size:24px;line-height:1.4;}
+  .road .ph.on p{color:#d6f2ea;} .road .ph.next p{color:var(--ink-2);}
+  .footer-tag{font-size:24px;color:var(--ink-3);margin-top:auto;line-height:1.5;}
+  .rev{display:flex;flex-direction:column;gap:14px;}
+  .rev .r{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 26px;}
+  .rev .r .k{font-size:24px;font-weight:700;flex:1;} .rev .r .d{font-size:24px;color:var(--ink-2);flex:2;} .rev .r .ic{font-size:30px;}
+  @media (prefers-reduced-motion:no-preference){[data-deck-active] .anim{animation:rise .55s both;}[data-deck-active] .anim2{animation:rise .55s .12s both;}[data-deck-active] .anim3{animation:rise .55s .24s both;}@keyframes rise{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}}
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section class="hero" data-label="ปก">
+    <div class="brandbar anim"><div class="lg"><img src="assets/kaidee-logo.png" alt="KaiDee"/></div>
+      <div class="tx">KaiDee Platform<small>Market OS · โปรแกรมบริหารตลาด</small></div></div>
+    <div class="fill"></div>
+    <div class="eyebrow anim2">แผนการนำเสนอระบบ · เฟส 1</div>
+    <h1 class="anim2">ตลาดที่<br>เก็บเงินเองอัตโนมัติ</h1>
+    <p class="sub anim3" style="margin-top:22px;max-width:1100px;">เปลี่ยนการเดินเก็บค่าเช่า-น้ำ-ไฟ ให้เป็นบิลออนไลน์ + จับยอดเข้าบัญชีอัตโนมัติ — และปลดล็อกรายได้ใหม่จากยอดขายของร้าน ไม่ใช่แค่ค่าเช่า</p>
+  </section>
+
+  <section data-label="ปัญหา">
+    <div class="eyebrow">ปัญหาของตลาดวันนี้</div>
+    <h2>เก็บค่าเช่าด้วยมือ = รั่ว ช้า มองไม่เห็นตัวเลข</h2>
+    <div class="grid3" style="margin-top:34px;">
+      <div class="card anim"><span class="ic">🚶</span><h3>เดินเก็บเงินสด</h3><p>เสียเวลา คนเก็บถือเงินสดก้อนโต เสี่ยงรั่วไหล ตรวจสอบยาก</p></div>
+      <div class="card anim2"><span class="ic">📉</span><h3>ค้างจ่ายไม่รู้ตัว</h3><p>ไม่รู้ว่าใครค้าง เท่าไหร่ ตามยาก ไม่มีเครื่องมือกดดันให้จ่าย</p></div>
+      <div class="card anim3"><span class="ic">🧾</span><h3>ทำบัญชี/ภาษีไม่ทัน</h3><p>บิล-ใบเสร็จ-VAT ทำมือ ส่งสำนักงานบัญชีไม่ครบ ตกหล่น</p></div>
+    </div>
+    <p class="sub" style="margin-top:36px;">ตลาดมีแผงหลักร้อย–พัน แต่บริหารด้วยสมุดกับเงินสด — <b style="color:var(--brand-ink)">รายได้จริงมองไม่เห็น</b></p>
+  </section>
+
+  <section data-label="ทางออก">
+    <div class="eyebrow">ทางออก</div>
+    <h2>โปรแกรมตลาด — บิลออนไลน์ + จับยอดอัตโนมัติ</h2>
+    <div class="grid2" style="margin-top:30px;gap:30px;">
+      <ul class="chk anim">
+        <li>ออกบิลค่าเช่า/น้ำ/ไฟ ออนไลน์ → ส่ง LINE/SMS พร้อม QR PromptPay</li>
+        <li>ร้านสแกนจ่าย → เงินเข้าบัญชีกลาง → <b>ระบบจับยอดเข้าบิลเอง</b></li>
+        <li>ค้างเกินกำหนด = ล็อกสิทธิ์อัตโนมัติ (เครื่องมือกดดันจ่าย)</li>
+        <li>ร้านกรอกใบสมัครเอง → อนุมัติ → <b>ทำสัญญาอัตโนมัติ</b> ไม่ต้องพิมพ์</li>
+      </ul>
+      <div class="card anim2" style="background:var(--softer);border-color:#cfeae4;">
+        <span class="tag">ทำงานได้แล้ว</span>
+        <h3 style="font-size:24px;margin-bottom:16px;">6 โมดูลในระบบเดียว</h3>
+        <p style="font-size:24px;line-height:1.7;">เช่าแผง · บิล &amp; เก็บเงิน · GP &amp; ยอดขาย · <b>บัญชี double-entry</b> · รายงานภาษี (ภ.พ.30) · ผู้ใช้ &amp; สิทธิ์<br><span style="color:var(--ink-3);font-size:24px;">แยกสิทธิ์ ร้าน / เจ้าของตลาด / แพลตฟอร์ม · บัญชีแยกต่อตลาด</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="ภาพรวมแพลตฟอร์ม">
+    <div class="eyebrow">ภาพรวม · หนึ่งเอนจิน — ต่อยอดได้ทุกธุรกิจค้าขาย</div>
+    <h2>KaiDee Platform — เอนจินเดียว ขายได้หลายธุรกิจในแอปเดียว</h2>
+    <p class="sub" style="margin-bottom:22px;">บิลออนไลน์ + จับยอดอัตโนมัติ + บัญชี/ภาษี + LINE OA = โครงเดียว — เปิดเป็น“โมดูล”ตามประเภทธุรกิจ ใช้ซ้ำได้เกือบทั้งชุด</p>
+    <div class="grid2" style="gap:16px;">
+      <div class="card anim"><span class="ic">🏪</span><h3>Market OS · บริหารตลาด</h3><p>เช่าแผง · บิลออนไลน์ · VA จับยอด · กระเป๋าเงินตลาด · บัญชี+ภาษี <b>(แกนหลัก)</b></p></div>
+      <div class="card anim2"><span class="ic">🧾</span><h3>KaiDee POS · หน้าขาย</h3><p>ขายหน้าร้าน · เก็บเงินพร้อมเพย์+จับยอด · ลูกค้าสั่งเอง · ขายฝาก · Back Office</p></div>
+      <div class="card anim3"><span class="ic">🏋️</span><h3>Fitness · ฟิตเนส/ยิม</h3><p>สมาชิก · เช็คอิน NFC · คลาส/เทรนเนอร์ · ขายของ · ต่ออายุอัตโนมัติ</p></div>
+      <div class="card anim"><span class="ic">🎽</span><h3>Labor Win · วินแรงงาน</h3><p>เรียกแรงงานผ่านไลน์ · จับคู่คิว 60 วิ · 3 บทบาท · ค่าหัวคิวเข้าวิน</p></div>
+    </div>
+    <div class="flywheel" style="margin-top:26px;">
+      <div class="fw">เอนจินเดียว<br><small>บิล/จ่าย/ขาย/ข้อมูล</small></div><div class="fw-arr">→</div>
+      <div class="fw">หลาย vertical<br><small>เปิด/ปิดตามธุรกิจ</small></div><div class="fw-arr">+</div>
+      <div class="fw">ระบบนิเวศ<br><small>สปอนเซอร์ · ไรเดอร์</small></div><div class="fw-arr">→</div>
+      <div class="fw">กระเป๋าแพลตฟอร์ม<br><small>รายได้ของเรา</small></div>
+    </div>
+    <p class="footer-tag anim3">จุดแข็ง: <b>สร้างครั้งเดียว ขายได้หลายธุรกิจ</b> · ลูกค้า/สมาชิกกลุ่มเดียวกัน → ยิ่งโต ระบบยิ่งมีค่า · เดโมกดจริงทุก vertical พร้อมโชว์</p>
+  </section>
+
+  <section data-label="จัดการแผง + ผังจริง">
+    <div class="eyebrow">ทำงานได้แล้ว · โมดูล 01 เช่าแผง</div>
+    <h2>รับสมัคร · จองแผงในไลน์ · ผังจริงปักหมุด — ลดแผงว่าง</h2>
+    <p class="sub" style="margin-bottom:24px;">ร้านสมัคร/จองเข้ามาเอง → เจ้าของจัดลงแผงคลิกเดียว → เห็นผังแผงจริงทั้งตลาดในจอเดียว</p>
+    <div class="grid3">
+      <div class="card anim"><span class="ic">🔗</span><h3>ร้านจองเองในไลน์</h3><p>แชร์ลิงก์รับสมัคร + ผังจองในไลน์ · กรอกข้อมูลก่อนดูราคา = ได้ lead ทุกคน · 4 ทางจอง: รายวัน · นัดดูพื้นที่ · จอง+มัดจำ · โอนเต็ม</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="ic">🗺️</span><h3>ผังแผงจริง (ปักหมุด)</h3><p><b>อัปโหลดรูปผังตลาดจริง</b> แล้วลากหมุดแต่ละแผงลงตำแหน่ง · สีบอกสถานะทันที <b style="color:var(--brand-ink);">🟢 มีร้าน</b> · 🔴 ค้างจ่าย/ล็อก · ⚪ ว่าง</p></div>
+      <div class="card anim3"><span class="ic">📇</span><h3>จัดลงแผง 1 คลิก</h3><p>ใบสมัคร/การจอง → กด "จัดลงแผง" = สร้างทะเบียนร้าน + ร่างสัญญาเช่าอัตโนมัติ · ไม่ต้องคีย์ใหม่</p></div>
+    </div>
+    <p class="footer-tag anim3">เห็นแผงว่างจากผังจริงทั้งตลาดในจอเดียว — ว่างตรงไหนปล่อยเช่าได้ทันที · แตะหมุด = ดูสัญญา/ค่าเช่า/สถานะบิลรายแผง</p>
+  </section>
+
+  <section data-label="จองรายวัน (ตลาดนัด)">
+    <div class="eyebrow">ทำงานได้แล้ว · โมดูล 01 · ตลาดนัด/รายวัน</div>
+    <h2>จองแผงรายวัน — ปฏิทิน · เก็บเงินหน้างาน · เช็คอิน</h2>
+    <p class="sub" style="margin-bottom:24px;">ตลาดนัด/แผงชั่วคราวจองเป็นวันๆ ได้ — เห็นทั้งเดือนว่าวันไหนเต็ม/ว่าง เก็บเงินแยกจากบิลรายเดือน</p>
+    <div class="grid3">
+      <div class="card anim"><span class="ic">📅</span><h3>ปฏิทินรายวัน</h3><p>เลือกวัน/เลื่อนวัน · แถบ 7 วันข้างหน้าโชว์จำนวนจองแต่ละวัน · รู้ทันทีวันไหนเต็ม วันไหนยังว่าง</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="ic">💵</span><h3>เก็บเงิน + เช็คอินหน้างาน</h3><p>ค่าเช่า/วัน + น้ำ-ไฟ/วัน · กดเก็บเงินทีละร้าน · เช็คอินร้านที่มาจริง · ทวงเก็บผ่าน LINE · <b>แยกจากบิลรายเดือน</b></p></div>
+      <div class="card anim3"><span class="ic">➕</span><h3>ลงร้าน walk-in ได้ทันที</h3><p>ร้านจองผ่านผังในไลน์เด้งเข้าเอง · หรือเจ้าหน้าที่กดเพิ่มร้านที่มาหน้างาน (ชื่อ/เบอร์/สินค้า/แผง) จบในจอเดียว</p></div>
+    </div>
+    <p class="footer-tag anim3">ตลาดตั้งค่าเช่า/วัน · น้ำ-ไฟ/วัน · วันเปิดทำการ · อุปกรณ์ที่จัดให้ — รองรับทั้งตลาดสด (สัญญารายเดือน) และตลาดนัด (รายวัน) ในระบบเดียว</p>
+  </section>
+
+  <section data-label="ส่งใบแจ้งหนี้">
+    <div class="eyebrow">การทำงานจริง · ออกบิลถึงมือร้าน</div>
+    <h2>ส่งใบแจ้งหนี้ให้ร้านค้า — จบใน 5 ขั้น ไม่ต้องเดินเก็บ</h2>
+    <p class="sub" style="margin-bottom:22px;">เจ้าของตลาดกดออกบิลทีเดียวทั้งตลาด → ร้านจ่ายเอง → ระบบจับยอดเข้าอัตโนมัติ</p>
+    <div class="road">
+      <div class="ph on anim"><div class="p">1 · ออกบิล</div><h3>สร้างบิลทั้งตลาด</h3><p>กดออกบิลรอบเดือน → ระบบคิดค่าเช่า + น้ำ/ไฟ (ตามมิเตอร์) + ค่าส่วนกลาง ให้ทุกแผงอัตโนมัติ</p></div>
+      <div class="ph on anim2"><div class="p">2 · ส่งถึงร้าน</div><h3>LINE / SMS + ลิงก์</h3><p>ร้านได้ใบแจ้งหนี้ออนไลน์ พร้อม QR PromptPay · มี LINE ใช้ LINE · ไม่มี ก็ SMS + ลิงก์เว็บ</p></div>
+      <div class="ph on anim3"><div class="p">3 · ร้านจ่าย</div><h3>สแกนจ่ายเอง</h3><p>ร้านสแกน QR โอนเข้าบัญชีกลางตลาด — ไม่ต้องล็อกอิน ไม่ต้องมีแอป</p></div>
+      <div class="ph next anim3"><div class="p">4 · จับยอด</div><h3>ตัดชำระอัตโนมัติ</h3><p>เงินเข้า → ระบบจับคู่ยอด+เวลา+เลขอ้างอิง → อัปเดตสถานะ "จ่ายแล้ว" รายร้านทันที</p></div>
+      <div class="ph next anim3"><div class="p">5 · ค้างจ่าย</div><h3>เห็น + เตือน + ล็อก</h3><p>ร้านค้างชำระขึ้น Overdue · เตือนซ้ำอัตโนมัติ · ตั้งล็อกสิทธิ์เมื่อเกินกำหนดได้</p></div>
+    </div>
+    <p class="footer-tag anim3">เจ้าของตลาดเห็นภาพเดียวจบ: ออกกี่บิล · จ่ายแล้วกี่ร้าน · ค้างเท่าไหร่ · เงินเข้าบัญชีจริงเท่าไหร่ — ไม่ต้องเดินเก็บ ไม่ต้องจดมือ</p>
+  </section>
+
+  <section data-label="บัญชีพร้อมใช้">
+    <div class="eyebrow">ทำงานได้แล้ว · บนเว็บ</div>
+    <h2>บัญชี &amp; ภาษี ครบ — ส่งสำนักงานบัญชีได้เลย</h2>
+    <p class="sub" style="margin-bottom:24px;">ระบบลงบัญชีคู่ (double-entry) อัตโนมัติจากบิลค่าเช่า+ค่าใช้จ่าย — ไม่ต้องมีนักบัญชีก็จัดทำเอกสารได้</p>
+    <div class="grid3">
+      <div class="card anim"><span class="ic">📒</span><h3>บัญชี double-entry</h3><p>งบกำไรขาดทุน · สมุดรายวัน · แยกประเภท · งบทดลอง (เดบิต=เครดิตดุล) · Export CSV</p></div>
+      <div class="card anim2"><span class="ic">🧮</span><h3>รายงานภาษี</h3><p>ภาษีขาย/ภาษีซื้อ · สรุป ภ.พ.30 · รองรับจด VAT / ไม่จด / บุคคลธรรมดา</p></div>
+      <div class="card anim3"><span class="ic">📄</span><h3>เอกสารครบ</h3><p>ใบแจ้งหนี้ · ใบกำกับภาษี · ใบเสร็จ · สัญญาเช่า · เอกสารคู่ค้าขายฝาก + หัก ณ ที่จ่าย</p></div>
+    </div>
+    <p class="footer-tag anim3">บัญชีแยกต่อตลาด (คนละเลขผู้เสียภาษี ไม่ปนกัน) · การยื่นจริงยังใช้ผู้สอบบัญชี — ระบบลดงาน 80–90%</p>
+  </section>
+
+  
+
+  
+
+  
+
+  
+
+  <section data-label="Virtual Account">
+    <div class="eyebrow">หัวใจการเก็บเงิน</div>
+    <h2>Virtual Account — รู้ทันทีว่าเงินมาจากร้านไหน</h2>
+    <p class="sub" style="margin-bottom:24px;">เจ้าของตลาดเปิดบัญชีบริษัทตลาด (บัญชีแม่) → ร้านที่เข้าร่วมได้เลขบัญชี/QR เสมือนของตัวเอง → จับยอดอัตโนมัติ 100% ไม่ต้องแนบสลิป</p>
+    <div class="flywheel anim" style="margin-bottom:26px;">
+      <div class="fw">บัญชีแม่ (บริษัทตลาด)</div><span class="fw-arr">→</span>
+      <div class="fw">VA รายร้าน (subset)</div><span class="fw-arr">→</span>
+      <div class="fw">escrow รวม</div><span class="fw-arr">→</span>
+      <div class="fw">หัก holdback → Wallet</div>
+    </div>
+    <div class="grid2" style="gap:26px;">
+      <div class="card anim2" style="border-color:var(--brand);">
+        <span class="tag">ยอดขาย / สินเชื่อ</span>
+        <h3>ควรใช้ VA</h3>
+        <p>ยอดขายรายวันคาดเดาไม่ได้ → VA จับรายร้านเรียลไทม์ ผูกหัก holdback สินเชื่อได้ตรง · เงินสดฝาก CDM/agent ก็เข้า VA ของร้านเอง</p>
+      </div>
+      <div class="card anim3" style="border-color:var(--blue);">
+        <span class="tag" style="background:#E6F0F8;color:#155a8c;">ค่าเช่ารายเดือน</span>
+        <h3>ระบบปัจจุบันพอแล้ว</h3>
+        <p>บิลมีเลขอ้างอิงเฉพาะใบ (ref) จับคู่ยอด+เวลาได้อยู่แล้ว — <b>VA เป็น optional upgrade</b> ตลาดเล็กใช้ ref ฟรีก่อน ตลาดที่ทำสินเชื่อค่อยเปิด VA</p>
+      </div>
+    </div>
+    <p class="footer-tag anim3">VA layer เดียวรองรับทั้งค่าเช่า + ยอดขาย · ค่าธรรมเนียมถูกกว่า payment gateway มาก (flat ต่อ VA)</p>
+  </section>
+
+  <section data-label="VA ทำงานยังไง">
+    <div class="eyebrow">Virtual Account · กลไก</div>
+    <h2>รู้ทันทีว่าเงินมาจากร้านไหน — ไม่ต้องเดา ไม่ต้องแนบสลิป</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:stretch;margin-top:30px;">
+      <div class="card anim" style="border-radius:20px 0 0 20px;"><div class="big-num">01</div><h3 style="font-size:25px;margin:8px 0;">บัญชีแม่ 1 บัญชี</h3><p>ตลาดเปิดบัญชีนิติบุคคลบัญชีเดียว + ขอบริการ VA กับธนาคาร</p></div>
+      <div class="card anim2" style="border-radius:0;border-left:none;"><div class="big-num">02</div><h3 style="font-size:25px;margin:8px 0;">แจกเลข VA ต่อร้าน</h3><p>ธนาคารออกเลข VA ไม่จำกัดใต้บัญชีแม่ — ร้านละ 1 เลข/QR เฉพาะตัว</p></div>
+      <div class="card anim3" style="border-radius:0;border-left:none;"><div class="big-num">03</div><h3 style="font-size:25px;margin:8px 0;">โอนเข้าเลขของร้าน</h3><p>ลูกค้า/ร้านโอนเข้าเลข VA นั้น (เงินสดผ่าน CDM/agent ก็ได้)</p></div>
+      <div class="card anim4" style="border-radius:0 20px 20px 0;border-left:none;"><div class="big-num">04</div><h3 style="font-size:25px;margin:8px 0;">เข้า Wallet อัตโนมัติ</h3><p>ธนาคารยิง webhook พร้อมเลข VA → ระบบรู้ทันทีว่าร้านไหน → เครดิตเข้ากระเป๋าร้านนั้น</p></div>
+    </div>
+    <div class="killer anim3" style="margin-top:28px;display:flex;align-items:center;gap:22px;">
+      <div class="mono" style="font-size:26px;color:var(--brand-ink);font-weight:600;">โอนเข้า VA 8010-0042</div>
+      <span class="fw-arr">→</span>
+      <div style="font-size:26px;font-weight:700;">= ร้าน “ป้าแดง · ผักสด”</div>
+      <span class="fw-arr">→</span>
+      <div style="font-size:26px;font-weight:700;color:var(--brand-ink);">✓ เข้า Wallet ป้าแดง ฿12,450</div>
+    </div>
+    <div class="grid3" style="margin-top:28px;">
+      <div class="card anim2"><span class="ic">🧾</span><h3>ไม่ต้องแนบสลิป/จับคู่มือ</h3><p>เลข VA คือตัวระบุร้าน — จับยอดอัตโนมัติ 100% ไม่มีเงินไม่รู้ที่มา</p></div>
+      <div class="card anim3"><span class="ic">🏪</span><h3>ร้านไม่ต้องเปิดบัญชี merchant</h3><p>ทุกร้านใช้บัญชีแม่ของตลาดร่วมกัน — ตลาดคุมการเก็บเงินจุดเดียว</p></div>
+      <div class="card anim4"><span class="ic">🔒</span><h3>เงินอยู่ในธนาคารตลอด</h3><p>ปลอดภัย + ตรงกฎหมาย · ระบบเก็บแค่ ledger (ตัวเลข) ไม่ได้ถือเงินสดเอง</p></div>
+    </div>
+  </section>
+
+  
+
+  
+
+  
+
+  
+
+  <section data-label="กระเป๋าเงินตลาด">
+    <div class="eyebrow">ทำงานได้แล้ว · หัวใจการเก็บเงิน</div>
+    <h2>กระเป๋าเงินตลาด — เก็บล่วงหน้า หักบิลอัตโนมัติ รู้ว่าใครจ่าย</h2>
+    <p class="sub" style="margin-bottom:24px;">ตลาดเลือกโหมดรับเงินได้ (มีผลทั้งตลาด) — เริ่มด้วย PromptPay แล้วอัปเป็นกระเป๋าเมื่อ VA ธนาคารพร้อม</p>
+    <div class="grid3">
+      <div class="card anim"><span class="tag">โหมด 1</span><h3>PromptPay ตรง</h3><p>ร้านสแกน QR บนบิล → เข้าบัญชีกลาง → ระบบจับคู่ยอด+เวลา+เลขอ้างอิงเข้าบิลอัตโนมัติ · แนบสลิปได้</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="tag">โหมด 2</span><h3>กระเป๋าเงินตลาด</h3><p><b>ร้านเติมเงินเข้ากระเป๋า</b> → ระบบ<b>หักค่าเช่าอัตโนมัติ</b>ทุกรอบ · ยอดคงเหลือรายร้าน + เดินบัญชี (ledger) · เติมผ่าน QR (โหลดรูป/สแกนด้วยแอปธนาคาร) · รู้ว่าใครจ่ายทันที ไม่ต้องจับสลิป</p></div>
+      <div class="card anim3"><span class="tag" style="background:var(--gold-soft);color:var(--gold);">โหมด 3</span><h3>ทั้งสอง (เปลี่ยนผ่าน)</h3><p>ช่วงยื่นขอ VA/บัญชีธนาคาร — รับได้ทั้ง PromptPay และกระเป๋า จนกว่าจะสลับเป็นกระเป๋าเต็มตัว</p></div>
+    </div>
+    <p class="footer-tag anim3">กระเป๋าเงิน = เก็บเงินล่วงหน้า (ลดค้างจ่าย) · หักบิลเป๊ะ · ร้านมีเลข VA + เติม/จ่ายบิลเองจากหน้าร้าน (เปิดจากไลน์) · ต่อยอดเครดิต/สินเชื่อร้านได้ในอนาคต</p>
+  </section>
+
+  <section data-label="แพ็ก POS ร้าน GP">
+    <div class="eyebrow">แพ็กเกจ · POS สำหรับร้านคิด GP</div>
+    <h2>ร้าน GP ใช้ POS ฟรี — ตลาดได้ GP จากยอดขายแทน</h2>
+    <p class="sub" style="margin-bottom:24px;">ร้านที่จ่ายค่าเช่าแบบ GP ต้องขายผ่าน POS อยู่แล้ว → ยิ่งดันให้ติดตั้ง ยิ่งเก็บ GP ได้ครบ · win-win</p>
+    <div class="grid3">
+      <div class="card anim" style="border-color:var(--brand);"><span class="tag">GP Free</span><h3>ร้าน GP</h3><p><b>฿0 ค่าระบบ POS</b> — ตลาด/แพลตฟอร์มออกให้ เพราะเก็บ GP จากยอดขายแล้ว · ร้านได้ POS + ออเดอร์ + พร้อมเพย์ฟรี</p></div>
+      <div class="card anim2"><span class="tag" style="background:#E6F0F8;color:#155a8c;">GP + Pro</span><h3>อยากได้ครบ</h3><p>ร้าน GP ที่อยากได้ Backoffice/CRM/รายงานภาษี → เสริม <b>฿199/เดือน</b> (ถูกกว่าปกติ เพราะเป็นร้านในตลาด)</p></div>
+      <div class="card anim3"><span class="tag" style="background:var(--gold-soft);color:var(--gold);">ร้านเช่าคงที่</span><h3>ไม่คิด GP</h3><p>ร้านค่าเช่าคงที่ (ไม่ผ่าน GP) → ใช้แพ็ก POS ปกติ <b>S/M/L</b> (฿259/499/990) เลือกเองตามขนาด</p></div>
+    </div>
+    <p class="footer-tag anim3">กลไก: ค่าระบบ POS ของร้าน GP ถูกกลบด้วย GP ที่ตลาดเก็บ → ต้นทุนเราคืนจาก transaction/GP ไม่ใช่ค่าระบบ · เป็นตัวดัน POS เข้าทุกแผง</p>
+  </section>
+
+  <section data-label="แพ็กเกจโปรแกรมตลาด">
+    <div class="eyebrow">แพ็กเกจ · โปรแกรมบริหารตลาด</div>
+    <h2>ราคาตามขนาดตลาด + โมดูลเสริม</h2>
+    <p class="sub" style="margin-bottom:24px;">ขายให้ "ตลาด" (คนละชุดกับ POS ร้านค้า) — ฐานตามจำนวนแผง แล้วเปิดโมดูลเสริมตามต้องการ</p>
+    <div class="grid3">
+      <div class="card anim"><span class="tag">S · ตลาดเล็ก</span><h3>฿1,990<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>≤100 แผง · บิลค่าเช่า/น้ำไฟ + เช่าแผง + เก็บเงิน PromptPay + รายงานพื้นฐาน</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="tag">M · ตลาดกลาง</span><h3>฿4,990<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>100–400 แผง · ครบชุด S + GP Settlement + บัญชี double-entry + รายงานภาษี + หลายผู้ใช้</p></div>
+      <div class="card anim3"><span class="tag" style="background:var(--gold-soft);color:var(--gold);">L · ตลาดใหญ่</span><h3>฿9,990+<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>400+ แผง / หลายตลาด · ครบทุกโมดูล + Wallet/สินเชื่อ + ขายฝาก + จัดการหลายสาขา</p></div>
+    </div>
+    <p class="footer-tag anim3">โมดูลเสริม (add-on): บัญชี · ขายฝาก · Wallet/สินเชื่อ · รายงานภาษี — เปิดเฉพาะที่ใช้ · <b style="color:var(--brand-ink);">ทดลองฟรี 30 วัน</b> (ไม่ผูกบัตร) · + ส่วนแบ่ง transaction/VA เมื่อมีเงินไหลผ่าน = โตตาม GMV</p>
+  </section>
+
+  <section data-label="Deployment & License">
+    <div class="eyebrow">สถาปัตยกรรม · คลาวด์แยกต่อตลาด</div>
+    <h2>แต่ละตลาด = คลาวด์ของตัวเอง — ข้อมูลไม่ปนกับเรา</h2>
+    <p class="sub" style="margin-bottom:22px;">ขายแบบ single‑tenant — ตลาดแต่ละแห่งมี instance/คลาวด์แยกของตัวเอง · ยอดขาย/บิล/ลูกค้าอยู่กับตลาดนั้น ไม่รวมศูนย์ที่เรา · ตลาดเป็นเจ้าของข้อมูลเอง</p>
+    <div class="road">
+      <div class="ph on anim"><div class="p">1 · เปิดระบบ</div><h3>คลาวด์เฉพาะตลาด</h3><p>ตั้ง instance + license/subscription ให้แต่ละตลาด — ข้อมูลแยกกันคนละก้อน ไม่แชร์ฐานข้อมูลเดียวกัน</p></div>
+      <div class="ph on anim2"><div class="p">2 · ตลาดใช้งาน</div><h3>เจ้าของข้อมูลคือตลาด</h3><p>ข้อมูลอยู่บนคลาวด์ของตลาดเอง · เราเข้าไม่ได้ถ้าไม่ได้รับสิทธิ์ · export / ย้ายข้อมูลได้</p></div>
+      <div class="ph next anim3"><div class="p">3 · ดูแล</div><h3>อัปเดต + สำรองข้อมูล</h3><p>เราดูแลอัปเดต/แบ็กอัป/ความปลอดภัยรายตลาด · คิดค่าคลาวด์ + ค่าดูแลตามขนาด (recurring)</p></div>
+    </div>
+    <p class="footer-tag anim3">ไม่ใช่ multi‑tenant รวมศูนย์ — ตลาดมั่นใจว่าข้อมูลลูกค้า/ยอดขายไม่ถูกเอาไปรวมกับตลาดอื่นหรือกับเรา · เป็นจุดขายด้านความเชื่อใจ + ตั้งราคาต่อตลาดได้</p>
+  </section>
+
+  <section data-label="ราคาโปรแกรม+cloud+ดูแล">
+    <div class="eyebrow">แพ็กเกจ · ขายโปรแกรม + cloud + ดูแล</div>
+    <h2>เหมือน POS — ขายโปรแกรม บวกค่า cloud + ค่าดูแล</h2>
+    <p class="sub" style="margin-bottom:24px;">แยกให้เห็นชัดว่าจ่ายอะไรบ้าง — ค่าเปิดระบบครั้งเดียว + รายเดือน (รวม cloud) + ค่าดูแล</p>
+    <div class="grid3">
+      <div class="card anim"><span class="tag">ครั้งเดียว</span><h3>ค่าแรกเข้า / License<br><span style="color:var(--brand-ink);">฿5,000–15,000</span></h3><p>เปิดระบบ + gen license + ตั้งค่าตลาด + onboarding/เทรนทีม · ตามขนาดตลาด</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="tag">รายเดือน</span><h3>ค่าบริการ S/M/L<br><span style="color:var(--brand-ink);">฿1,990–9,990</span></h3><p>รวม <b>คลาวด์เฉพาะตลาด</b> + อัปเดตระบบ + โมดูลตามแพ็ก · จ่ายต่อเนื่องรายเดือน/รายปี (ฟรี 2 เดือน)</p></div>
+      <div class="card anim3"><span class="tag" style="background:var(--gold-soft);color:var(--gold);">ดูแล + เสริม</span><h3>ค่าดูแล / Enterprise<br><span style="color:var(--gold);">+฿990/ด. หรือดีล</span></h3><p>support ด่วน + SLA + <b>สำรองข้อมูลรายตลาด</b> · ค่าคลาวด์ตามขนาด data ของแต่ละตลาด</p></div>
+    </div>
+    <p class="footer-tag anim3">ทุกตลาดได้คลาวด์แยกของตัวเอง (ข้อมูลไม่รวมศูนย์) · ค่าคลาวด์ปรับตามขนาดข้อมูล · ค่าดูแล = รายได้ recurring ที่มั่นคง</p>
+  </section>
+
+  <section data-label="คลาวด์ส่วนตัว (ร้านใหญ่)">
+    <div class="eyebrow">แพ็กเกจ · ร้านค้าที่ต้องการความเป็นส่วนตัว</div>
+    <h2>คลาวด์ส่วนตัว — โปรแกรมมองไม่เห็นยอดขายของร้าน</h2>
+    <div class="grid3" style="margin-top:32px;">
+      <div class="card anim"><span class="ic">🔐</span><h3>คลาวด์แยกเฉพาะร้าน</h3><p>ข้อมูล/ยอดขายอยู่ในอินสแตนซ์ของร้านเอง — ไม่เข้าส่วนกลาง แพลตฟอร์มไม่เห็นตัวเลข</p></div>
+      <div class="card anim2"><span class="ic">📜</span><h3>SLA รายปี</h3><p>รับประกัน uptime · สำรองข้อมูล · ความปลอดภัย · ทีมดูแล/อัปเดตตามสัญญา</p></div>
+      <div class="card anim3"><span class="ic">💳</span><h3>ราคา = โปรแกรม + SLA</h3><p>ค่าโปรแกรม (ซื้อขาด/รายปี) <b>+ ค่า SLA รายปี</b> — สำหรับร้านขายของ/ร้านใหญ่</p></div>
+    </div>
+    <div class="grid2" style="margin-top:30px;gap:26px;">
+      <div class="killer anim2"><div class="n mono">SHARED (ค่าเริ่มต้น)</div><h3>คลาวด์รวมของแพลตฟอร์ม</h3><p>ถูกกว่า · แพลตฟอร์มเห็นยอดรวม (ไว้ต่อยอดสื่อ/ข้อมูล) · เหมาะร้านทั่วไป</p></div>
+      <div class="killer anim3" style="border-color:var(--gold);background:var(--gold-soft,#FBF0DC);"><div class="n mono" style="color:#8a6100;">PRIVATE (ทางเลือก)</div><h3>คลาวด์ส่วนตัว + SLA</h3><p>ข้อมูลไม่แชร์เลย · จ่ายแพงกว่า · เหมาะร้านใหญ่/เชนที่หวงยอดขาย</p></div>
+    </div>
+    <p class="footer-tag">ลูกค้าเลือกได้: ยอมแชร์ข้อมูลเพื่อราคาถูก หรือจ่ายเพิ่มเพื่อความเป็นส่วนตัวเต็มรูปแบบ</p>
+  </section>
+
+  <section data-label="Vertical ฟิตเนส">
+    <div class="eyebrow">ต่อยอด · Vertical ใหม่</div>
+    <h2>โครงเดียวกัน — ต่อยอดสู่ฟิตเนส / ยิม</h2>
+    <p class="sub" style="margin-bottom:22px;">แพลตฟอร์มเป็น multi‑tenant — ฟิตเนสคือ "ตลาดอีกแบบ": บริหารสมาชิกแทนแผง · เก็บค่าสมาชิกแทนค่าเช่า — ใช้เอนจินเดิมซ้ำได้เกือบทั้งชุด</p>
+    <div class="grid2" style="gap:30px;">
+      <ul class="chk anim">
+        <li><b>ใช้ซ้ำได้ทันที:</b> บิลออนไลน์ + QR PromptPay + จับยอดอัตโนมัติ → เก็บค่าสมาชิกรายเดือน/รายปี</li>
+        <li><b>Overdue lock:</b> สมาชิกหมดอายุ → ตัดสิทธิ์เข้า→เตือนต่ออายุ</li>
+        <li><b>LINE OA:</b> แจ้งใกล้หมด + จองคลาส/เทรนเนอร์</li>
+        <li><b>POS ในฟิตเนส:</b> ขายน้ำ/อาหารเสริม — จ่ายผ่านแอปขณะอยู่ในยิม</li>
+      </ul>
+      <div class="card anim2" style="background:linear-gradient(150deg,#0E5C4A,#0E9C88);color:#fff;border:none;">
+        <span class="ic">💪</span>
+        <h3 style="color:#fff;">เช็คอินหน้าประตู — แค่แตะมือถือ</h3>
+        <p style="color:#d7f0e8;font-size:24px;">สมาชิกแตะมือถือที่ <b>NFC tag หน้าประตู</b> (สติกเกอร์ถูกหลักร้อยบาท) → แอปเช็คสมาชิกให้อัตโนมัติ — ไม่ต้องมีเครื่องสแกน ไม่ต้องเปิด LINE</p>
+      </div>
+    </div>
+    <p class="footer-tag anim3">เคสจริง: ฟิตเนสหลายที่เก็บเงินด้วย LINE มืออยู่ = เจ็บเหมือนตลาด → pitch เดียวกัน "เลิกเดินเก็บ/ทวงเอง" · เฟส 1 โฟกัสตลาดก่อน ฟิตเนสเป็น vertical ถัดไป</p>
+  </section>
+
+  <section data-label="ฟังก์ชันฟิตเนส">
+    <div class="eyebrow">Vertical ฟิตเนส · ฟังก์ชันใช้งาน</div>
+    <h2>ครบวงจรฟิตเนส — สมาชิก · คลาส · เทรนเนอร์ · ขายของ</h2>
+    <div class="grid3" style="gap:22px;">
+      <div class="card anim"><span class="ic">🎫</span><h3>สมาชิก & ต่ออายุ</h3><p>เลือกแพ็ก (รายเดือน/รายปี/แพ็กคลาส/เข้าครั้ง) · <b>ซื้อ/ต่อแพ็กผ่านแอปเอง (mobile order)</b> · แจ้งเตือนใกล้หมด · ประวัติเข้าใช้ · รองรับทั้งมี LINE OA และไม่มี (ลิงก์เว็บ + SMS)</p></div>
+      <div class="card anim2"><span class="ic">🚪</span><h3>เช็คอินหน้าประตู</h3><p>NFC tag หน้าประตู (แตะมือถือ) · หรือ QR · คัดกรองสมาชิกหมดอายุอัตโนมัติ — ไม่ต้องเปิด LINE</p></div>
+      <div class="card anim3"><span class="ic">📅</span><h3>คลาส & ตาราง</h3><p>ตารางคลาสฟรี/เสียเงิน · จองที่นั่ง + waitlist · เช็คคลาสเต็ม · เตือนก่อนคลาสเริ่ม</p></div>
+      <div class="card anim"><span class="ic">🏋️</span><h3>เทรนเนอร์ (PT)</h3><p>โปรไฟล์+ความเชี่ยวชาญ+ใบเซอร์ · <b>จองคิว PT + จ่ายเงินในแอปได้เลย</b> (จ่ายต่อครั้ง หรือซื้อแพ็กเซสชันไว้ก่อน แล้วค่อยนัดวันทีหลัง) · นัด/ปรับตารางร่วมกันระหว่างสมาชิกกับเทรนเนอร์ · รีวิว/เรตติ้ง · รายได้-ส่วนแบ่งอัตโนมัติ</p></div>
+      <div class="card anim2"><span class="ic">🥤</span><h3>ขายของในฟิตเนส</h3><p>เครื่องดื่ม/อาหารเสริม/สินค้า · ลูกค้าจ่ายผ่านแอปขณะอยู่ในฟิตเนส (POS) · ตัดสต๊อก</p></div>
+      <div class="card anim3"><span class="ic">📊</span><h3>Backoffice</h3><p>รายได้ · สมาชิก active/หมดอายุ · คลาสยอดนิยม · รายได้เทรนเนอร์ · บัญชี+ภาษี (ใช้ของเดิม)</p></div>
+    </div>
+    <p class="footer-tag anim3">ใช้ซ้ำ 80% ของระบบตลาด — เปลี่ยน "แผง"→"สมาชิก", "ค่าเช่า"→"ค่าสมาชิก/คลาส/PT" · เพิ่มจอง+เทรนเนอร์+เช็คอิน</p>
+  </section>
+
+  <section data-label="เช็คอินหน้าประตู">
+    <div class="eyebrow">Vertical ฟิตเนส · เช็คอินหน้าประตู · ระบบทำงานยังไง</div>
+    <h2>แตะมือถือหน้าประตู — คัดกรองสมาชิกอัตโนมัติ ไม่ต้องมีเครื่องสแกน</h2>
+    <p class="sub" style="margin-bottom:22px;">สมาชิกแตะ/สแกนเอง → ระบบเช็คสถานะแพ็กให้ทันที · หมดอายุก็ต่อในแอปแล้วเข้าได้เลย</p>
+    <div class="road">
+      <div class="ph on anim"><div class="p">1 · แตะ / สแกน</div><h3>NFC tag หรือ QR ที่ประตู</h3><p>สมาชิกแตะมือถือกับสติกเกอร์ NFC หรือสแกน QR ที่ประตู → เปิดหน้าเช็คอินบนมือถือทันที ไม่ต้องเปิดแอป/LINE · ฟิตเนสไม่ต้องมีเครื่องสแกน</p></div>
+      <div class="ph on anim2"><div class="p">2 · รู้ว่าใคร</div><h3>ดึงสถานะสมาชิก</h3><p>หน้าเช็คอินผูกกับสมาชิก (เบอร์/บัญชี) → แสดงชื่อ + สถานะแพ็ก + วันหมดอายุ ขึ้นจอมือถือทันที</p></div>
+      <div class="ph on anim3"><div class="p">3 · คัดกรอง</div><h3>เขียวเข้าได้ / แดงต่ออายุ</h3><p>แพ็ก active = ✓ เขียว เข้าได้ · หมดอายุ/ค้างจ่าย = ✗ แดง + ปุ่มต่ออายุจ่ายในแอปเลย จ่ายเสร็จเข้าได้ทันที</p></div>
+      <div class="ph next anim3"><div class="p">4 · บันทึก + นับ</div><h3>เข้า Backoffice</h3><p>log เวลาเข้า/ความถี่ → เห็นคนเข้าต่อวัน · ชั่วโมงพีค · คลาสไหนแน่น · สมาชิกที่หายไป = เสี่ยงเลิก แจ้งเตือนให้ดึงกลับ</p></div>
+    </div>
+    <div class="grid2" style="gap:26px;margin-top:26px;">
+      <div class="card anim"><span class="ic">🏷️</span><h3>อุปกรณ์ที่ต้องมี</h3><p><b>สติกเกอร์ NFC แปะไว้ที่ฟิตเนส</b> (ประตู/เคาน์เตอร์) แผ่นละไม่กี่บาท แปะครั้งเดียวจบ · <b>ไม่ใช่ติดที่มือถือลูกค้า</b> — ลูกค้าเอามือถือตัวเองมาแตะ · ไม่ต้องซื้อเครื่องสแกน ไม่ต้องต่อคอม · อ่านได้ทั้ง iOS/Android</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="ic">📱</span><h3>ถ้าไม่มี NFC ทำยังไง</h3><p>ใช้ <b>QR สติกเกอร์/ป้ายตั้งโต๊ะ</b> สแกนด้วยกล้องมือถือแทน · หรือพนักงานค้นชื่อ/เบอร์เช็คอินให้ที่เคาน์เตอร์ · หรือปุ่มเช็คอินในแอปเมื่ออยู่ในฟิตเนส (พิกัด GPS) — ทุกทางบันทึกประวัติเข้า Backoffice เหมือนกัน</p></div>
+    </div>
+    <p class="footer-tag anim3">ประวัติเข้าใช้ทั้งหมดวิ่งเข้า <b>Backoffice ของฟิตเนส — ตัวเดียวกับร้านค้า/ตลาด</b> (เอนจินเดียว) แค่เปลี่ยนเลนส์เป็นสมาชิก/คลาส/เช็คอิน · รองรับทั้งมี LINE OA และไม่มี OA (ลิงก์เว็บ + SMS) ผูกตัวตนด้วยเบอร์โทร</p>
+  </section>
+
+  <section data-label="ราคาฟิตเนส">
+    <div class="eyebrow">Vertical ฟิตเนส · ราคา</div>
+    <h2>ราคาฟิตเนส — เลือกจ่ายแบบไหนก็ได้</h2>
+    <p class="sub" style="margin-bottom:24px;">ให้ฟิตเนสเลือกโมเดลที่เหมาะกับตัวเอง — จ่ายคงที่เป็นแพ็ก หรือจ่ายตามยอดที่ไหลผ่านแอป</p>
+    <div class="grid3">
+      <div class="card anim"><span class="tag">แบบ A · แพ็กคงที่</span><h3>฿1,990–9,990<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>ตามจำนวนสมาชิก (S ≤200 · M ≤800 · L 800+) · จ่ายเท่ากันทุกเดือน คุมงบง่าย · เหมาะฟิตเนสที่สมาชิกนิ่ง</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="tag">แบบ B · % ผ่านแอป</span><h3>2–3%<span style="font-size:24px;font-weight:600;color:var(--ink-3);">ของยอดผ่านแอป</span></h3><p>คิดจากค่าสมาชิก+ขายของ+PT ที่จับผ่านระบบ · ค่าระบบเริ่มต้น ฿0 · จ่ายตามโต — เหมาะฟิตเนสเล็ก/เพิ่งเปิด</p></div>
+      <div class="card anim3"><span class="tag" style="background:var(--gold-soft);color:var(--gold);">แบบ C · ไฮบริด</span><h3>฿990 + 1%<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>ค่าระบบต่ำ + ส่วนแบ่งบางๆ · สมดุลระหว่างคงที่กับตามยอด — ตัวเลือกที่ปิดดีลง่ายสุด</p></div>
+    </div>
+    <p class="footer-tag anim3">ทุกแบบ: ทดลองฟรี 30 วัน (ไม่ผูกบัตร) · โมดูลเสริม PT/ขายของ/CRM เปิดเฉพาะที่ใช้ · + ค่าถอนทันที/VA เมื่อทำ Wallet</p>
+  </section>
+
+  <section data-label="ฟิตเนสต่อยอดข้อมูล">
+    <div class="eyebrow">Vertical ฟิตเนส · ข้อมูล & การมีส่วนร่วม</div>
+    <h2>มากกว่าเก็บเงิน — เป็นศูนย์ข้อมูลสุขภาพของฟิตเนส</h2>
+    <div class="grid2" style="gap:30px;">
+      <ul class="chk anim">
+        <li><b>ผลตรวจค่าร่างกาย ก่อน–หลัง:</b> น้ำหนัก · % ไขมัน → สรุปผลลัพธ์ <span style="color:#0E9C88;font-weight:800;">[ทำแล้ว · Back Office]</span> · <i>เฟส 2:</i> เพิ่มมวลกล้าม/รอบเอว + กราฟ progress + ทำบนมือถือ/แอปสมาชิก</li>
+        <li><b>แบบฟอร์ม PAR‑Q + ความยินยอม PDPA:</b> ติ๊กผ่าน PAR‑Q/ยินยอมในทะเบียนสมาชิก <span style="color:#0E9C88;font-weight:800;">[ทำแล้ว · Back Office]</span> · <i>เฟส 2:</i> ฟอร์มถาม-ตอบเต็ม · แบบประเมินพอใจ · โพลคลาสใหม่</li>
+        <li style="opacity:.7;"><b>โปรแกรมเทรน (เทรนเนอร์→ลูกค้า):</b> <i>(เฟส 2 · ยังไม่ทำ)</i> เทรนเนอร์สร้างโปรแกรม/ตารางออกกำลัง มอบให้ลูกที่เทรน · ลูกเปิดดูในแอป</li>
+        <li style="opacity:.7;"><b>นำเข้าผลจากเครื่องวัด (InBody ฯลฯ):</b> <i>(เฟส 2 · ไอเดีย)</i> เฟสแรก = แนบสลิป/คีย์มือในแอป · ต่อยอด = บอท LINE รับ QR ผล / เชื่อม API เครื่อง (ต้องมี cloud API ปลายทาง)</li>
+        <li style="opacity:.58;"><b>💡 รับสมัครเทรนเนอร์ในแอป</b> <i>(ไอเดีย · ยังไม่ทำ)</i> — ประกาศรับ + ฟอร์มสมัคร + แนบใบเซอร์ → ฟิตเนสคัดเลือก/อนุมัติ</li>
+      </ul>
+      <div class="card anim2" style="background:linear-gradient(150deg,#0E5C4A,#0E9C88);color:#fff;border:none;">
+        <span class="ic">📈</span>
+        <h3 style="color:#fff;">ทำไมข้อมูลนี้สำคัญ</h3>
+        <p style="color:#d7f0e8;font-size:24px;">ผลก่อน–หลังที่เห็นพัฒนาการ = <b>ลูกค้าติดฟิตเนส ต่ออายุยาว</b> · เทรนเนอร์โชว์ผลงานปิดการขาย PT ได้ · ฟิตเนสมี data สุขภาพเป็นสินทรัพย์ (ต่อยอดประกัน/อาหารเสริม)</p>
+      </div>
+    </div>
+    <p class="footer-tag anim3"><b style="color:#0E9C88;">● ทำแล้ว</b> (เดสก์ท็อป Back Office) &nbsp;·&nbsp; <b>◐ เฟส 2</b> ต่อยอดเข้ามือถือ/แอปสมาชิก + กราฟ + ฟอร์มเต็ม &nbsp;·&nbsp; <b style="opacity:.6;">○ ไอเดีย</b> ยังไม่เริ่ม (รับสมัครเทรนเนอร์ · เชื่อมเครื่องวัด) &nbsp;—&nbsp; ข้อมูลสุขภาพเก็บตาม PDPA แยกสิทธิ์เข้าถึง</p>
+  </section>
+
+  <section data-label="ไอเดีย · ลานจอดเต็ม/ว่าง">
+    <div class="eyebrow">Vertical ฟิตเนส · ไอเดียต่อยอด (ยังไม่ปล่อย)</div>
+    <h2>รู้ว่าลานจอดเต็มไหม — ใช้บัตรสมาชิก ไม่ต้องมีทะเบียนรถ</h2>
+    <p class="sub" style="margin-bottom:22px;">เหมาะกับ<b>ลานจอดที่ยังไม่มีระบบไม้กั้น/แตะบัตรของตัวเอง</b> — ต่อยอดจากระบบเช็คอินฟิตเนสที่มีอยู่แล้ว นับ "คนที่กำลังอยู่ในฟิต" มาประเมินจำนวนรถ · ฟิตเนสตั้งความจุ+ประเภทช่องเอง · <b>ไม่ต้องเก็บทะเบียนรถลูกค้า</b></p>
+    <div class="grid2" style="gap:30px;">
+      <div class="card anim" style="background:linear-gradient(150deg,#8A6A00,#C79A16);color:#fff;border:none;text-align:center;">
+        <span class="ic">🅿️</span>
+        <h3 style="color:#fff;">ลานจอด · สถานะสด</h3>
+        <div style="font-size:88px;font-weight:800;line-height:1;margin:6px 0;">28<span style="font-size:40px;font-weight:600;opacity:.7;">/40</span></div>
+        <div style="font-size:26px;font-weight:700;margin-bottom:10px;">เหลือ 12 ช่อง</div>
+        <span class="tag" style="background:rgba(255,255,255,.22);color:#fff;font-size:22px;">🟡 ใกล้เต็ม</span>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+          <span style="background:rgba(255,255,255,.16);border-radius:10px;padding:8px 14px;font-size:19px;">🚗 รถยนต์ <b>20/28</b></span>
+          <span style="background:rgba(255,255,255,.16);border-radius:10px;padding:8px 14px;font-size:19px;">🛻 กระบะ <b>2/4</b></span>
+          <span style="background:rgba(255,255,255,.16);border-radius:10px;padding:8px 14px;font-size:19px;">🏍️ มอไซค์ <b>6/8</b></span>
+        </div>
+        <p style="color:#fff3d6;font-size:20px;margin-top:14px;">ฟิตเนสตั้งเอง: <b>ความจุสูงสุด + จำนวนช่องแต่ละประเภทรถ</b> → ระบบประเมินจากสมาชิกที่ present · 🟢 ว่าง / 🟡 ใกล้เต็ม / 🔴 เต็ม</p>
+      </div>
+      <ul class="chk anim2">
+        <li><b>ฟิตเนสตั้งค่าเอง:</b> ความจุสูงสุด (ลานรับได้กี่คัน) + แยกจำนวนช่องตามประเภทรถ (รถยนต์/กระบะ/มอเตอร์ไซค์) — <b>เหมาะกับลานที่ยังไม่มีระบบไม้กั้น/แตะบัตร</b></li>
+        <li><b>นับจากเช็คอิน (proxy):</b> คนที่ยัง present ในฟิต × สัดส่วนคัน/คน → จำนวนรถโดยประมาณ (เพิ่ม "เช็คเอาต์ตอนออก" ให้แม่นขึ้น)</li>
+        <li><b>ปุ่ม ±manual ที่ป้อม/เคาน์เตอร์:</b> รถเข้า +1 / ออก −1 — นับคนนอกที่ไม่ใช่สมาชิกได้</li>
+        <li><b>แบบสอบถามหลังข้อความต้อนรับ (ฟิตเนสเปิด/ปิดได้):</b> พอแตะบัตร/สแกนเข้า → โชว์ welcome แล้วถามสั้นๆ "ขับรถมาไหม? · ประเภทรถ (เก๋ง/กระบะ/มอไซค์)" → นับรถ + รู้ประเภท · ไม่ถามทะเบียน</li>
+        <li><b>ต่อเซนเซอร์นับรถ (ถ้ามี):</b> IR/loop ทางเข้า → ป้อนเลขให้แอปโชว์ · แม่นสุด</li>
+        <li><b>โชว์ในหน้าสมาชิก (จุดขายสำคัญ):</b> การ์ดสถานะลานจอดสดบนหน้าบัตรสมาชิก → เช็คก่อนออกจากบ้าน/ก่อนขับมา · <b>หมดปัญหามาถึงแล้วที่จอดเต็ม</b> + โชว์บนทีวีทางเข้าด้วย</li>
+      </ul>
+    </div>
+    <p class="footer-tag anim3">ไอเดียต่อยอด · client-side ได้เลย · ไม่แตะทะเบียนรถลูกค้า (เลี่ยง PDPA) — เริ่มจาก "นับเช็คอิน + ปุ่ม manual" ก่อน · <b>สมาชิกเช็คสถานะลานจอดในแอปก่อนมา = หมดปัญหาที่จอดเต็ม</b></p>
+  </section>
+
+  <section data-label="Labor Win — วินแรงงาน">
+    <div class="eyebrow">ต่อยอด · Vertical ใหม่ · Labor Win</div>
+    <h2>วินแรงงานในตลาดค้าส่ง — เรียกคนผ่านไลน์ จับคู่อัตโนมัติ</h2>
+    <p class="sub" style="margin-bottom:22px;">ร้านในตลาดต้องการแรงงานยกของ/แบก/แพ็กเป็นครั้ง วันนี้โทรตามหัวหน้าวินเอง วุ่น ไม่เป็นคิว เกี่ยงงาน — Labor Win ทำให้เรียกงานผ่าน LINE แล้วระบบเดินคิวหาคนที่ว่างให้เอง</p>
+    <div class="grid2" style="gap:30px;">
+      <ul class="chk anim">
+        <li><b>ปัญหาเดิม:</b> โทรหาหัวหน้าวินทีละสาย · เกี่ยงงานถูก/แพง · ไม่รู้ใครว่าง · ค่าหัวคิวเก็บสด รั่ว</li>
+        <li><b>Labor Win:</b> ร้านกดเรียกงาน → เลือกวินสี + ราคากลาง → ระบบยิงหาแรงงานที่ว่างในวินนั้นทีละคนตามคิว</li>
+        <li><b>ใช้เอนจินเดิม:</b> โมดูลในแอปเดียว · คุมเปิด/ปิดจาก Platform Control · บิล/กระเป๋า/รายงานใช้ซ้ำ</li>
+        <li><b>รันบน LINE OA:</b> ทั้งร้าน แรงงาน หัวหน้าวิน อยู่บนไลน์ — ไม่ต้องลงแอปใหม่</li>
+      </ul>
+      <div class="card anim2" style="background:linear-gradient(150deg,#7A3A0E,#F4900C);color:#fff;border:none;">
+        <span class="ic">🎽</span>
+        <h3 style="color:#fff;">โมเดลรายได้ที่สะอาด</h3>
+        <p style="color:#ffe6cc;font-size:24px;">แอปเก็บแค่ <b>ค่าบริการรายเดือนจากร้าน</b> (299/599/999) · ค่าแรง = เงินสดจ่ายตรงแรงงาน · ค่าหัวคิวหักจากกระเป๋าแรงงานเข้าหัวหน้าวิน <b>เต็ม 100%</b> — แอปไม่แตะ</p>
+      </div>
+    </div>
+    <p class="footer-tag anim3">โมเดลนำร่อง: ตลาดสี่มุมเมือง — แรงงานต่างด้าว TH/MY/KH · หัวหน้าวินแบ่งตามสีเสื้อ</p>
+  </section>
+
+  <section data-label="Labor Win — บทบาท 3 ฝ่าย">
+    <div class="eyebrow">Labor Win · โมดูลล็อกให้เห็นเฉพาะที่ใช้</div>
+    <h2>3 บทบาท — ร้านผู้จ้าง · หัวหน้าวิน · แรงงาน</h2>
+    <div class="grid3" style="gap:22px;margin-top:26px;">
+      <div class="card anim"><span class="ic">🏪</span><h3>ร้าน / ผู้จ้าง</h3><p><b>ล็อก 4 เมนู:</b> 🧾 หน้าขาย (เรียกงาน) · 💰 รายรับรายจ่าย · 👤 หน้าของสมาชิก (ทะเบียนแรงงานที่จ้าง ⭐favorite/🚫blacklist+รีวิว) · ➕ หน้าที่เพิ่ม (ตั้งค่า/สัญญา/เชื่อม LINE) · เข้าผ่าน LIFF ผูกเลขแผง</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="ic">🎽</span><h3>หัวหน้าวิน</h3><p>คิวในสังกัด (ทำงาน/ว่าง/พัก เรียลไทม์) · 👛 กระเป๋าค่าหัวคิว + กดถอนเข้าบัญชี · รีวิว/คะแนนแรงงาน · ⛔ override สั่งพัก/Ban แรงงานได้ทันที · web dashboard / rich menu</p></div>
+      <div class="card anim3"><span class="ic">👷</span><h3>แรงงาน TH/MY/KH</h3><p>UI ปุ่มใหญ่ ข้อความน้อย เน้นรูป/สี/เลข · 🟢รับ/🔴ไม่รับ · 🌐 สลับภาษา · 👛 กระเป๋าเติมล่วงหน้า (เติมก่อนรับงาน) · 🗺️ แผนที่จำลอง + เลขล็อกแผงตัวใหญ่</p></div>
+    </div>
+    <p class="footer-tag anim3">โครงเดียวกับฟิตเนส/ตลาด — เปลี่ยน "แผง/สมาชิก" เป็น "งาน/แรงงาน" · เมนูล็อกตามบทบาทเหมือน Platform Control</p>
+  </section>
+
+  <section data-label="Labor Win — คิวจับคู่ 60 วิ">
+    <div class="eyebrow">Labor Win · กลไกจับคู่งาน & คิวเรียลไทม์</div>
+    <h2>เดินคิวอัตโนมัติ — ปฏิเสธ/ไม่ตอบใน 60 วิ = คิวถัดไปทันที</h2>
+    <p class="sub" style="margin-bottom:22px;">หมุนเวียนเป็นธรรม: ดึงคิวที่ 1 ของวินสีที่ร้านขอ ที่ว่าง + กระเป๋าพอจ่ายค่าหัวคิว → ยิงการ์ดงาน → ไม่รับ = ดันท้ายคิว ส่งคนถัดไป</p>
+    <div class="road">
+      <div class="ph on anim"><div class="p">1 · ร้านเรียกงาน</div><h3>เลือกงาน + วินสี + ราคา</h3><p>ร้านกดเรียกในหน้าขาย เลือกชนิดงาน (ยก/แบก/แพ็ก) + วินสี + ราคากลาง → ระบบสร้างงาน เริ่มเดินคิว</p></div>
+      <div class="ph on anim2"><div class="p">2 · ดึงคิวที่ 1</div><h3>คนว่าง + กระเป๋าพอ</h3><p>คิวตำแหน่งน้อยสุดของวินสีนั้น ที่สถานะว่าง และกระเป๋าเติมล่วงหน้าพอจ่ายค่าหัวคิว</p></div>
+      <div class="ph on anim3"><div class="p">3 · ยิงการ์ด LINE</div><h3>ไทย+พม่า · 60 วินาที</h3><p>การ์ด Flex ไทยคู่พม่า/เขมร · ปุ่ม 🟢รับ / 🔴ไม่รับ · จับเวลา 60 วิ</p></div>
+      <div class="ph on anim3"><div class="p">4 · ไม่รับ/หมดเวลา</div><h3>ดันท้ายคิว → คนถัดไป</h3><p>ดันคนเดิมไปท้ายคิวของวิน แล้วส่ง offer ให้คิวถัดไปโดยข้ามคนเดิมทันที</p></div>
+    </div>
+    <div class="grid2" style="gap:26px;margin-top:26px;">
+      <div class="card anim"><span class="ic">✅</span><h3>ปิดงานด้วย QR</h3><p>แรงงานทำเสร็จรับเงินสด → ร้านสแกน QR ยืนยันจบงาน → ระบบหักค่าหัวคิว + ให้ร้านรีวิว 1–5⭐ / กด favorite / blacklist</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="ic">🗺️</span><h3>ออกแบบเพื่อแรงงานอ่านไทยไม่คล่อง</h3><p>การ์ดเน้น <b>เลขล็อกแผงตัวใหญ่</b> บนแถบสีวิน + ไอคอนงาน + ค่าแรงตัวโต + ภาษาที่สองใต้ไทยทุกบรรทัด · ปุ่มเขียว/แดงเต็มความกว้าง</p></div>
+    </div>
+    <p class="footer-tag anim3">มีโค้ดจริงแล้ว: dispatch + timeout 60 วิ + หักกระเป๋า (Node/Express) · schema SQLite/D1 · LINE Flex JSON — พร้อมส่ง dev</p>
+  </section>
+
+  <section data-label="Labor Win — เงิน + Tech">
+    <div class="eyebrow">Labor Win · การไหลของเงิน & Tech Stack</div>
+    <h2>3 กระเป๋าแยกชัด — แอปไม่แตะค่าแรง ไม่แบ่งค่าหัวคิว</h2>
+    <div class="grid3" style="gap:22px;">
+      <div class="card anim"><span class="tag">รายได้แอป</span><h3>เดือนแรกฟรี<span style="font-size:24px;font-weight:600;color:var(--ink-3);"> · แล้ว ฿99/เดือน</span></h3><p>ค่าบริการฐานต่ำเข้าง่าย → <b>เข้าผู้พัฒนา 100%</b> · เก็บเพิ่มจากแอดออน + สปอนเซอร์ — ไม่กันคนเข้าด้วยค่าแพง</p></div>
+      <div class="card anim2"><span class="tag" style="background:var(--gold-soft);color:var(--gold);">ค่าแรง</span><h3>เงินสด<span style="font-size:24px;font-weight:600;color:var(--ink-3);">จ่ายตรง</span></h3><p>ร้านจ่ายค่าแรงสดให้แรงงานตามราคากลาง <b>เต็มจำนวน</b> · หัวหน้าวินไม่เห็นยอดรวม · แอปไม่หัก</p></div>
+      <div class="card anim3" style="border-color:var(--brand);"><span class="tag">ค่าหัวคิว</span><h3>~10%<span style="font-size:24px;font-weight:600;color:var(--ink-3);">เข้าวิน 100%</span></h3><p>แรงงานโอนเข้า <b>PromptPay ของหัวหน้าวินโดยตรง</b> ตอนจบงาน · เงินเข้าบัญชีหัวหน้าวินตรงๆ · แอปไม่แตะเงิน</p></div>
+    </div>
+    <div class="grid2" style="gap:26px;margin-top:24px;">
+      <div class="card anim"><span class="ic">🧩</span><h3>Tech Stack — เริ่มเกือบ ฿0/เดือน</h3><p><b>Cloudflare Workers + D1</b> (SQLite · stack เดียวกับ KaiDee POS) · <b>LINE Messaging API + LIFF + Flex</b> (push ฟรี 500/เดือน) · <b>PromptPay</b> เติมกระเป๋า + ค่าบริการ → ต่อ Omise เมื่อโต · serverless เริ่มฟรี โตแล้วค่อยจ่ายตามจริง</p></div>
+      <div class="card anim2" style="background:linear-gradient(150deg,#0E5C4A,#0E9C88);color:#fff;border:none;"><span class="ic">💳</span><h3 style="color:#fff;">PromptPay หัวหน้าวินตรง — ไม่ต้องผูกธนาคาร</h3><p style="color:#d7f0e8;font-size:24px;">หัวหน้าวินตั้ง <b>หน้ารับเงิน</b> เอง (ใส่ PromptPay ตัวเอง) → ปิดงานแอปโชว์ QR ให้แรงงานสแกนโอน + ยืนยัน/แนบสลิป — ไม่ต้องสมัคร LINE bank ไม่ต้องมี wallet · เริ่ม ฿0</p></div>
+    </div>
+    <p class="footer-tag anim3">สถานะ: ออกแบบระบบ + โค้ดตัวอย่างเสร็จ (schema · dispatch/wallet · LINE Flex · tech stack) · ขั้นต่อไป prototype มือถือ 3 บทบาท + deploy จริง</p>
+  </section>
+
+
+  
+
+  <section data-label="ตลาดเป็นโมดูลในแอป">
+    <div class="eyebrow">โครงเดียวกัน · โมดูลในแอปเดียว</div>
+    <h2>ทะเบียน + สมัครร้านค้า + บริหารตลาด — เป็นโมดูลในแอป POS</h2>
+    <div class="grid3" style="margin-top:32px;">
+      <div class="card anim"><span class="ic">🧾</span><h3>ร้านสมัครเอง (แท็บสมัคร)</h3><p>เปิดแท็บ “สมัครร้านค้า” ในแอป — ร้านกรอกข้อมูลเอง เหมือนหน้าสมัครสมาชิก</p></div>
+      <div class="card anim2"><span class="ic">🗂️</span><h3>ฐานข้อมูลร้านอัตโนมัติ</h3><p>ข้อมูลที่ร้านกรอกกลายเป็นทะเบียนร้านของตลาด — ตลาดไม่ต้องคีย์เอง</p></div>
+      <div class="card anim3"><span class="ic">🎛️</span><h3>ตลาดบริหารผ่านแอปนี้</h3><p>บิล · GP · เช่าแผง · รายงาน = อีกโมดูล/เลนส์ในแอปเดียวกัน (เหมือนฟิตเนส)</p></div>
+    </div>
+    <div class="flywheel" style="margin-top:40px;">
+      <div class="fw">แอป POS เดียว</div><div class="fw-arr">→</div>
+      <div class="fw">โมดูลร้านค้า<br><small>สมัคร · ขาย</small></div><div class="fw-arr">+</div>
+      <div class="fw">โมดูลตลาด<br><small>ทะเบียน · บิล · GP</small></div><div class="fw-arr">+</div>
+      <div class="fw">โมดูลฟิตเนส<br><small>สมาชิก · คลาส</small></div>
+    </div>
+    <p class="footer-tag">ไม่ต้องแยกหลายโปรแกรม — เปิด/ปิดโมดูลตามประเภทผู้ใช้ · ร้านสมัครเอง = ตลาดได้ฐานข้อมูลฟรี</p>
+  </section>
+
+  <section data-label="Mockup — Labor Win 3 บทบาท">
+    <div class="eyebrow">Labor Win · วิธีใช้งานจริง 3 บทบาท</div>
+    <h2>แม่ค้าเรียกงาน → แรงงานรับ → หัวหน้าวินเก็บค่าคิว</h2>
+    <p class="sub" style="margin-bottom:24px;">จอจริงที่เพิ่งทำ — ทุกฝ่ายอยู่บน LINE ปุ่มใหญ่ อ่านง่าย ไทยคู่พม่าสำหรับแรงงาน</p>
+    <div style="display:flex;gap:30px;align-items:stretch;justify-content:center;">
+
+      <div style="flex:0 0 auto;text-align:center;">
+        <div style="font-size:16px;font-weight:800;color:var(--brand);margin-bottom:10px;">1 · แม่ค้า / ร้าน 🏪</div>
+        <div style="width:290px;height:590px;background:#0f1720;border-radius:36px;padding:11px;box-shadow:0 20px 50px rgba(0,0,0,.26);">
+          <div style="width:100%;height:100%;background:#F3F6F4;border-radius:27px;overflow:hidden;display:flex;flex-direction:column;text-align:left;">
+            <div style="background:var(--brand);color:#fff;padding:18px 16px 14px;"><div style="font-size:15px;opacity:.85;">หน้าขาย · เรียกแรงงาน</div><div style="font-size:21px;font-weight:800;">ต้องการคนช่วยงาน</div></div>
+            <div style="padding:13px;display:flex;flex-direction:column;gap:11px;">
+              <div style="font-size:13px;font-weight:700;color:var(--ink-3);">เลือกงาน</div>
+              <div style="display:flex;gap:8px;"><div style="flex:1;background:var(--brand-soft);border:2px solid var(--brand);border-radius:12px;padding:12px 6px;text-align:center;font-size:14px;font-weight:700;">📦 ยกของ</div><div style="flex:1;background:#fff;border-radius:12px;padding:12px 6px;text-align:center;font-size:14px;">🛒 แบก</div><div style="flex:1;background:#fff;border-radius:12px;padding:12px 6px;text-align:center;font-size:14px;">📦 แพ็ก</div></div>
+              <div style="font-size:13px;font-weight:700;color:var(--ink-3);margin-top:2px;">เลือกวิน (สีเสื้อ)</div>
+              <div style="display:flex;gap:8px;"><div style="flex:1;background:#fdecea;border:2px solid #C0392B;border-radius:12px;padding:10px;text-align:center;font-size:14px;font-weight:700;color:#C0392B;">🔴 แดง</div><div style="flex:1;background:#fff;border-radius:12px;padding:10px;text-align:center;font-size:14px;">🔵 น้ำเงิน</div></div>
+              <div style="background:#fff;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;color:var(--ink-3);">ราคากลาง</span><span style="font-size:20px;font-weight:800;color:var(--brand);">฿120</span></div>
+              <div style="background:var(--brand);color:#fff;border-radius:14px;padding:15px;text-align:center;font-size:17px;font-weight:800;margin-top:2px;">เรียกแรงงาน →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 auto;text-align:center;">
+        <div style="font-size:16px;font-weight:800;color:#C0392B;margin-bottom:10px;">2 · แรงงาน 👷 (ไทย+พม่า)</div>
+        <div style="width:290px;height:590px;background:#0f1720;border-radius:36px;padding:11px;box-shadow:0 20px 50px rgba(0,0,0,.26);">
+          <div style="width:100%;height:100%;background:#F3F6F4;border-radius:27px;overflow:hidden;display:flex;flex-direction:column;text-align:left;">
+            <div style="background:var(--gold);color:#fff;padding:18px 16px 14px;"><div style="font-size:15px;opacity:.9;">🔔 งานใหม่ / အလုပ်အသစ်</div><div style="font-size:26px;font-weight:800;">ล็อก A-12</div></div>
+            <div style="padding:15px;display:flex;flex-direction:column;gap:12px;flex:1;">
+              <div style="display:flex;align-items:center;gap:12px;"><div style="font-size:34px;">📦</div><div><div style="font-size:20px;font-weight:800;">ยกของลงรถ</div><div style="font-size:16px;color:var(--ink-3);">ကုန်ချ</div></div></div>
+              <div style="border-top:1px solid #e2e8e4;padding-top:12px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:15px;color:var(--ink-3);">ค่าแรง / လုပ်ခ</span><span style="font-size:26px;font-weight:800;color:var(--brand);">฿120</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:13px;color:var(--ink-3);">หักค่าคิว</span><span style="font-size:15px;color:#C0392B;">-฿12</span></div>
+              <div style="text-align:center;font-size:13px;font-weight:700;color:var(--gold);">⏱️ ตอบใน 60 วิ / ၆၀ စက္ကန့်</div>
+              <div style="margin-top:auto;display:flex;gap:10px;"><div style="flex:1;background:#C0392B;color:#fff;border-radius:14px;padding:16px;text-align:center;font-size:17px;font-weight:800;">🔴 ไม่รับ</div><div style="flex:1;background:#1DB954;color:#fff;border-radius:14px;padding:16px;text-align:center;font-size:17px;font-weight:800;">🟢 รับงาน</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 auto;text-align:center;">
+        <div style="font-size:16px;font-weight:800;color:var(--ink);margin-bottom:10px;">3 · หัวหน้าวิน 🎽</div>
+        <div style="width:290px;height:590px;background:#0f1720;border-radius:36px;padding:11px;box-shadow:0 20px 50px rgba(0,0,0,.26);">
+          <div style="width:100%;height:100%;background:#F3F6F4;border-radius:27px;overflow:hidden;display:flex;flex-direction:column;text-align:left;">
+            <div style="background:#1f2a24;color:#fff;padding:18px 16px 14px;"><div style="font-size:15px;opacity:.85;">วินแดง · คิวในสังกัด</div><div style="font-size:21px;font-weight:800;">รายได้ค่าหัวคิววันนี้</div><div style="font-size:28px;font-weight:800;color:#5fe0a0;">฿840</div></div>
+            <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
+              <div style="background:#fff;border-radius:12px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;font-weight:700;">👷 หม่อง · ทำงาน</span><span style="font-size:12px;color:#C0392B;">ล็อก A-12</span></div>
+              <div style="background:#fff;border-radius:12px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;font-weight:700;">👷 จอ · ว่าง</span><span style="font-size:12px;color:var(--brand);">คิว 2</span></div>
+              <div style="border:2px dashed var(--brand);background:var(--brand-soft);border-radius:12px;padding:12px;">
+                <div style="font-size:13px;font-weight:700;color:var(--brand);">หน้ารับเงิน · ตั้งเอง</div>
+                <div style="font-size:14px;margin-top:6px;">💵 เงินสด · 💳 PromptPay ตรง · 👛 กระเป๋า</div>
+              </div>
+              <div style="background:var(--ink);color:#fff;border-radius:12px;padding:13px;text-align:center;font-size:15px;font-weight:700;">💳 กดถอนเข้าบัญชี</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <p class="footer-tag anim3">เงิน: ค่าแรงจ่ายสดตรงแรงงาน · ค่าหัวคิวเข้าหัวหน้าวิน 100% ตามหน้ารับเงินที่ตั้งเอง · แอปเก็บแค่ค่าบริการรายเดือนของร้าน</p>
+  </section>
+
+  <section data-label="Mockup — พื้นที่สปอนเซอร์">
+    <div class="eyebrow">รายได้เสริม · โฆษณา/สปอนเซอร์ในแอป</div>
+    <h2>พื้นที่สปอนเซอร์ — แบรนด์/ซัพพลายเออร์ลงโฆษณาถึงร้าน &amp; แรงงาน</h2>
+    <p class="sub" style="margin-bottom:26px;">เริ่มแบบง่าย (เราวางโฆษณาให้ เก็บค่าลงรายเดือน) — วางในจุดที่คนเห็นทุกวัน: หน้าแรก · หน้าเรียกงาน · หน้าสมาชิก</p>
+    <div style="display:flex;gap:40px;align-items:center;">
+      <div style="display:flex;gap:26px;flex:0 0 auto;">
+        <div style="width:300px;height:600px;background:#0f1720;border-radius:38px;padding:12px;box-shadow:0 24px 60px rgba(0,0,0,.28);">
+          <div style="width:100%;height:100%;background:#F3F6F4;border-radius:28px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="background:var(--brand);color:#fff;padding:20px 18px 16px;">
+              <div style="font-size:17px;opacity:.85;">สวัสดี, ร้านเจ๊แดง 👋</div>
+              <div style="font-size:24px;font-weight:800;margin-top:2px;">ตลาดสี่มุมเมือง</div>
+            </div>
+            <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
+              <div style="border:2px dashed var(--gold);background:var(--gold-soft);border-radius:16px;padding:14px;position:relative;">
+                <div style="position:absolute;top:10px;right:12px;font-size:12px;font-weight:700;color:var(--gold);">สปอนเซอร์</div>
+                <div style="font-size:13px;color:var(--gold);font-weight:700;">โฆษณา</div>
+                <div style="font-size:20px;font-weight:800;color:var(--ink);margin-top:4px;line-height:1.2;">น้ำแข็งเจ้าใหญ่<br>ส่งถึงแผง ลด 15%</div>
+                <div style="font-size:14px;color:var(--ink-3);margin-top:6px;">แตะเพื่อสั่งเลย →</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div style="background:#fff;border-radius:14px;padding:16px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05);"><div style="font-size:26px;">🧾</div><div style="font-size:14px;font-weight:700;margin-top:6px;">บิลค่าเช่า</div></div>
+                <div style="background:#fff;border-radius:14px;padding:16px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05);"><div style="font-size:26px;">🎽</div><div style="font-size:14px;font-weight:700;margin-top:6px;">เรียกแรงงาน</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="width:300px;height:600px;background:#0f1720;border-radius:38px;padding:12px;box-shadow:0 24px 60px rgba(0,0,0,.28);">
+          <div style="width:100%;height:100%;background:#F3F6F4;border-radius:28px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="background:#1f2a24;color:#fff;padding:20px 18px 16px;">
+              <div style="font-size:17px;opacity:.85;">เรียกแรงงาน · คิววินแดง</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px;">กำลังหาคนให้…</div>
+            </div>
+            <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
+              <div style="background:#fff;border-radius:14px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);"><div style="font-size:15px;font-weight:700;">🔴 วินแดง · ล็อก A-12</div><div style="font-size:14px;color:var(--ink-3);margin-top:4px;">ยกของลงรถ · ฿120</div></div>
+              <div style="border:2px dashed var(--brand);background:var(--brand-soft);border-radius:16px;padding:14px;position:relative;">
+                <div style="position:absolute;top:10px;right:12px;font-size:12px;font-weight:700;color:var(--brand);">สปอนเซอร์</div>
+                <div style="font-size:13px;color:var(--brand);font-weight:700;">แนะนำสำหรับวินคุณ</div>
+                <div style="font-size:19px;font-weight:800;color:var(--ink);margin-top:4px;line-height:1.2;">ถุงมือ-รองเท้าเซฟตี้<br>ราคาส่ง สั่งในแอป</div>
+                <div style="font-size:14px;color:var(--ink-3);margin-top:6px;">ดูสินค้า →</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:16px;">
+        <div class="card anim"><span class="ic">📣</span><h3>วางในจุดที่คนเห็นทุกวัน</h3><p>การ์ด/แบนเนอร์ "สปอนเซอร์" บนหน้าแรก · หน้าเรียกงาน · หน้าสมาชิก — กลมกลืนแต่มีป้ายบอกชัดว่าเป็นโฆษณา</p></div>
+        <div class="card anim2"><span class="ic">🎯</span><h3>ยิงตรงกลุ่ม</h3><p>ซัพพลายเออร์อยากขายของให้ร้าน/วินในตลาด — โฆษณาเห็นเฉพาะกลุ่มที่เกี่ยว (ร้านอาหาร/วินแรงงาน)</p></div>
+        <div class="card anim3" style="border-color:var(--gold);"><span class="ic">💰</span><h3>เริ่มเก็บเงินได้เลย</h3><p>เฟสแรก: เราวางโฆษณาให้เอง เก็บค่าลงรายเดือน/เหมา — พิสูจน์ดีมานด์ก่อน · เฟสสอง: หน้า self-serve ให้สปอนเซอร์ลงเอง+นับยอดคลิก</p></div>
+      </div>
+    </div>
+    <p class="footer-tag anim3">Mockup เพื่อสื่อภาพ — ตำแหน่งจริงปรับได้ · รายได้โฆษณา = ทางที่ 2 นอกจากค่าบริการ + แอดออน (freemium ดึงคนเข้าเยอะ = พื้นที่โฆษณามีค่า)</p>
+  </section>
+
+  <section data-label="วงจรระบบนิเวศ (กำลังต่อยอด)">
+    <div class="eyebrow">โรดแมป · ระบบที่กำลังต่อยอด (ยังไม่ปล่อย)</div>
+    <h2>วงจรระบบนิเวศ — ร้านตลาด · ไรเดอร์ · ร้าน POS เห็นหน้าขายสปอนเซอร์เดียวกัน</h2>
+    <p class="sub" style="margin-bottom:22px;">ยิ่งมีคนในระบบมาก พื้นที่สปอนเซอร์ยิ่งมีค่า — ทุกฝ่ายหมุนเวียนเป็นทั้งผู้ซื้อ ผู้ขาย และคนส่ง เงินหมุนในแพลตฟอร์มเดียว</p>
+    <div class="flywheel" style="margin:30px 0 34px;">
+      <div class="fw">ร้าน POS /<br><small>ซัพพลายเออร์</small></div><div class="fw-arr">→</div>
+      <div class="fw">ซื้อแพคสปอนเซอร์<br><small>ลงขายในแอป</small></div><div class="fw-arr">→</div>
+      <div class="fw">คนในระบบเห็น<br><small>ตลาด · วิน · ยิม</small></div><div class="fw-arr">→</div>
+      <div class="fw">สั่งซื้อ + ไรเดอร์ส่ง<br><small>เงินหมุนกลับ</small></div>
+    </div>
+    <div class="grid3" style="gap:22px;">
+      <div class="card anim"><span class="ic">🛒</span><h3>หน้าขายสปอนเซอร์</h3><p>ร้านค้าออนไลน์ในแอป — <b>ร้านตลาด · แม่ค้า Labor Win · สมาชิกฟิตเนส · ร้าน POS</b> เห็นและสั่งซื้อได้ กดสั่งคุ้นมือแบบ Shopee</p></div>
+      <div class="card anim2"><span class="ic">🛵</span><h3>จัดส่ง 2 ทาง</h3><p>ใช้ <b>ทะเบียนไรเดอร์ของเรา</b> (ในตลาด/ละแวกเดียวกัน) หรือ <b>เชื่อม Lalamove</b> นอกพื้นที่ · ร้านเลือกไรเดอร์คนโปรดแบบ Grab</p></div>
+      <div class="card anim3" style="border-color:var(--gold);"><span class="ic">🔁</span><h3>ร้านกลายเป็นสปอนเซอร์</h3><p>ร้าน POS/ซัพพลายเออร์กดซื้อ <b>แพคสปอนเซอร์</b> → ลงขายเอง · ค่าแพค + ค่าธรรมเนียมเข้า <b>กระเป๋าแพลตฟอร์ม</b> = รายได้เพิ่มของเรา</p></div>
+    </div>
+    <p class="footer-tag anim3">สถานะ: <b>เดโมแนวคิดกดได้จริงแล้ว</b> (Sponsor Shop · Rider) — ยังไม่ปล่อยในแอปจริง · เก็บเงินค่าสินค้า/ค่าส่งวิ่งตรงหาสปอนเซอร์/ไรเดอร์ก่อน (กันเกณฑ์ e-money ธปท.) กระเป๋าแพลตฟอร์มเก็บเฉพาะรายได้เรา</p>
+  </section>
+
+  <section data-label="ฐานผู้ซื้อรวมทุก vertical">
+    <div class="eyebrow">ระบบนิเวศ · ฐานผู้ซื้อรวมทุก vertical</div>
+    <h2>ทุก vertical เห็นร้านสปอนเซอร์เดียวกัน — ฐานผู้ซื้อยิ่งใหญ่ สปอนยิ่งขายได้ ยิ่งต่อแพค</h2>
+    <p class="sub" style="margin-bottom:22px;">สมาชิกฟิตเนส · ลูกค้าร้าน POS · ร้านค้าในตลาด · แรงงานวิน — คนทุกกลุ่มในทุกธุรกิจ <b>เห็นหน้าร้านสปอนเซอร์ชุดเดียวกัน</b> = ออดิเอนซ์ก้อนใหญ่ที่สุดในที่เดียว สปอนเซอร์ไม่ต้องหาคนซื้อเอง</p>
+    <div class="flywheel" style="margin:22px 0 12px;gap:14px;">
+      <div class="fw">สมาชิกฟิตเนส<br><small>ยิม/สตูดิโอ</small></div><div class="fw-arr">+</div>
+      <div class="fw">ลูกค้าร้าน POS<br><small>ร้านอาหาร/คาเฟ่</small></div><div class="fw-arr">+</div>
+      <div class="fw">ร้านค้าในตลาด<br><small>แม่ค้า/แผง</small></div><div class="fw-arr">+</div>
+      <div class="fw">แรงงานวิน<br><small>Labor Win</small></div>
+    </div>
+    <div class="flywheel" style="margin:0 0 30px;gap:14px;">
+      <div class="fw" style="border-color:var(--gold);color:var(--gold);">ฐานผู้ซื้อรวม<br><small>เห็นร้านสปอนเดียวกัน</small></div><div class="fw-arr">→</div>
+      <div class="fw">สปอนขายได้เยอะ<br><small>ยอด/เดือนสูง</small></div><div class="fw-arr">→</div>
+      <div class="fw">ต่อแพคสปอน<br><small>รายเดือน/รายปี</small></div><div class="fw-arr">→</div>
+      <div class="fw">รายได้แพลตฟอร์ม↑<br><small>วนกลับลงทุนต่อ</small></div>
+    </div>
+    <div class="grid3" style="gap:22px;">
+      <div class="card anim"><span class="ic">👥</span><h3>ฐานผู้ซื้อรวมทุกธุรกิจ</h3><p>ยิ่งมีร้าน/ยิม/ตลาดใช้ระบบมาก คนเห็นร้านสปอนยิ่งเยอะ — <b>ออดิเอนซ์ก้อนเดียวที่ใหญ่ขึ้นเรื่อยๆ</b> คุ้มกว่าลงโฆษณาแยกทีละที่</p></div>
+      <div class="card anim2"><span class="ic">📈</span><h3>ขายได้ → ต่อแพคยาว</h3><p>เข้าถึงคนทั้งระบบ = ยอดสปอนต่อเดือนสูง → คุ้มค่าแพค → สปอน<b>ต่อรายเดือน/รายปีเอง</b> กลายเป็นรายได้ประจำของแพลตฟอร์ม</p></div>
+      <div class="card anim3" style="border-color:var(--gold);"><span class="ic">🔁</span><h3>ใครก็เป็นลูกค้า/สปอนได้</h3><p>ร้าน POS · ฟิตเนส · ซัพพลายเออร์ กด<b>เป็นสปอนเซอร์เอง</b> → ทุกส่วนเป็นทั้งผู้ซื้อและผู้ขาย = โอกาสขายเกิดได้ทุกจุดในระบบ</p></div>
+    </div>
+    <p class="footer-tag anim3">ยิ่งระบบโต ฐานผู้ซื้อยิ่งใหญ่ → สปอนขายดี → ต่อแพคเยอะ → รายได้แพลตฟอร์มโตตาม = <b>วงจรที่เร่งตัวเอง (flywheel)</b></p>
+  </section>
+
+  <section data-label="แพ็กสปอนเซอร์ (ราคา)">
+    <div class="eyebrow">รายได้เสริม · แพ็กสปอนเซอร์ (โฆษณา + ขายของ)</div>
+    <h2>แพ็กสปอนเซอร์ — กดซื้อในแอป ปลดล็อกหน้าใช้งานตามแพ็ก</h2>
+    <p class="sub" style="margin-bottom:22px;">แบรนด์/ซัพพลายเออร์ลงโฆษณา+เปิดร้านขายของถึงคนทั้งระบบ — <b>เห็นจากหน้าแอปตลาดที่ใช้โปรแกรมตลาด</b> · รายปีจ่าย 10 เดือน (ฟรี 2 เดือน)</p>
+    <div class="grid3">
+      <div class="card anim"><span class="tag">Starter · เปิดร้าน</span><h3>฿990<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>เปิดร้านออนไลน์ในแอป · ลงสินค้าไม่จำกัด + รับออเดอร์ · เลือกจัดส่งไรเดอร์เรา/Lalamove · ป้าย“สปอนเซอร์”</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="tag" style="background:var(--brand);color:#fff;">Growth · แนะนำ ★</span><h3>฿2,900<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>ทุกอย่างใน Starter + แบนเนอร์โฆษณาหมุนเวียน · “ร้านแนะนำ” · เลือกกลุ่มเป้าหมาย · รายงานการเข้าถึง · ยิงโปร 1 ครั้ง/เดือน</p></div>
+      <div class="card anim3"><span class="tag" style="background:var(--gold-soft);color:var(--gold);">Premium · เด่นสุด</span><h3>฿5,900<span style="font-size:24px;font-weight:600;color:var(--ink-3);">/เดือน</span></h3><p>ทุกอย่างใน Growth + แบนเนอร์ปักหมุดหน้าแรก · ยิงโปรไม่อั้น · ขึ้นหลายจุด (ตลาด/POS/ฟิตเนส/วิน) · ทีมดูแลจัดแคมเปญ</p></div>
+    </div>
+    <p class="footer-tag anim3">แพ็กสปอนเซอร์โชว์ใน <b>หน้าแอปตลาดที่ใช้โปรแกรมตลาด</b> + ทุก vertical · ซื้อจบในแอป → ปลดล็อกหน้าจัดการตามแพ็กทันที · ยอดเข้ากระเป๋าแพลตฟอร์ม + แอดออนซื้อเพิ่มได้ (ปักหมุด/ยิงโปร)</p>
+  </section>
+
+  <section data-label="หน้าขายสปอนเซอร์ ทำงานยังไง">
+    <div class="eyebrow">วิธีทำงาน · หน้าขายสปอนเซอร์ในแอป</div>
+    <h2>หน้าขายสปอนเซอร์ 2 โหมด — ของกินจับพื้นที่ · ของใช้ช้อปทั่วไทย</h2>
+    <p class="sub" style="margin-bottom:22px;">แอปแยกประเภทสินค้าให้โหมดการขายสอดคล้อง — ของกินเน้นระยะทาง · ของใช้เน้นราคา+ส่วนลด</p>
+    <div class="grid3" style="gap:22px;">
+      <div class="card anim"><span class="ic">🛵</span><h3>ใกล้ฉัน (แบบไลน์แมน)</h3><p><b>อาหาร/คาเฟ่/ของสด</b> — จับพื้นที่ เรียงร้านใกล้สุดก่อน สั่งแล้ว <b>ไรเดอร์วินในตลาด</b> ส่งข้ามโซนถึงแผง — เฝ้าร้านคนเดียวก็สั่งได้</p></div>
+      <div class="card anim2"><span class="ic">🛍️</span><h3>ช้อปทั่วไทย (แบบ Shopee)</h3><p><b>ของใช้/ค้าส่ง</b> — ไม่ต้องใกล้ เน้น <b>ราคา + คูปองส่วนลด</b> — ส่งผ่านขนส่งทั่วไทยถึงบ้าน</p></div>
+      <div class="card anim3" style="border-color:var(--gold);"><span class="ic">⭐</span><h3>ปักหน้าแรก + คูปอง</h3><p><b>จ่ายแพงขึ้น=เห็นก่อน</b> (แบบ Grab) · สปอน <b>สร้างคูปองเอง</b> (แบบ Shopee) — ส่วนลดหักที่ร้านตรง ไม่ผ่านแพลตฟอร์ม</p></div>
+    </div>
+    <p class="footer-tag anim3">เงินค่าสินค้า/ค่าส่งวิ่งตรงหาสปอน/ไรเดอร์ · แพลตฟอร์มเก็บแค่ <b>ค่าแพค + ค่าปักหน้าแรก</b> (ไม่เก็บ GP) — เดโมกดจริงแล้วที่ Sponsor Shop</p>
+  </section>
+
+  <section data-label="ทำไมสปอนเซอร์ถึงคุ้ม">
+    <div class="eyebrow">มุมมองสปอนเซอร์ · ทำไมถึงลงโฆษณากับเรา</div>
+    <h2>ช่องทางขายเพิ่ม — จ่ายค่าสปอน ไม่โดน GP แพง</h2>
+    <p class="sub" style="margin-bottom:22px;">สปอนเซอร์ไม่ได้หวังรายได้ก้อนใหญ่เท่า Grab/LINE MAN — แต่มองว่าเป็น <b>ช่องทางขายเสริมต้นทุนต่ำ คุ้มที่จะลอง</b> · จุดขายของเราคือ <b>ไม่เก็บ GP แพงต่อบิล เสียแค่ค่าแพคคงที่</b></p>
+    <div class="grid3" style="gap:22px;">
+      <div class="card anim"><span class="ic">🧭</span><h3>คิดแบบสปอนเซอร์</h3><p>“ลงสปอนถูกๆ = เปิดอีกช่องทางขาย” ไม่ได้หวังรายได้หลักเท่าเดลิเวอรีเจ้าใหญ่ · ขอแค่ <b>คุ้มค่าที่ลอง</b> เห็นออเดอร์เพิ่มก็พอ</p></div>
+      <div class="card anim2" style="border-color:var(--brand);"><span class="ic">✂️</span><h3>ไม่โดน GP 30%</h3><p>Grab/LINE MAN หัก GP ~30% ทุกบิล · ของเรา <b>จ่ายค่าแพคคงที่ครั้งเดียว/เดือน</b> ขายได้เท่าไรกำไรเต็ม ยิ่งขายยิ่งคุ้ม</p></div>
+      <div class="card anim3" style="border-color:var(--gold);"><span class="ic">📈</span><h3>ราคาโตตามฐานผู้ใช้</h3><p>ช่วงแรกคนยังน้อย → <b>ราคาถูกจับต้องได้</b> ดึงสปอนมาลอง · <b>Back Office คำนวณ</b> ว่าควรขยับราคาเมื่อฐานผู้ใช้ (reach) โตถึงระดับไหน</p></div>
+    </div>
+    <p class="footer-tag anim3">หน้า “สปอนเซอร์ & ราคาแพ็ก” ใน Back Office เทียบชัด: <b>ค่าสปอนคงที่ vs ต้นทุน GP 30%</b> ตามยอดขายที่คาด — ช่วยตั้งราคาให้จูงใจแต่โตตามฐานผู้ใช้</p>
+  </section>
+
+  <section data-label="โมเดลรายได้รวม">
+    <div class="eyebrow">โมเดลธุรกิจ · เราหาเงินจากอะไร</div>
+    <h2>รายได้หลายทาง — รวมเข้า “กระเป๋าแพลตฟอร์ม” ที่เดียว</h2>
+    <div class="grid2" style="gap:16px;">
+      <div class="card anim"><span class="ic">🏪</span><h3>ค่าบริการรายเดือน (SaaS)</h3><p>ร้าน/ยิม/ตลาดจ่ายค่าโปรแกรมรายเดือน — รายได้ประจำ (recurring) เดือนแรกฟรีดึงคนใช้</p></div>
+      <div class="card anim2"><span class="ic">💳</span><h3>GP + ค่าธรรมเนียม</h3><p>ร้าน GP ใช้ POS ฟรี → เก็บจากยอดขาย · % จากออเดอร์ออนไลน์ที่จับผ่านระบบ</p></div>
+      <div class="card anim3"><span class="ic">📣</span><h3>แพ็กสปอนเซอร์ + โฆษณา</h3><p>แบรนด์/ซัพซื้อแพ็กลงโฆษณา+เปิดร้าน · ยิ่งระบบมีคนมาก พื้นที่ยิ่งมีค่า</p></div>
+      <div class="card anim"><span class="ic">🧩</span><h3>แอดออนเสริม</h3><p>ขายของออนไลน์ · จองออเดอร์ล่วงหน้า · CRM/โมดูลเสริม — ปลดล็อกเฉพาะที่ใช้</p></div>
+    </div>
+    <p class="footer-tag anim3">ทุกรายได้ของเราไหลเข้า <b>กระเป๋าแพลตฟอร์ม</b> — เห็นยอดจริงที่เดียว · <b>ค่าสินค้า/ค่าส่งวิ่งตรงหาสปอนเซอร์/ไรเดอร์</b> ไม่ผ่านกระเป๋ากลาง (กันเกณฑ์ e-money ธปท.)</p>
+  </section>
+
+  <section class="hero" data-label="ปิด">
+    <div class="brandbar anim"><div class="lg"><img src="assets/kaidee-logo.png" alt="KaiDee"/></div>
+      <div class="tx">KaiDee Platform<small>Market OS</small></div></div>
+    <div class="fill"></div>
+    <h1 class="anim2" style="font-size:66px;">แผงว่างที่ขายไม่ออก<br>คือรายได้ที่ยังไม่ได้เปิด</h1>
+    <p class="sub anim3" style="color:#cdeee6;margin-top:24px;max-width:1050px;">เริ่มที่เก็บค่าเช่าให้ครบ แล้วปล่อยให้ข้อมูลทำงานต่อ — พร้อมสาธิตระบบจริงใน Backoffice</p>
+    <p class="footer-tag anim3" style="color:#8fd3c7;margin-top:40px;">เป้าหมายแลนด์: ตลาดสี่มุมเมือง · เดโมพร้อมใช้งาน 3 ตลาด 3 ประเภท</p>
+  </section>
+
+</deck-stage>
+<script src="deck-stage.js?v=p2-20260730j"></script>
+</body>
+</html>

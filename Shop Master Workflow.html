@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop Master · Workflow (ขาแจ้ง → CMPOS → Backoffice)</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root{ --dark:#1a1d20; --yellow:#2e934a; --green:#2e934a; --bg:#eef1f4; --line:#d9dee4; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); font-family:'Kanit',sans-serif; color:var(--dark); -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:34px 28px 80px; }
+
+  /* header */
+  .hd{ background:var(--dark); border-radius:18px; padding:26px 30px; border-left:12px solid var(--yellow); margin-bottom:10px; }
+  .hd h1{ font-family:'Montserrat',sans-serif; font-weight:900; color:#fff; margin:0; font-size:1.55rem; letter-spacing:.3px; }
+  .hd h1 .y{ color:var(--yellow); }
+  .hd p{ color:rgba(255,255,255,.72); margin:8px 0 0; font-size:.95rem; }
+  .draft{ display:inline-flex; align-items:center; gap:7px; margin-top:12px; background:rgba(46,147,74,.14); border:1px solid rgba(46,147,74,.4); color:var(--yellow); font-size:.74rem; font-weight:700; padding:4px 12px; border-radius:999px; }
+
+  .sec-ttl{ font-family:'Montserrat',sans-serif; font-weight:800; text-transform:uppercase; letter-spacing:.6px; font-size:.82rem; color:#7b828b; margin:34px 4px 14px; display:flex; align-items:center; gap:9px; }
+  .sec-ttl i{ color:var(--green); }
+
+  /* concept band */
+  .concept{ display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:stretch; gap:0; }
+  .cbox{ background:#fff; border:1.5px solid var(--line); border-radius:15px; padding:18px 18px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+  .cbox .ic{ width:48px; height:48px; border-radius:13px; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:1.3rem; }
+  .cbox h3{ margin:0 0 4px; font-size:1rem; font-weight:700; }
+  .cbox p{ margin:0; font-size:.8rem; color:#6b727b; line-height:1.45; }
+  .cbox.this{ border-color:var(--yellow); box-shadow:0 8px 26px rgba(46,147,74,.16); }
+  .cbox.this .ic{ background:var(--yellow); color:var(--dark); }
+  .cbox.mail .ic{ background:#e9f1ff; color:#2c5fb3; }
+  .cbox.bo .ic{ background:#e7f6ee; color:var(--green); }
+  .arrow{ display:flex; align-items:center; justify-content:center; padding:0 6px; color:#aab1b9; font-size:1.4rem; }
+
+  .side{ margin-top:14px; display:flex; gap:14px; }
+  .side .store{ flex:1; background:#fff; border:1.5px dashed var(--green); border-radius:13px; padding:14px 18px; display:flex; align-items:center; gap:14px; }
+  .side .store .ic{ width:42px; height:42px; border-radius:11px; background:#e7f6ee; color:var(--green); display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex:none; }
+  .side .store b{ font-size:.95rem; } .side .store span{ font-size:.8rem; color:#6b727b; }
+
+  /* principle */
+  .principle{ background:linear-gradient(100deg,#1a1d20,#23282c); color:#fff; border-radius:15px; padding:20px 24px; display:flex; align-items:center; gap:18px; }
+  .principle .big{ font-family:'Montserrat',sans-serif; font-weight:900; font-size:1.05rem; color:var(--yellow); white-space:nowrap; }
+  .principle p{ margin:0; font-size:.92rem; color:rgba(255,255,255,.82); line-height:1.5; }
+
+  /* main flow */
+  .flow{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0; align-items:stretch; }
+  .step{ position:relative; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:18px 16px 16px; margin:0 16px; }
+  .step .n{ position:absolute; top:-13px; left:16px; width:26px; height:26px; border-radius:50%; background:var(--dark); color:var(--yellow); font-family:'JetBrains Mono',monospace; font-weight:700; font-size:.82rem; display:flex; align-items:center; justify-content:center; }
+  .step h4{ margin:6px 0 6px; font-size:.96rem; font-weight:700; }
+  .step p{ margin:0; font-size:.8rem; color:#6b727b; line-height:1.45; }
+  .step .chev{ position:absolute; right:-22px; top:50%; transform:translateY(-50%); color:var(--yellow); font-size:1.5rem; z-index:2; }
+  .step:last-child .chev{ display:none; }
+
+  /* fork outcome */
+  .fork{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px; }
+  .out{ background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .out .ic{ width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex:none; }
+  .out.a .ic{ background:#e9f1ff; color:#2c5fb3; } .out.b .ic{ background:#e7f6ee; color:var(--green); }
+  .out h4{ margin:0 0 4px; font-size:.96rem; } .out p{ margin:0; font-size:.82rem; color:#6b727b; line-height:1.5; }
+
+  /* notification types */
+  .types{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  .type{ background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .type .top{ display:flex; align-items:center; gap:11px; margin-bottom:9px; }
+  .type .tag{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex:none; }
+  .type h4{ margin:0; font-size:.98rem; font-weight:700; } .type .top small{ color:#9aa1a9; font-size:.72rem; display:block; }
+  .type ul{ margin:0; padding-left:18px; } .type li{ font-size:.82rem; color:#5d646d; line-height:1.7; }
+  .type.t1 .tag{ background:var(--yellow); color:var(--dark); }
+  .type.t2 .tag{ background:#ede4fb; color:#6b3fa0; }
+  .type.t3 .tag{ background:#fdecec; color:#c0392b; }
+  .type.t4 .tag{ background:#e9f1ff; color:#2c5fb3; }
+  .mail-pill{ display:inline-flex; align-items:center; gap:5px; font-size:.7rem; font-weight:700; background:#e9f1ff; color:#2c5fb3; border-radius:999px; padding:1px 9px; margin-left:6px; }
+  .mail-pill.opt{ background:#f1f3f5; color:#7b828b; }
+
+  /* status lifecycle */
+  .life{ display:flex; align-items:center; gap:0; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:20px 24px; }
+  .ls{ display:flex; align-items:center; gap:11px; flex:none; }
+  .dot{ width:13px; height:13px; border-radius:50%; }
+  .ls b{ font-size:.92rem; } .ls span{ font-size:.76rem; color:#6b727b; display:block; }
+  .ls .lbl{ line-height:1.25; }
+  .lz{ flex:1; height:2px; background:repeating-linear-gradient(90deg,#cfd5db 0 7px,transparent 7px 13px); margin:0 18px; }
+
+  /* questions */
+  .qbox{ background:#fffaf0; border:1.5px solid #f3e0b8; border-radius:14px; padding:18px 22px; }
+  .qbox .qh{ display:flex; align-items:center; gap:9px; font-weight:700; color:#9a6700; margin-bottom:12px; font-size:.95rem; }
+  .q{ display:flex; gap:12px; padding:10px 0; border-top:1px dashed #f0dcb0; }
+  .q:first-of-type{ border-top:0; }
+  .q .qn{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--green); flex:none; }
+  .q p{ margin:0; font-size:.9rem; color:#4a5158; line-height:1.5; }
+  .q .opts{ font-size:.8rem; color:#8a6d2a; margin-top:4px; }
+
+  .foot{ text-align:center; color:#9aa1a9; font-size:.78rem; margin-top:40px; }
+  @media(max-width:900px){
+    .concept{ grid-template-columns:1fr; } .arrow{ transform:rotate(90deg); padding:8px 0; }
+    .flow{ grid-template-columns:1fr; } .step{ margin:18px 0; } .step .chev{ display:none; }
+    .fork,.types{ grid-template-columns:1fr; } .life{ flex-direction:column; align-items:stretch; gap:14px; } .lz{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hd">
+    <h1>Shop Master · Workflow <span class="y">— ขาแจ้ง → CMPOS → Backoffice</span></h1>
+    <p>เว็บนี้ไม่ใช่ระบบทำงานหลัก แต่เป็น “ขาแจ้ง” (intake) — ทุกการเปลี่ยนข้อมูลสาขาเริ่มจากใบแจ้ง แล้วไหลไปอัปเดต Shop Master + ส่งเมลให้ CMPOS ขึ้นข้อมูลบน Backoffice ที่ใช้ทำปุ่มโปรโมชัน</p>
+    <span class="draft"><i class="fas fa-pen-ruler"></i> CONCEPT MOCKUP — ไว้ทบทวนหลังเสร็จงานโปรโมชัน · ยังไม่ลงมือ</span>
+  </div>
+
+  <div class="sec-ttl"><i class="fas fa-diagram-project"></i> ภาพรวม — เว็บนี้อยู่ตรงไหนของระบบ</div>
+  <div class="concept">
+    <div class="cbox this">
+      <div class="ic"><i class="fas fa-bell"></i></div>
+      <h3>เว็บนี้ = ขาแจ้ง</h3>
+      <p>กรอกใบแจ้ง + งานอุปกรณ์ IT · เก็บ Shop Master เป็นสำเนา</p>
+    </div>
+    <div class="arrow"><i class="fas fa-arrow-right-long"></i></div>
+    <div class="cbox mail">
+      <div class="ic"><i class="fas fa-envelope"></i></div>
+      <h3>เมลแจ้ง CMPOS</h3>
+      <p>ส่งรายละเอียด Shop ที่ต้องขึ้น/แก้บน Backoffice</p>
+    </div>
+    <div class="arrow"><i class="fas fa-arrow-right-long"></i></div>
+    <div class="cbox bo">
+      <div class="ic"><i class="fas fa-database"></i></div>
+      <h3>Backoffice</h3>
+      <p>ขึ้นข้อมูลสาขาจริง → ใช้ทำปุ่มโปรโมชัน</p>
+    </div>
+  </div>
+  <div class="side">
+    <div class="store"><div class="ic"><i class="fas fa-store"></i></div><div><b>Shop Master (ในเว็บนี้)</b> <span>= สำเนาสถานะปัจจุบัน · อัปเดตจากใบแจ้งทุกใบ ไม่แก้ตรง</span></div></div>
+  </div>
+
+  <div class="sec-ttl"><i class="fas fa-bullseye"></i> หลักการ</div>
+  <div class="principle">
+    <div class="big">ทุกอย่างผ่าน “ใบแจ้ง”</div>
+    <p>ไม่แก้ตาราง Master ตรง ๆ — เริ่มจากแจ้ง → กรอกรายละเอียด → รายละเอียดนั้นไหลไปอัปเดต Shop Master เอง พร้อมส่งเมล CMPOS · ตาราง Master จึงเป็น “ผลลัพธ์” ที่มาจากใบแจ้ง ไม่ใช่ที่กรอกมือ</p>
+  </div>
+
+  <div class="sec-ttl"><i class="fas fa-route"></i> Flow หลัก — แจ้ง 1 ใบ ทำงานยังไง</div>
+  <div class="flow">
+    <div class="step"><div class="n">1</div><h4>เลือกชนิดการแจ้ง</h4><p>เพิ่มสาขา/License · Relicense/Transfer · Broken/Renovate/Relocate/Close · แก้ไขข้อมูล</p><div class="chev"><i class="fas fa-chevron-right"></i></div></div>
+    <div class="step"><div class="n">2</div><h4>กรอกรายละเอียด</h4><p>ข้อมูล Shop ที่เกี่ยวข้อง (รหัส/License/ที่อยู่/ภาษี/Store Format/เครื่อง)</p><div class="chev"><i class="fas fa-chevron-right"></i></div></div>
+    <div class="step"><div class="n">3</div><h4>กดส่งแจ้ง</h4><p>ยืนยันการแจ้ง → ระบบสร้าง “ใบแจ้ง” 1 ใบ เก็บประวัติ</p><div class="chev"><i class="fas fa-chevron-right"></i></div></div>
+    <div class="step"><div class="n">4</div><h4>ไหลออก 2 ทาง</h4><p>ส่งเมล CMPOS + อัปเดต Shop Master พร้อมกัน (ดูด้านล่าง)</p></div>
+  </div>
+
+  <div class="fork">
+    <div class="out a"><div class="ic"><i class="fas fa-envelope-circle-check"></i></div><div><h4>① ส่งเมล CMPOS</h4><p>แนบรายละเอียดที่ต้องขึ้น/แก้บน Backoffice — CMPOS ดำเนินการแล้วทำให้สาขาพร้อมทำปุ่มโปร</p></div></div>
+    <div class="out b"><div class="ic"><i class="fas fa-table-list"></i></div><div><h4>② อัปเดต Shop Master</h4><p>เขียนข้อมูลใหม่/ที่แก้ลงตาราง ตั้งสถานะ <b>🟡 รอ CMPOS</b> จนกว่าจะขึ้น Backoffice เสร็จ → <b>🟢</b></p></div></div>
+  </div>
+
+  <div class="sec-ttl"><i class="fas fa-layer-group"></i> ชนิดของใบแจ้ง</div>
+  <div class="types">
+    <div class="type t1">
+      <div class="top"><div class="tag"><i class="fas fa-plus"></i></div><div><h4>แจ้งเพิ่มสาขา / เพิ่ม License <span class="mail-pill"><i class="fas fa-envelope"></i> เมล CMPOS</span></h4><small>จุดเริ่มของสาขาใหม่</small></div></div>
+      <ul><li>กรอกข้อมูลสาขาครบ → ขอ CMPOS ขึ้นบน Backoffice</li><li>สร้างแถวใหม่ใน Shop Master (สถานะ 🟡)</li></ul>
+    </div>
+    <div class="type t2">
+      <div class="top"><div class="tag"><i class="fas fa-right-left"></i></div><div><h4>Relicense / Transfer <span class="mail-pill"><i class="fas fa-envelope"></i> เมล CMPOS</span></h4><small>เปลี่ยนรหัส/license</small></div></div>
+      <ul><li>เก็บรหัสเดิม → รหัสใหม่ (เช่น PC1001 → PC2030)</li><li>Type เปลี่ยนตาม prefix อัตโนมัติ (PC1=COCO · PC2=DOCO · PC3=DODO · PC6=DODO-M)</li></ul>
+    </div>
+    <div class="type t3">
+      <div class="top"><div class="tag"><i class="fas fa-screwdriver-wrench"></i></div><div><h4>Broken / Renovate / Relocate / Close <span class="mail-pill opt"><i class="fas fa-envelope"></i> เฉพาะที่ต้อง</span></h4><small>6 กรณีฝั่ง RD</small></div></div>
+      <ul><li>route ไป FRC / COCO ตามเกณฑ์เดิม + งานเครื่อง POS</li><li>อัปเดตแถวเดิม (ที่อยู่/สถานะ/เครื่อง)</li></ul>
+    </div>
+    <div class="type t4">
+      <div class="top"><div class="tag"><i class="fas fa-pen"></i></div><div><h4>แจ้งแก้ไขข้อมูล <span class="mail-pill opt"><i class="fas fa-envelope"></i> เฉพาะที่ต้อง</span></h4><small>ชื่อ/ที่อยู่/ภาษี/Store Format</small></div></div>
+      <ul><li>แก้รายละเอียดทั่วไป → อัปเดต Master</li><li>ถ้ากระทบ Backoffice ค่อยแนบเมล CMPOS</li></ul>
+    </div>
+  </div>
+
+  <div class="sec-ttl"><i class="fas fa-traffic-light"></i> สถานะของแต่ละใบแจ้ง</div>
+  <div class="life">
+    <div class="ls"><span class="dot" style="background:#9aa1a9"></span><div class="lbl"><b>ร่าง / ส่งแจ้ง</b><span>กรอก + กดส่ง</span></div></div>
+    <div class="lz"></div>
+    <div class="ls"><span class="dot" style="background:var(--yellow)"></span><div class="lbl"><b>🟡 รอ CMPOS</b><span>เมลออกแล้ว · Master อัปเดตแล้ว · รอขึ้น Backoffice</span></div></div>
+    <div class="lz"></div>
+    <div class="ls"><span class="dot" style="background:var(--green)"></span><div class="lbl"><b>🟢 ขึ้นแล้ว</b><span>CMPOS ยืนยัน · สาขาพร้อมทำปุ่มโปร</span></div></div>
+  </div>
+
+  <div class="sec-ttl"><i class="fas fa-circle-question"></i> คำถามที่ค้างไว้ (ตอนกลับมาทำ)</div>
+  <div class="qbox">
+    <div class="qh"><i class="fas fa-list-check"></i> รอเคาะก่อนลงมือ</div>
+    <div class="q"><span class="qn">Q1</span><div><p>CMPOS ต้องกดยืนยันกลับไหม (ใครเปลี่ยน 🟡 → 🟢)</p><div class="opts">ตัวเลือก: มีหน้าให้ CMPOS กดยืนยัน · หรือ ส่งแจ้งแล้วถือว่าขึ้นเลย</div></div></div>
+    <div class="q"><span class="qn">Q2</span><div><p>ตาราง Master ให้แก้ตรงได้อีกไหม</p><div class="opts">ตัวเลือก: ปิดเลย แจ้งอย่างเดียว · หรือ เหลือไว้ให้ Admin กรณีฉุกเฉิน</div></div></div>
+    <div class="q"><span class="qn">Q3</span><div><p>เมล CMPOS ส่ง field อะไรบ้าง + มี template ไหม</p><div class="opts">เช่น Shop Code · License/CMPOS · ชื่อ · ที่อยู่ · Type · ภาษี · Store Format</div></div></div>
+  </div>
+
+  <div class="foot">Potato Corner · Shop Master Workflow (concept) — ทำต่อหลังงานโปรโมชัน</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260730j"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="omelette-owns-print" content="1">
+<title>ใบเสนอราคา (Smart Quote) — KaiDee Market OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;--gold:#E8992F;--danger:#E0533D;--hair:#D8E0DD;--hair-2:#E9EEEC;--font:"IBM Plex Sans Thai",system-ui,sans-serif;--mono:"IBM Plex Mono",monospace;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:#E7ECEA;color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .mono{font-family:var(--mono);} .num{font-variant-numeric:tabular-nums;}
+  input,select,textarea,button{font-family:var(--font);}
+  .toolbar{position:sticky;top:0;z-index:30;background:#0E2A2A;color:#dbeee7;padding:11px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .toolbar .tt{font-weight:700;color:#fff;margin-right:auto;display:flex;align-items:center;gap:9px;font-size:15px;}
+  .toolbar .tt .lg{width:26px;height:26px;background:#fff;border-radius:7px;padding:3px;object-fit:contain;}
+  .toolbar .tb{border:none;border-radius:9px;padding:9px 15px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  .toolbar .pri{background:var(--brand);color:#fff;} .toolbar .gh{background:rgba(255,255,255,.1);color:#dbeee7;}
+  .layout{display:flex;align-items:flex-start;gap:0;}
+  .panel{width:390px;flex:0 0 auto;background:#fff;border-right:1px solid var(--hair);height:calc(100vh - 55px);overflow-y:auto;position:sticky;top:55px;padding:18px 18px 60px;}
+  .panel h2{font-size:13px;font-weight:700;color:var(--brand-ink);text-transform:uppercase;letter-spacing:.05em;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--hair-2);}
+  .panel h2:first-child{margin-top:0;}
+  label.lb{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin:10px 0 4px;}
+  .fld{border:1px solid var(--hair);border-radius:9px;padding:8px 11px;background:#fff;outline:none;width:100%;font-size:13.5px;}
+  .fld:focus{border-color:var(--brand);}
+  textarea.fld{resize:vertical;min-height:64px;line-height:1.5;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .li{border:1px solid var(--hair-2);border-radius:11px;padding:11px;margin-bottom:9px;background:#FbFdfc;position:relative;}
+  .li .lidesc{font-weight:600;}
+  .li .lidel{position:absolute;top:8px;right:8px;border:none;background:#fbeae6;color:var(--danger);width:24px;height:24px;border-radius:7px;font-size:14px;cursor:pointer;line-height:1;}
+  .li .ligrid{display:grid;grid-template-columns:1fr 74px 96px;gap:7px;margin-top:8px;align-items:end;}
+  .li .ligrid .mini{font-size:10.5px;color:var(--ink-3);font-weight:600;margin-bottom:2px;display:block;}
+  .li .liamt{text-align:right;font-weight:700;color:var(--brand-ink);font-size:13px;margin-top:8px;font-variant-numeric:tabular-nums;}
+  .addbtn{width:100%;border:1.5px dashed var(--brand);color:var(--brand-ink);background:var(--brand-softer);border-radius:10px;padding:10px;font-size:13.5px;font-weight:700;cursor:pointer;margin-top:2px;}
+  .presetbtn{border:1px solid var(--hair);background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer;}
+  .presetbtn:hover{border-color:var(--brand);color:var(--brand-ink);}
+  .chk{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--ink-2);cursor:pointer;margin:12px 0 4px;}
+  .chk input{width:18px;height:18px;accent-color:var(--brand);}
+  .seg{display:inline-flex;background:#EEF1F0;border-radius:9px;padding:3px;gap:2px;width:100%;}
+  .seg button{flex:1;border:none;background:none;padding:7px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;}
+  .seg button.on{background:#fff;color:var(--brand-ink);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .hint{font-size:11.5px;color:var(--ink-3);margin-top:4px;line-height:1.5;}
+  /* sheet */
+  .sheet-wrap{flex:1;min-width:0;padding:26px 20px 60px;display:flex;justify-content:center;}
+  .sheet{background:#fff;width:210mm;min-height:297mm;padding:19mm 17mm;box-shadow:0 4px 30px rgba(0,0,0,.14);}
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:2.5px solid var(--ink);padding-bottom:16px;}
+  .issuer{max-width:60%;}
+  .issuer .logo{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .issuer .logo img{width:34px;height:34px;object-fit:contain;}
+  .issuer .logo .kd{font-size:11px;font-weight:700;color:var(--brand-ink);letter-spacing:.03em;}
+  .issuer .nm{font-size:19px;font-weight:700;line-height:1.25;}
+  .issuer .meta{font-size:12px;color:var(--ink-2);line-height:1.55;margin-top:6px;white-space:pre-line;}
+  .doc-title{text-align:right;flex:0 0 auto;}
+  .doc-title .th{font-size:24px;font-weight:700;}
+  .doc-title .en{font-size:12px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+  .doc-title .docno{margin-top:12px;font-size:12.5px;line-height:1.7;}
+  .doc-title .docno b{font-family:var(--mono);}
+  .parties{display:flex;justify-content:space-between;gap:24px;margin-top:18px;font-size:13px;}
+  .parties .blk{flex:1;}
+  .parties .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+  .parties .nm{font-weight:700;font-size:14.5px;}
+  .parties .dt{color:var(--ink-2);line-height:1.55;margin-top:3px;white-space:pre-line;}
+  table.items{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px;}
+  table.items th{background:#0E2A2A;color:#eafaf4;text-align:left;font-size:11.5px;font-weight:600;padding:10px 12px;}
+  table.items th.r,table.items td.r{text-align:right;}
+  table.items th.c,table.items td.c{text-align:center;}
+  table.items td{padding:11px 12px;border-bottom:1px solid var(--hair-2);vertical-align:top;}
+  table.items tbody tr:nth-child(even){background:#F7FAF9;}
+  table.items td .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px;white-space:pre-line;}
+  table.items td.idx{color:var(--ink-3);font-family:var(--mono);}
+  .totals{display:flex;justify-content:flex-end;margin-top:16px;}
+  .totals .box{width:300px;}
+  .totals .rw{display:flex;justify-content:space-between;padding:7px 0;font-size:13.5px;border-bottom:1px dashed var(--hair);}
+  .totals .rw .k{color:var(--ink-2);}
+  .totals .rw.disc .v{color:var(--danger);}
+  .totals .rw.grand{border-bottom:none;border-top:2px solid var(--ink);margin-top:4px;padding-top:11px;font-size:17px;font-weight:700;}
+  .totals .rw.grand .v{color:var(--brand-ink);}
+  .baht{margin-top:14px;background:#F1F5F4;border-radius:8px;padding:11px 14px;font-size:13px;font-weight:600;text-align:center;}
+  .termblk{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:22px;font-size:12.5px;}
+  .termblk .th4{font-size:12px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
+  .termblk .bd{color:var(--ink-2);line-height:1.7;white-space:pre-line;}
+  .paybar{margin-top:20px;display:flex;gap:16px;align-items:center;border:1px solid var(--hair);border-radius:12px;padding:14px 16px;}
+  .paybar .qr{width:88px;height:88px;flex:0 0 auto;} .paybar .qr svg{width:100%;height:100%;}
+  .paybar .pi{font-size:12.5px;line-height:1.6;} .paybar .pi b{font-family:var(--mono);}
+  .sign{display:flex;justify-content:space-between;gap:40px;margin-top:40px;}
+  .sign .col{flex:1;text-align:center;}
+  .sign .line{border-top:1px dotted var(--ink-2);margin:38px 12px 8px;}
+  .sign .rl{font-size:12.5px;color:var(--ink-2);}
+  .foot-note{margin-top:26px;font-size:10.5px;color:var(--ink-3);text-align:center;border-top:1px solid var(--hair-2);padding-top:12px;line-height:1.5;}
+  @media print{ body{background:#fff;} .toolbar,.panel{display:none!important;} .layout{display:block;} .sheet-wrap{padding:0;} .sheet{box-shadow:none;width:auto;min-height:auto;padding:12mm 11mm;} }
+  @media (max-width:1080px){ .layout{flex-direction:column;} .panel{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--hair);} .sheet{width:100%;} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="market-data.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState, useEffect } = React;
+const { B, B1, bahtText, thDate, todayISO, qrSVG } = MK;
+const LS='kd_quote_v1';
+const uid=()=>Math.random().toString(36).slice(2,8);
+const nz=(v)=>Number(v)||0;
+
+// แม่แบบรายการที่เพิ่มได้เร็ว (ขายโปรแกรม Market OS)
+const PRESETS=[
+  {desc:'ค่าติดตั้ง & ตั้งค่าระบบโปรแกรมตลาด',detail:'One-time setup · นำเข้าข้อมูลแผง/ร้าน + ตั้งค่าบัญชีกลาง',qty:1,unit:'ครั้ง',price:25000},
+  {desc:'ค่าลิขสิทธิ์ใช้งานรายปี — แพ็กเกจ M',detail:'สูงสุด 50 แผง · บิล/เช่าแผง/POS-GP/รายงาน · อัปเดตในตัว',qty:1,unit:'ปี',price:59000},
+  {desc:'อบรมการใช้งาน + สนับสนุนเริ่มต้น',detail:'อบรมทีมตลาด 2 รอบ + ดูแลใกล้ชิด 30 วันแรก',qty:1,unit:'แพ็ก',price:12000},
+  {desc:'เครื่อง POS + ลิ้นชักเก็บเงิน + เครื่องพิมพ์ใบเสร็จ',detail:'ชุดฮาร์ดแวร์หน้าร้าน (ออปชัน)',qty:1,unit:'ชุด',price:8900},
+  {desc:'ค่าบริการรายเดือน — Add-on ขายฝาก',detail:'จัดการคลังฝาก + เคลียร์เงินคู่ค้า (ต่อสาขา)',qty:12,unit:'เดือน',price:490},
+];
+
+function seed(){
+  return { no:'', date:todayISO(), validDays:30,
+    seller:{ name:'บจก. ขายดี แพลตฟอร์ม', line1:'เลขประจำตัวผู้เสียภาษี 0-1055-xxxxx-xx-x',
+      addr:'เลขที่ 000 อาคารสำนักงาน ถนน... แขวง... เขต... กรุงเทพฯ 10000', phone:'02-000-0000', email:'sales@kaidee-market.co.th', promptpay:'0-9455-00000-0' },
+    buyer:{ name:'บจก. ตลาดสี่มุมเมือง', attn:'ฝ่ายจัดซื้อ', addr:'355/1 ถ.พหลโยธิน ต.คูคต อ.ลำลูกกา จ.ปทุมธานี 12130', phone:'02-536-1234', taxId:'0-1055-00000-00-0' },
+    items:[ {id:uid(),...PRESETS[0]}, {id:uid(),...PRESETS[1]}, {id:uid(),...PRESETS[2]} ],
+    discMode:'none', discVal:0, vat:true, vatRate:7, wht:false, whtRate:3,
+    payTerms:'ชำระ 50% เมื่อยืนยันสั่งซื้อ · ส่วนที่เหลือเมื่อส่งมอบระบบ · โอนผ่าน PromptPay บัญชีกลาง',
+    notes:'ราคานี้รวมการติดตั้งและอบรมตามที่ระบุ · ไม่รวมค่าอุปกรณ์นอกเหนือรายการ · ราคายังไม่รวมภาษีมูลค่าเพิ่ม (แสดงแยกด้านล่าง)',
+    prepBy:'' };
+}
+function applyParams(q){ const p=new URLSearchParams(location.search); if(![...p.keys()].length) return q;
+  const b={...q.buyer}; if(p.get('bname'))b.name=p.get('bname'); if(p.get('baddr'))b.addr=p.get('baddr'); if(p.get('btax'))b.taxId=p.get('btax'); if(p.get('bphone'))b.phone=p.get('bphone'); return {...q,buyer:b}; }
+function load(){ let q; try{ const j=JSON.parse(localStorage.getItem(LS)); q=(j&&j.items)?{...seed(),...j}:seed(); }catch(e){ q=seed(); } return applyParams(q); }
+
+function calc(q){
+  const sub=q.items.reduce((a,l)=>a+nz(l.qty)*nz(l.price),0);
+  const disc = q.discMode==='pct'? Math.round(sub*nz(q.discVal)/100) : q.discMode==='amt'? nz(q.discVal) : 0;
+  const base=Math.max(0,sub-disc);
+  const vatAmt = q.vat? Math.round(base*nz(q.vatRate)/100*100)/100 : 0;
+  const grand=base+vatAmt;
+  const whtAmt = q.wht? Math.round(base*nz(q.whtRate)/100*100)/100 : 0;
+  const net=grand-whtAmt;
+  return {sub,disc,base,vatAmt,grand,whtAmt,net};
+}
+function quoteNo(q){ if(q.no) return q.no; const s=(q.buyer.name||'')+q.date; let h=0; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0; return 'QT'+new Date().getFullYear()+'-'+String(h%9000+1000); }
+
+/* ─── control panel ─── */
+function Panel({q,setQ}){
+  const set=(k,v)=>setQ({...q,[k]:v});
+  const setSeller=(k,v)=>setQ({...q,seller:{...q.seller,[k]:v}});
+  const setBuyer=(k,v)=>setQ({...q,buyer:{...q.buyer,[k]:v}});
+  const setItem=(id,k,v)=>setQ({...q,items:q.items.map(l=>l.id===id?{...l,[k]:v}:l)});
+  const addItem=(p)=>setQ({...q,items:[...q.items,{id:uid(),desc:'',detail:'',qty:1,unit:'รายการ',price:0,...(p||{})}]});
+  const delItem=(id)=>setQ({...q,items:q.items.filter(l=>l.id!==id)});
+  return (<div className="panel">
+    <h2>ข้อมูลใบเสนอราคา</h2>
+    <div className="row2">
+      <div><label className="lb">เลขที่ (เว้นว่าง = อัตโนมัติ)</label><input className="fld" value={q.no} placeholder={quoteNo({...q,no:''})} onChange={e=>set('no',e.target.value)}/></div>
+      <div><label className="lb">วันที่</label><input className="fld" type="date" value={q.date} onChange={e=>set('date',e.target.value)}/></div>
+    </div>
+    <label className="lb">ยืนราคา (วัน)</label><input className="fld num" type="number" value={q.validDays} onChange={e=>set('validDays',e.target.value)}/>
+
+    <h2>ผู้เสนอราคา (ผู้ขาย)</h2>
+    <label className="lb">ชื่อ/นิติบุคคล</label><input className="fld" value={q.seller.name} onChange={e=>setSeller('name',e.target.value)}/>
+    <label className="lb">เลขผู้เสียภาษี / บรรทัดใต้ชื่อ</label><input className="fld" value={q.seller.line1} onChange={e=>setSeller('line1',e.target.value)}/>
+    <label className="lb">ที่อยู่</label><textarea className="fld" value={q.seller.addr} onChange={e=>setSeller('addr',e.target.value)}/>
+    <div className="row2"><div><label className="lb">โทร</label><input className="fld" value={q.seller.phone} onChange={e=>setSeller('phone',e.target.value)}/></div>
+      <div><label className="lb">อีเมล</label><input className="fld" value={q.seller.email} onChange={e=>setSeller('email',e.target.value)}/></div></div>
+    <label className="lb">PromptPay (บัญชีรับเงิน)</label><input className="fld mono" value={q.seller.promptpay} onChange={e=>setSeller('promptpay',e.target.value)}/>
+
+    <h2>ลูกค้า (ผู้ซื้อ / องค์กร)</h2>
+    <label className="lb">ชื่อองค์กร</label><input className="fld" value={q.buyer.name} onChange={e=>setBuyer('name',e.target.value)}/>
+    <div className="row2"><div><label className="lb">เรียน / ผู้ติดต่อ</label><input className="fld" value={q.buyer.attn} onChange={e=>setBuyer('attn',e.target.value)}/></div>
+      <div><label className="lb">โทร</label><input className="fld" value={q.buyer.phone} onChange={e=>setBuyer('phone',e.target.value)}/></div></div>
+    <label className="lb">ที่อยู่</label><textarea className="fld" value={q.buyer.addr} onChange={e=>setBuyer('addr',e.target.value)}/>
+    <label className="lb">เลขผู้เสียภาษี</label><input className="fld mono" value={q.buyer.taxId} onChange={e=>setBuyer('taxId',e.target.value)}/>
+
+    <h2>รายการ ({q.items.length})</h2>
+    {q.items.map((l,i)=>(<div className="li" key={l.id}>
+      <button className="lidel" onClick={()=>delItem(l.id)} title="ลบ">✕</button>
+      <input className="fld lidesc" style={{paddingRight:30}} placeholder={'รายการที่ '+(i+1)} value={l.desc} onChange={e=>setItem(l.id,'desc',e.target.value)}/>
+      <input className="fld" style={{marginTop:6,fontSize:12}} placeholder="รายละเอียด (ไม่บังคับ)" value={l.detail} onChange={e=>setItem(l.id,'detail',e.target.value)}/>
+      <div className="ligrid">
+        <div><span className="mini">จำนวน × หน่วย</span><div style={{display:'flex',gap:5}}><input className="fld num" style={{width:52}} type="number" value={l.qty} onChange={e=>setItem(l.id,'qty',e.target.value)}/><input className="fld" style={{flex:1,minWidth:0}} value={l.unit} onChange={e=>setItem(l.id,'unit',e.target.value)}/></div></div>
+        <div><span className="mini">ราคา/หน่วย</span><input className="fld num" type="number" value={l.price} onChange={e=>setItem(l.id,'price',e.target.value)}/></div>
+        <div style={{textAlign:'right'}}><span className="mini">รวม</span><div className="liamt">{B1(nz(l.qty)*nz(l.price))}</div></div>
+      </div>
+    </div>))}
+    <button className="addbtn" onClick={()=>addItem()}>+ เพิ่มรายการว่าง</button>
+    <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:10}}>
+      {PRESETS.map((p,i)=><button key={i} className="presetbtn" onClick={()=>addItem(p)}>+ {p.desc.length>22?p.desc.slice(0,22)+'…':p.desc}</button>)}
+    </div>
+
+    <h2>ส่วนลด & ภาษี</h2>
+    <label className="lb">ส่วนลด</label>
+    <div className="seg">{[['none','ไม่มี'],['pct','เป็น %'],['amt','เป็นบาท']].map(([k,l])=><button key={k} className={q.discMode===k?'on':''} onClick={()=>set('discMode',k)}>{l}</button>)}</div>
+    {q.discMode!=='none'&&<input className="fld num" style={{marginTop:8}} type="number" value={q.discVal} onChange={e=>set('discVal',e.target.value)} placeholder={q.discMode==='pct'?'เช่น 10':'เช่น 5000'}/>}
+    <label className="chk"><input type="checkbox" checked={q.vat} onChange={e=>set('vat',e.target.checked)}/> คิดภาษีมูลค่าเพิ่ม (VAT) {q.vat&&<input className="fld num" style={{width:56,marginLeft:'auto',padding:'4px 7px'}} type="number" value={q.vatRate} onChange={e=>set('vatRate',e.target.value)}/>}</label>
+    <label className="chk"><input type="checkbox" checked={q.wht} onChange={e=>set('wht',e.target.checked)}/> หัก ณ ที่จ่าย (แสดงยอดสุทธิ) {q.wht&&<input className="fld num" style={{width:56,marginLeft:'auto',padding:'4px 7px'}} type="number" value={q.whtRate} onChange={e=>set('whtRate',e.target.value)}/>}</label>
+    <div className="hint">VAT คำนวณจากยอดหลังหักส่วนลด · ราคาต่อหน่วยเป็นราคาก่อน VAT</div>
+
+    <h2>เงื่อนไข</h2>
+    <label className="lb">เงื่อนไขการชำระเงิน</label><textarea className="fld" value={q.payTerms} onChange={e=>set('payTerms',e.target.value)}/>
+    <label className="lb">หมายเหตุ / ขอบเขตงาน</label><textarea className="fld" value={q.notes} onChange={e=>set('notes',e.target.value)}/>
+    <label className="lb">ผู้เสนอราคา (ชื่อผู้ลงนาม)</label><input className="fld" value={q.prepBy} onChange={e=>set('prepBy',e.target.value)} placeholder="เช่น ทีมขาย KaiDee"/>
+  </div>);
+}
+
+/* ─── printable sheet ─── */
+function Sheet({q}){
+  const c=calc(q); const no=quoteNo(q);
+  const until = (()=>{ const d=new Date(q.date+'T00:00:00'); d.setDate(d.getDate()+nz(q.validDays)); return d.toISOString().slice(0,10); })();
+  return (<div className="sheet">
+    <div className="doc-head">
+      <div className="issuer">
+        <div className="logo"><img src="assets/kaidee-logo.png" alt="KaiDee"/><span className="kd">KAIDEE · MARKET OS</span></div>
+        <div className="nm">{q.seller.name}</div>
+        <div className="meta">{[q.seller.line1,q.seller.addr,[q.seller.phone&&('โทร '+q.seller.phone),q.seller.email].filter(Boolean).join(' · ')].filter(Boolean).join('\n')}</div>
+      </div>
+      <div className="doc-title"><div className="th">ใบเสนอราคา</div><div className="en">Quotation</div>
+        <div className="docno">เลขที่ <b>{no}</b><br/>วันที่ {thDate(q.date)}<br/>ยืนราคาถึง {thDate(until)}</div></div>
+    </div>
+    <div className="parties">
+      <div className="blk"><div className="lbl">เสนอต่อ / ลูกค้า</div><div className="nm">{q.buyer.name}</div>
+        <div className="dt">{[q.buyer.attn&&('เรียน '+q.buyer.attn),q.buyer.addr,[q.buyer.phone&&('โทร '+q.buyer.phone),q.buyer.taxId&&('เลขภาษี '+q.buyer.taxId)].filter(Boolean).join(' · ')].filter(Boolean).join('\n')}</div></div>
+      <div className="blk" style={{textAlign:'right'}}><div className="lbl">อ้างอิง</div><div className="nm">{no}</div><div className="dt">สกุลเงิน: บาท (THB){q.vat?'\nราคาก่อนภาษีมูลค่าเพิ่ม':''}</div></div>
+    </div>
+    <table className="items"><thead><tr><th style={{width:34}} className="c">#</th><th>รายการ</th><th className="c" style={{width:110}}>จำนวน</th><th className="r" style={{width:110}}>ราคา/หน่วย</th><th className="r" style={{width:120}}>จำนวนเงิน</th></tr></thead>
+      <tbody>{q.items.map((l,i)=>(<tr key={l.id}>
+        <td className="idx c">{i+1}</td>
+        <td><div style={{fontWeight:600}}>{l.desc||'—'}</div>{l.detail&&<div className="sub">{l.detail}</div>}</td>
+        <td className="c num">{B1(nz(l.qty))} {l.unit}</td>
+        <td className="r num">{B1(nz(l.price))}</td>
+        <td className="r num" style={{fontWeight:600}}>{B1(nz(l.qty)*nz(l.price))}</td></tr>))}
+        {!q.items.length&&<tr><td colSpan="5" style={{textAlign:'center',color:'var(--ink-3)',padding:'26px'}}>ยังไม่มีรายการ — เพิ่มจากแผงด้านซ้าย</td></tr>}
+      </tbody></table>
+    <div className="totals"><div className="box">
+      <div className="rw"><span className="k">รวมเป็นเงิน</span><span className="v num">{B1(c.sub)}</span></div>
+      {c.disc>0&&<div className="rw disc"><span className="k">ส่วนลด{q.discMode==='pct'?(' '+q.discVal+'%'):''}</span><span className="v num">−{B1(c.disc)}</span></div>}
+      {c.disc>0&&<div className="rw"><span className="k">ยอดหลังหักส่วนลด</span><span className="v num">{B1(c.base)}</span></div>}
+      {q.vat&&<div className="rw"><span className="k">ภาษีมูลค่าเพิ่ม {q.vatRate}%</span><span className="v num">{B1(c.vatAmt)}</span></div>}
+      <div className="rw grand"><span className="k">รวมทั้งสิ้น</span><span className="v num">{B(c.grand)}</span></div>
+      {q.wht&&<div className="rw"><span className="k">หัก ณ ที่จ่าย {q.whtRate}%</span><span className="v num">−{B1(c.whtAmt)}</span></div>}
+      {q.wht&&<div className="rw" style={{fontWeight:700}}><span className="k">ยอดชำระสุทธิ</span><span className="v num">{B(c.net)}</span></div>}
+    </div></div>
+    <div className="baht">({bahtText(q.wht?c.net:c.grand)})</div>
+    <div className="termblk">
+      <div><div className="th4">เงื่อนไขการชำระเงิน</div><div className="bd">{q.payTerms||'—'}</div></div>
+      <div><div className="th4">หมายเหตุ</div><div className="bd">{q.notes||'—'}</div></div>
+    </div>
+    <div className="paybar">
+      <div className="qr" dangerouslySetInnerHTML={{__html:qrSVG(no+(q.wht?c.net:c.grand))}}/>
+      <div className="pi"><b style={{fontFamily:'var(--font)',fontWeight:700}}>ชำระผ่าน PromptPay</b><br/>บัญชี {q.seller.name}<br/>พร้อมเพย์ <b>{q.seller.promptpay}</b><br/>ยอดชำระ <b>{B(q.wht?c.net:c.grand)}</b></div>
+    </div>
+    <div className="sign">
+      <div className="col"><div className="line"></div><div className="rl">ผู้เสนอราคา{q.prepBy?(' — '+q.prepBy):''}<br/>({q.seller.name})</div></div>
+      <div className="col"><div className="line"></div><div className="rl">ผู้อนุมัติ / ยืนยันสั่งซื้อ<br/>({q.buyer.name})</div></div>
+    </div>
+    <div className="foot-note">ใบเสนอราคานี้สร้างด้วย KaiDee Market OS · ยืนราคาภายในกำหนด · การสั่งซื้อถือเป็นการยอมรับเงื่อนไขข้างต้น<br/>แม่แบบเพื่อความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย/บัญชี ควรตรวจทานก่อนใช้จริง</div>
+  </div>);
+}
+
+function App(){
+  const [q,setQ0]=useState(load);
+  const setQ=(nq)=>{ setQ0(nq); try{ localStorage.setItem(LS,JSON.stringify(nq)); }catch(e){} };
+  const reset=()=>{ if(confirm('ล้างและเริ่มใบเสนอราคาใหม่?')){ const s=seed(); setQ(s); } };
+  return (<>
+    <div className="toolbar">
+      <span className="tt"><img className="lg" src="assets/kaidee-logo.png" alt=""/>ใบเสนอราคา · Smart Quote</span>
+      <button className="tb gh" onClick={reset}>เริ่มใหม่</button>
+      <button className="tb pri" onClick={()=>window.print()}>🖨 พิมพ์ / บันทึก PDF</button>
+    </div>
+    <div className="layout">
+      <Panel q={q} setQ={setQ}/>
+      <div className="sheet-wrap"><Sheet q={q}/></div>
+    </div>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

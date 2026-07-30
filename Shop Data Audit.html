@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สรุปตรวจสอบข้อมูลสาขา — Shop Information PC</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Montserrat:wght@700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{ --black:#1a1d20; --yellow:#2e934a; --green:#2e934a; --red:#c0392b; --amber:#c9870a; --bg:#eef1f4; --line:#e7eaee; --mut:#8a9099; }
+  *{ box-sizing:border-box; }
+  body{ font-family:'Kanit',sans-serif; background:var(--bg); color:var(--black); margin:0; padding:0 0 60px; }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  .wrap{ max-width:1000px; margin:0 auto; padding:22px 18px 0; }
+  .head{ background:var(--black); color:#fff; border-radius:16px; padding:22px 26px; border-left:10px solid var(--yellow); }
+  .head h1{ font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.4rem; margin:0; display:flex; align-items:center; gap:12px; }
+  .head h1 i{ color:var(--yellow); }
+  .head .sub{ color:#c9ccd1; font-size:.86rem; margin-top:6px; line-height:1.5; }
+  .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:18px 0; }
+  .stat{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:15px 17px; }
+  .stat .n{ font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.8rem; line-height:1; }
+  .stat .n.red{ color:var(--red); } .stat .n.amber{ color:var(--amber); } .stat .n.green{ color:var(--green); }
+  .stat .l{ font-size:.76rem; color:var(--mut); margin-top:7px; font-weight:600; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px 22px; margin-bottom:18px; }
+  h2{ font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.05rem; margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  h2 .pill{ font-family:'Kanit'; font-size:.72rem; font-weight:700; border-radius:999px; padding:3px 11px; }
+  .pill.red{ background:#fdecea; color:var(--red); } .pill.amber{ background:#fff7e6; color:var(--amber); } .pill.green{ background:#eafaf1; color:#1d7a4d; }
+  .desc{ font-size:.86rem; color:#5a616b; margin:6px 0 14px; line-height:1.5; }
+  table{ width:100%; border-collapse:collapse; font-size:.86rem; }
+  th{ background:#1a1d20; color:#fff; text-align:left; font-size:.74rem; font-weight:700; padding:9px 12px; }
+  td{ padding:9px 12px; border-bottom:1px solid #f1f4f7; vertical-align:top; }
+  tr:last-child td{ border-bottom:0; }
+  .code{ font-family:'JetBrains Mono',monospace; font-weight:700; }
+  .bad{ color:var(--red); font-weight:600; } .good{ color:#1d7a4d; font-weight:600; }
+  .arrow{ color:var(--mut); margin:0 5px; }
+  .tag{ font-size:.72rem; font-weight:700; border-radius:6px; padding:2px 8px; white-space:nowrap; }
+  .tag.coco{ background:#eef4ff; color:#2c4a82; } .tag.dodo{ background:#fff0f4; color:#a8326a; } .tag.doco{ background:#f3eefe; color:#6d3bd1; } .tag.se{ background:#fff7e6; color:#9a6700; } .tag.expr{ background:#eafaf1; color:#1d7a4d; }
+  .note{ background:#eef6ff; border:1px solid #cfe0f5; border-left:4px solid #2f6dab; border-radius:11px; padding:11px 15px; font-size:.84rem; color:#2c4a82; line-height:1.5; margin-top:12px; }
+  .note.amber{ background:#fff7e6; border-color:#f0e2bc; border-left-color:var(--amber); color:#7a5800; }
+  .stbar{ display:flex; flex-wrap:wrap; gap:8px; }
+  .stbar .s{ background:#f4f6f9; border:1px solid var(--line); border-radius:9px; padding:7px 13px; font-size:.84rem; }
+  .stbar .s b{ font-family:'JetBrains Mono',monospace; }
+  @media print{ body{ background:#fff; } .wrap{ max-width:none; } section,.head{ break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1><i class="fas fa-clipboard-check"></i> สรุปตรวจสอบข้อมูลสาขา</h1>
+    <div class="sub">ไฟล์ <b>Shop Information PC</b> · เทียบ <b>Backoffice (CMPOS)</b> ↔ <b>Store Master</b> (ถือเป็นค่าที่ถูกต้อง) · ตรวจ Shop code ซ้ำ + Status<br>วันที่ตรวจ 27 มิ.ย. 2569</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="n">290</div><div class="l">Store Master (records)</div></div>
+    <div class="stat"><div class="n">172</div><div class="l">Backoffice CMPOS</div></div>
+    <div class="stat"><div class="n red">10</div><div class="l">Shop code ซ้ำ</div></div>
+    <div class="stat"><div class="n amber">29</div><div class="l">ช่อง CMPOS ≠ Master</div></div>
+    <div class="stat"><div class="n green">19</div><div class="l">Transfer Code</div></div>
+  </div>
+
+  <section>
+    <h2><i class="fas fa-triangle-exclamation" style="color:var(--red)"></i> 1. Shop code ซ้ำ <span class="pill red">10 รหัส · ต้องแก้</span></h2>
+    <div class="desc">Shop code ต้องไม่ซ้ำ — แต่พบรหัสกลุ่ม <b>Special Event (PCSE01–08)</b> · <b>Food Truck (PCFT01)</b> · <b>PC3001</b> ถูกใช้ซ้ำกับหลายสาขา (ส่วนใหญ่เป็น Pop-up / ปิดถาวรแล้ว) ควรแยกรหัสให้ unique หรือปิดรหัสที่เลิกใช้</div>
+    <table>
+      <thead><tr><th style="width:90px">Shop Code</th><th style="width:60px">ซ้ำ</th><th>สาขา (สถานะ)</th></tr></thead>
+      <tbody>
+        <tr><td class="code">PCSE04</td><td class="bad">13</td><td>Robinson Samut Prakan · Robinson Ratchapruek · True Digital Park · Esplanade Ratchada <span class="good">[Operating]</span> … (ส่วนใหญ่ Permanently Closed)</td></tr>
+        <tr><td class="code">PCSE03</td><td class="bad">12</td><td>LEO Fest · Central Embassy · Robinson Thalang · Pantip Ngamwongwan <span class="good">[Operating]</span> … (Pop-up/ปิด)</td></tr>
+        <tr><td class="code">PCSE01</td><td class="bad">10</td><td>Market Village Huahin · Robinson Saraburi · Victoria Gardens … (Permanently Closed ทั้งหมด)</td></tr>
+        <tr><td class="code">PCSE02</td><td class="bad">10</td><td>Major Ratchayothin · Paradise Park · Bitec Bangna <span class="good">[Operating]</span> · Emsphere ×2 …</td></tr>
+        <tr><td class="code">PCSE06</td><td class="bad">8</td><td>Lotus Bangkruai-Sai Noi <b class="bad">[Transfer Code]</b> · Emquartier · All Seasons Place … · Cloud 11 [Confirm Opening]</td></tr>
+        <tr><td class="code">PCSE05</td><td class="bad">6</td><td>Lotus Prachacheun <b class="bad">[Transfer Code]</b> · BABE FEST · Fashion Island 2 …</td></tr>
+        <tr><td class="code">PCSE07</td><td class="bad">5</td><td>Emsphere · Future Park Rangsit · I am china town <span class="good">[Operating]</span> · Laemtong Bangsaen <span class="good">[Operating]</span> …</td></tr>
+        <tr><td class="code">PCFT01</td><td class="bad">4</td><td>PTT Suwinthawong ×2 (1 Operating / 1 Closed) · Sammakorn Place · Lotus Sukhapiban 1</td></tr>
+        <tr><td class="code">PCSE08</td><td class="bad">4</td><td>Hatyai Village · Fu Me Fest · Central Chidlom · Sindhorn Tower <span class="good">[Operating]</span></td></tr>
+        <tr><td class="code">PC3001</td><td class="bad">2</td><td>Big C Narathiwat <span class="bad">[Re-Location]</span> · Clock Tower Narathiwat <span class="good">[Operating]</span></td></tr>
+      </tbody>
+    </table>
+    <div class="note amber"><i class="fas fa-lightbulb"></i> รหัส PCSE / PCFT เป็น “รหัสกลุ่มชั่วคราว” ที่ POS ใช้ร่วมหลายอีเวนต์ — ถ้าต้องการ unique จริง ควรออกรหัสรายสาขา หรือเก็บเฉพาะตัว Operating ไว้ตัวเดียวต่อรหัส</div>
+  </section>
+
+  <section>
+    <h2><i class="fas fa-code-compare" style="color:var(--amber)"></i> 2. CMPOS ≠ Master <span class="pill amber">29 จุด · แก้ที่ CMPOS</span></h2>
+    <div class="desc">Master = ค่าที่ถูกต้อง · ช่องที่ CMPOS ไม่ตรง ต้องอัปเดตฝั่ง CMPOS ให้ตรง Master (Shop Code · ชื่อ · Company ตรงกันหมดแล้ว)</div>
+    <table>
+      <thead><tr><th style="width:90px">Shop Code</th><th style="width:80px">ช่อง</th><th>Master (ถูก)</th><th>CMPOS (ผิด)</th></tr></thead>
+      <tbody>
+        <tr><td class="code">PC6031</td><td>Type</td><td class="good">DODO</td><td class="bad">DODO-M</td></tr>
+        <tr><td class="code">PCFT01</td><td>Type</td><td class="good">Food Truck</td><td class="bad">CTPS</td></tr>
+        <tr><td class="code">PCSE01,02,04,05,06,07</td><td>Type</td><td class="good">SE</td><td class="bad">CTPS</td></tr>
+        <tr><td class="code">PC1084, PC1086, PC6020</td><td>Group</td><td class="good">GBKK</td><td class="bad">BKK</td></tr>
+        <tr><td class="code">PC6010</td><td>Group</td><td class="good">Northeastern</td><td class="bad">Northern</td></tr>
+        <tr><td class="code">PCSE03</td><td>Group</td><td class="good">GBKK</td><td class="bad">Southern</td></tr>
+        <tr><td class="code">PCSE01,02,04,06,07,08</td><td>Group</td><td class="good">BKK</td><td class="bad">Special</td></tr>
+        <tr><td class="code">PC1084, PC1095, PC1106</td><td>Class</td><td class="good">Institution</td><td class="bad">Indy</td></tr>
+        <tr><td class="code">PC1091, PC1113, PC6017</td><td>Class</td><td class="good">Institution</td><td class="bad">NonMall</td></tr>
+        <tr><td class="code">PC1105</td><td>Class</td><td class="good">NonMall</td><td class="bad">Indy</td></tr>
+        <tr><td class="code">PC1109</td><td>Class</td><td class="good">Gas Station</td><td class="bad">NonMall</td></tr>
+        <tr><td class="code">PC3001</td><td>Class</td><td class="good">NonMall</td><td class="bad">BigC</td></tr>
+        <tr><td class="code">PC3015</td><td>Class</td><td class="good">Indy</td><td class="bad">Lotus</td></tr>
+      </tbody>
+    </table>
+    <div class="note"><i class="fas fa-circle-info"></i> รหัสใน CMPOS ที่ไม่มีใน Master (น่าจะ test/junk): <b class="mono">PCTRN1</b>, <b class="mono">XXXX</b> → ควรลบออกจาก CMPOS</div>
+  </section>
+
+  <section>
+    <h2><i class="fas fa-right-left" style="color:var(--green)"></i> 3. Transfer Code → เคสสติ๊กเกอร์ <span class="pill green">19 สาขา</span></h2>
+    <div class="desc">สาขาสถานะ <b>Transfer Code</b> = เคสโอน/ย้ายที่จะไหลเข้างาน <b>แจ้งยกเลิก/จดใหม่ (RD Sticker)</b> — เคสที่เคยคุยว่าจะดึงมาทำในส่วนเคส</div>
+    <table>
+      <thead><tr><th style="width:90px">Shop Code</th><th>สาขา</th><th style="width:90px">Type</th></tr></thead>
+      <tbody>
+        <tr><td class="code">PC1026</td><td>Central Plaza Chiang Rai</td><td><span class="tag coco">COCO</span></td></tr>
+        <tr><td class="code">PC1030</td><td>Big C Hang Dong 1</td><td><span class="tag coco">COCO</span></td></tr>
+        <tr><td class="code">PC1031</td><td>Big C Chiang Rai 2</td><td><span class="tag coco">COCO</span></td></tr>
+        <tr><td class="code">PC1041</td><td>Robinson Chantaburi</td><td><span class="tag coco">COCO</span></td></tr>
+        <tr><td class="code">PC1100</td><td>Dusit Central Park</td><td><span class="tag coco">COCO</span></td></tr>
+        <tr><td class="code">PC2001</td><td>Central Chaengwattana</td><td><span class="tag doco">DOCO</span></td></tr>
+        <tr><td class="code">PC2006</td><td>Big C Nakhon Pathom</td><td><span class="tag doco">DOCO</span></td></tr>
+        <tr><td class="code">PC2007</td><td>Big C Bangyai</td><td><span class="tag doco">DOCO</span></td></tr>
+        <tr><td class="code">PC2008</td><td>Central Rayong</td><td><span class="tag doco">DOCO</span></td></tr>
+        <tr><td class="code">PC2013</td><td>Central Udonthani</td><td><span class="tag doco">DOCO</span></td></tr>
+        <tr><td class="code">PC2017</td><td>Robinson Trang (DO-CO)</td><td><span class="tag doco">DOCO</span></td></tr>
+        <tr><td class="code">PC2021</td><td>Big C Rama 2</td><td><span class="tag doco">DOCO</span></td></tr>
+        <tr><td class="code">PC3002</td><td>Central Chanthaburi</td><td><span class="tag dodo">DODO</span></td></tr>
+        <tr><td class="code">PC3003</td><td>Robinson Chanthaburi</td><td><span class="tag dodo">DODO</span></td></tr>
+        <tr><td class="code">PC3004</td><td>Central Nakhon Si Thammarat</td><td><span class="tag dodo">DODO</span></td></tr>
+        <tr><td class="code">PC5001</td><td>Seacon Bangkae</td><td><span class="tag expr">EXPR</span></td></tr>
+        <tr><td class="code">PC5003</td><td>Major Ratchayothin</td><td><span class="tag expr">EXPR</span></td></tr>
+        <tr><td class="code">PCSE05</td><td>Lotus Prachacheun (Semi)</td><td><span class="tag se">SE</span></td></tr>
+        <tr><td class="code">PCSE06</td><td>Lotus Bangkruai - Sai Noi (Semi)</td><td><span class="tag se">SE</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><i class="fas fa-chart-pie"></i> 4. สรุปตามสถานะ (Store Master 290)</h2>
+    <div class="stbar">
+      <div class="s"><b>182</b> · Operating</div>
+      <div class="s"><b>67</b> · Permanently Closed</div>
+      <div class="s"><b>19</b> · Transfer Code</div>
+      <div class="s"><b>12</b> · Confirm Opening date</div>
+      <div class="s"><b>7</b> · (blank)</div>
+      <div class="s"><b>1</b> · Re-Location</div>
+      <div class="s"><b>1</b> · Tentative</div>
+      <div class="s"><b>1</b> · Confirm Location</div>
+    </div>
+    <div class="note amber"><i class="fas fa-arrow-right"></i> เคสที่โยงงานสติ๊กเกอร์: <b>Transfer Code (19)</b> + <b>Re-Location (1)</b> + <b>Permanently Closed (67)</b> = เคสยกเลิก/จดใหม่/ปิด ที่ควรไหลเข้า RD Sticker</div>
+  </section>
+</div>
+</body>
+</html>

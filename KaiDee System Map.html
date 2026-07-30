@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<title>ผังระบบขายดี · KaiDee System Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F6F3;--ink:#1C231F;--ink2:#48534C;--ink3:#8A948D;--brand:#16A97A;--brand-d:#0E6F51;--brand-s:#E4F4EE;--gold:#B7862F;--gold-s:#FBF2E1;--blue:#3B6FA8;--blue-s:#E8F0F8;--red:#C0392B;--line:#D9DFDA;--card:#FFFFFF}
+*{box-sizing:border-box}
+deck-stage:not(:defined){visibility:hidden}
+body{margin:0;background:#22271f}
+deck-stage,section{font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--ink)}
+section{background:var(--bg);padding:64px 76px;display:flex;flex-direction:column}
+h1,h2,h3,.big{color:var(--ink)}
+h1{font-size:76px;line-height:1.1;margin:0;font-weight:700;letter-spacing:-.02em}
+h2{font-size:44px;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{font-size:27px;color:var(--ink2);margin-top:14px;line-height:1.5}
+.kick{font-size:24px;font-weight:600;color:var(--brand-d);letter-spacing:.14em;text-transform:uppercase}
+.mono{font-family:'IBM Plex Mono',monospace}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:34px}
+.hd .note{font-size:24px;color:var(--ink3)}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:22px 24px}
+.card h3{margin:0;font-size:30px;font-weight:700}
+.card p{margin:8px 0 0;font-size:23px;color:var(--ink2);line-height:1.5}
+.files{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.files span{font-family:'IBM Plex Mono',monospace;font-size:20px;background:#F1F3F0;border:1px solid var(--line);border-radius:7px;padding:3px 8px;color:var(--ink2)}
+.tag{display:inline-block;font-size:24px;font-weight:600;border-radius:999px;padding:4px 14px}
+.t-b{background:var(--brand-s);color:var(--brand-d)}.t-g{background:var(--gold-s);color:var(--gold)}.t-u{background:var(--blue-s);color:var(--blue)}
+.band{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:20px 26px;display:flex;align-items:center;gap:20px}
+.band .lb{font-size:24px;font-weight:700;color:var(--ink);width:250px;flex:0 0 auto}
+.band .items{display:flex;gap:12px;flex-wrap:wrap;flex:1}
+.pill{font-size:23px;font-weight:600;background:#F1F3F0;border:1.5px solid var(--line);border-radius:12px;padding:8px 16px;color:var(--ink2)}
+.pill.on{background:var(--brand-s);border-color:#A9DCC9;color:var(--brand-d)}
+.pill.gd{background:var(--gold-s);border-color:#E8D3A8;color:var(--gold)}
+.pill.dash{border-style:dashed;background:#fff;color:var(--ink3)}
+.arrow{text-align:center;font-size:30px;color:var(--brand);line-height:1;margin:10px 0}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.flow{display:grid;grid-template-columns:1fr 64px 1fr 64px 1fr;align-items:center;gap:0}
+.ar{font-size:38px;color:var(--brand);text-align:center;font-weight:600}
+.legend{display:flex;gap:26px;align-items:center;font-size:24px;color:var(--ink3);margin-top:auto;padding-top:20px}
+.legend b{color:var(--ink2);font-weight:600}
+.dot{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:8px;vertical-align:-1px}
+ul.k{margin:10px 0 0;padding-left:26px;font-size:23px;color:var(--ink2);line-height:1.6}
+.big{font-size:34px;font-weight:700}
+.stat{font-size:26px;color:var(--ink2);line-height:1.55}
+.wip{border-style:dashed;border-color:var(--gold);background:#FFFDF7}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section data-label="ปก">
+  <div style="margin:auto 0">
+    <div class="kick">KaiDee Platform · ผังระบบ</div>
+    <h1 style="margin-top:20px">ระบบ “ขายดี” ต่อกันอย่างไร</h1>
+    <div class="sub" style="max-width:1180px">4 โมดูลที่ขายเป็นแพ็กเกจ · แกนกลางร่วมกัน (ด่านเข้า · ซิงก์ข้อมูล · กระเป๋าเงิน · ไลเซนส์) · ธุรกิจเสริมสปอนเซอร์ และสายงานหลังบ้านของผู้ให้บริการระบบ</div>
+    <div style="display:flex;gap:14px;margin-top:34px">
+      <span class="tag t-b">client-only · React + Babel</span>
+      <span class="tag t-u">localStorage + Cloudflare Worker sync</span>
+      <span class="tag t-g">build p2-20260730h · sw hagd-pos-v51</span>
+    </div>
+  </div>
+  <div class="legend"><span><span class="dot" style="background:var(--brand)"></span><b>ใช้งานได้แล้ว</b></span><span><span class="dot" style="background:var(--gold)"></span><b>กำลังทำ / ค้าง</b></span><span class="mono">30 ก.ค. 2026</span></div>
+</section>
+
+<section data-label="4 โมดูล">
+  <div class="hd"><h2>4 โมดูลที่ขายเป็นแพ็กเกจ</h2><div class="note">แต่ละโมดูลมีแอปหน้างาน + หลังบ้านของตัวเอง</div></div>
+  <div class="grid4" style="flex:1">
+    <div class="card"><span class="tag t-b">ร้านค้า · POS</span><h3 style="margin-top:14px">KaiDee POS</h3>
+      <p>ขายหน้าร้าน · สต๊อก · เงินสด · ใบเสนอราคา · ลูกค้า/CRM · ไรเดอร์ · จอคิว · LINE OA</p>
+      <div class="files"><span>index.html</span><span>kaidee-app.jsx</span><span>kaidee-merchant2.jsx</span><span>kaidee-crm.jsx</span><span>KaiDee Back Office.html</span></div></div>
+    <div class="card"><span class="tag t-b">ฟิตเนส</span><h3 style="margin-top:14px">Fitness POS</h3>
+      <p>สมาชิก/แพ็กคอร์ส · เช็คอินประตู · คลาส &amp; PT · โปรแกรมเทรน · ค่าร่างกาย/PAR-Q · KDS · Kiosk</p>
+      <div class="files"><span>Fitness POS.html</span><span>fitness-pos.jsx</span><span>fitness-train.jsx</span><span>fitness-health.jsx</span><span>fitness-pos-member.jsx</span></div></div>
+    <div class="card"><span class="tag t-b">ตลาด</span><h3 style="margin-top:14px">Market OS</h3>
+      <p>แผง/สัญญา · บิลค่าเช่า-น้ำไฟ · GP · กระเป๋าแผง · บัญชี/VAT · settlement</p>
+      <div class="files"><span>Market Backoffice.html</span><span>market-app.jsx</span><span>Market Mobile.html</span><span>market-data.jsx</span></div></div>
+    <div class="card"><span class="tag t-b">วิน · แรงงาน</span><h3 style="margin-top:14px">Labor Win</h3>
+      <p>คิวงาน · จัดคน · Leader Wallet · เบิกล่วงหน้า/หักคืน · GP ตลาดงาน</p>
+      <div class="files"><span>Labor Win App v2.html</span><span>laborwin2-win.jsx</span><span>laborwin2-worker.jsx</span><span>laborwin2-shop.jsx</span></div></div>
+  </div>
+  <div class="legend"><span>ทางเข้าเดียวกันทุกโมดูล → <b class="mono">Signup Chooser.html</b> “เลือก 1 ระบบ” (ไม่ต้องกรอกข้อมูลจ่ายเงินตอนสมัคร)</span></div>
+</section>
+
+<section data-label="ผังชั้นระบบ">
+  <div class="hd"><h2>ผังชั้นระบบ · ใครต่อกับอะไร</h2><div class="note">จากผู้ใช้ปลายทาง → แอปโมดูล → แกนกลาง → หลังบ้านแพลตฟอร์ม</div></div>
+  <div style="display:flex;flex-direction:column;gap:0;flex:1">
+    <div class="band"><div class="lb">ผู้ใช้ปลายทาง</div><div class="items">
+      <span class="pill">ลูกค้าร้าน (LINE)</span><span class="pill">สมาชิกฟิตเนส</span><span class="pill">ผู้เช่าแผง</span><span class="pill">แรงงาน/หัวคิววิน</span><span class="pill">ผู้บริโภคหน้าร้านสปอนเซอร์</span></div></div>
+    <div class="arrow">▼</div>
+    <div class="band"><div class="lb">แอปโมดูล (หน้างาน)</div><div class="items">
+      <span class="pill on">KaiDee POS</span><span class="pill on">Fitness POS + Checkin/KDS/Kiosk</span><span class="pill on">Market Mobile</span><span class="pill on">Labor Win App</span><span class="pill gd">Sponsor Shop</span></div></div>
+    <div class="arrow">▼</div>
+    <div class="band" style="border-color:var(--brand);border-width:2.5px"><div class="lb" style="color:var(--brand-d)">แกนกลางร่วม</div><div class="items">
+      <span class="pill on mono">gate.js · ด่านรหัส</span><span class="pill on mono">platform-api.jsx · PLAT_API sync</span><span class="pill on mono">kd-wallet.jsx · KDW</span><span class="pill on mono">kaidee-license.jsx</span><span class="pill on mono">sw.js + ?v= build</span></div></div>
+    <div class="arrow">▼</div>
+    <div class="band"><div class="lb">หลังบ้านผู้ให้บริการ</div><div class="items">
+      <span class="pill on">Platform Wallet · รายได้ระบบ</span><span class="pill on">Platform Control</span><span class="pill on">License Admin</span><span class="pill on">Back Office ของแต่ละโมดูล</span></div></div>
+  </div>
+  <div class="legend"><span>ข้อมูลทุกโมดูลอยู่ใน <b class="mono">localStorage</b> ต่อเครื่อง แล้วซิงก์ข้ามเครื่องด้วย <b>PLAT_API.attach(biz, type, key)</b> ผ่าน Cloudflare Worker</span></div>
+</section>
+
+<section data-label="เส้นทางเงิน">
+  <div class="hd"><h2>เส้นทางเงิน · กระเป๋าเงินกลาง (Wallet)</h2><div class="note">เลิกผูกบัตรตอนสมัคร — เติมก่อน หักทีหลัง · หน้ากระเป๋าอยู่ใน “เมนูแพ็กเกจ” ของแต่ละโมดูล</div></div>
+  <div class="flow" style="margin-bottom:28px">
+    <div class="card"><h3>1 · ผู้ใช้เติมเงิน</h3><p>พร้อมเพย์ / โอน จากหน้าแพ็กเกจในแอป (ระบบจริงจับยอดผ่าน VA/webhook)</p></div>
+    <div class="ar">→</div>
+    <div class="card" style="border-color:var(--brand);border-width:2.5px"><h3>2 · กระเป๋าธุรกิจ</h3><p class="mono" style="font-size:21px">kd_biz_wallet_v1<br>{ "pos:shop1" · "fitness:main" · "market:m1" · "labor:w1" }</p></div>
+    <div class="ar">→</div>
+    <div class="card"><h3>3 · หักค่าบริการ</h3><p>ครบรอบ = <b>ตัดอัตโนมัติ</b> ถ้ายอดพอ (KDW.autoRenew) · ไม่พอ = เตือนให้เติม ไม่ล็อกบัตร</p></div>
+  </div>
+  <div class="grid2" style="flex:1">
+    <div class="card"><h3>ทุกการหัก = รายได้แพลตฟอร์มทันที</h3>
+      <p>เขียนลง <span class="mono">kd_platform_wallet_v1</span> เหมือนยืนยันว่าได้รับยอดแล้ว → เห็นรวมที่หน้า <b>Platform Wallet</b> พร้อม ledger ต่อรายการ</p>
+      <ul class="k"><li>ค่าบริการรายเดือน/รายปีของทั้ง 4 โมดูล</li><li>add-on (ขายฝาก · KDS · จอคิว · เครื่องเพิ่ม)</li><li>แพ็กสปอนเซอร์ (Growth / Premium)</li></ul></div>
+    <div class="card"><h3>สถานะการผูกเข้าแต่ละโมดูล</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+        <div style="display:flex;justify-content:space-between;font-size:25px"><span>ร้านค้า POS — หน้าสมัคร (ถอดฟอร์มบัตร) + เมนูแพ็กเกจ</span><span class="tag t-b">เสร็จ</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:25px"><span>ฟิตเนส — แพ็กแพลตฟอร์ม + add-on</span><span class="tag t-g">ค้าง</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:25px"><span>ตลาด — SubscribeView</span><span class="tag t-g">ค้าง</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:25px"><span>วิน — ยังไม่มีหน้าแพ็กเกจ</span><span class="tag t-g">ต้องสร้าง</span></div>
+      </div>
+      <p style="margin-top:16px">บัตรเครดิต/ตัดอัตโนมัติ = โชว์แถวไว้แบบ <b>“รองรับ · ยังไม่เปิด”</b> จนต่อ API Gateway จริง</p></div>
+  </div>
+</section>
+
+<section data-label="สปอนเซอร์">
+  <div class="hd"><h2>ธุรกิจเสริม · ร้านค้าสปอนเซอร์ให้ทุกโมดูลเห็น</h2><div class="note">เส้นประ = แผนที่ยังไม่ได้ทำ</div></div>
+  <div class="grid3" style="margin-bottom:26px">
+    <div class="card"><span class="tag t-g">มีแล้ว</span><h3 style="margin-top:12px">Sponsor Packages</h3><p>สปอนเซอร์ซื้อแพ็ก → entitlement ปลดล็อกหน้าจัดการ + ยอดเข้ากระเป๋าแพลตฟอร์ม</p></div>
+    <div class="card"><span class="tag t-g">มีแล้ว</span><h3 style="margin-top:12px">Sponsor Console</h3><p>จัดหน้าร้าน · สร้างคูปองเอง (คีย์ <span class="mono">kd_sponsor_coupons_v1</span> ซิงก์ผ่าน PLAT_API)</p></div>
+    <div class="card"><span class="tag t-g">มีแล้ว</span><h3 style="margin-top:12px">Sponsor Shop</h3><p>หน้าร้านฝั่งผู้บริโภค 2 โหมด: ใกล้ฉัน (ไลน์แมน) / ส่งทั่วไทย (Shopee) · Premium ปักหน้าแรก</p></div>
+  </div>
+  <div class="card wip" style="flex:1;display:flex;flex-direction:column">
+    <h3>ตัวเชื่อมที่จะทำ · <span class="mono">kd-sponsor-feed.jsx</span> (ไฟล์ร่วมไฟล์เดียว แปะได้ทุกโมดูล)</h3>
+    <p>อ่านร้าน + คูปองจากคีย์กลางเดียวกับ Console → การ์ด “ดีลใกล้คุณ” → กดเปิด <span class="mono">Sponsor Shop.html?from=&lt;mod&gt;</span> · เรียงตามระดับแพ็ก Premium → Growth → ปกติ และนับ impression/คลิกกลับให้สปอนเซอร์</p>
+    <div class="grid4" style="margin-top:22px">
+      <div class="card" style="border-style:dashed"><div class="big">ร้านค้า</div><p>แอปลูกค้าบน LINE<br><span class="mono">kaidee-home.jsx</span></p></div>
+      <div class="card" style="border-style:dashed"><div class="big">ฟิตเนส</div><p>แอปสมาชิก แท็บดีล<br><span class="mono">fitness-pos-member.jsx</span></p></div>
+      <div class="card" style="border-style:dashed"><div class="big">ตลาด</div><p>หน้าแรกผู้เช่า/ลูกค้า<br><span class="mono">Market Mobile.html</span></p></div>
+      <div class="card" style="border-style:dashed"><div class="big">วิน</div><p>การ์ดของถูกใกล้จุดรอ<br><span class="mono">laborwin2-worker.jsx</span></p></div>
+    </div>
+    <div class="stat" style="margin-top:auto;padding-top:18px">ผลลัพธ์: สปอนเซอร์ 1 ร้าน = เห็นได้จากผู้ใช้ปลายทางทั้ง 4 โมดูล และเก็บค่าพื้นที่ผ่าน <b>กระเป๋าเงินเดียวกัน</b></div>
+  </div>
+</section>
+
+<section data-label="ไฟล์และการปล่อยงาน">
+  <div class="hd"><h2>โครงไฟล์ &amp; การปล่อยงาน</h2><div class="note">ทำครบ 4 ขั้นทุกครั้ง ไม่ข้าม</div></div>
+  <div class="grid2" style="flex:1">
+    <div class="card"><h3>ที่เก็บไฟล์ (3 ที่ ต้องตรงกัน)</h3>
+      <ul class="k"><li><b class="mono">root</b> — ไฟล์ทำงานจริงที่แก้</li><li><b class="mono">kaidee-deploy/</b> — ชุดขึ้น pages.dev (มี sw.js · hagd-pos-vNN)</li><li><b class="mono">market-deploy/</b> — ชุดตลาด/ฟิตเนสแยก</li></ul>
+      <p style="margin-top:18px"><b>แยกขาดจากงาน Potato</b> (<span class="mono">potato-deploy/ · pages/ · js/ · data/</span>) — sw คนละตัว ห้ามคัดปนกัน</p>
+      <h3 style="margin-top:22px">กฎในโค้ดที่พลาดบ่อย</h3>
+      <ul class="k"><li>ฟีเจอร์ฟิตเนสใหม่ = เพิ่ม key ใน <span class="mono">PERM_PAGES</span> + <span class="mono">ROLE_DEFAULTS</span> + <span class="mono">ROLE_TABS</span></li><li>ห้าม <span class="mono">confirm/alert</span> ในแอปมือถือ → ใช้ชีตในแอป</li><li>แปลงเวลาข้อมูลเก่าต้อง guard เสมอ</li></ul></div>
+    <div class="card"><h3>ลำดับปล่อยงาน</h3>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
+        <div class="band" style="padding:14px 18px"><div class="lb" style="width:60px;font-size:30px;color:var(--brand)">1</div><div class="stat">แก้ที่ root → sync ครบ <b>3 ที่</b></div></div>
+        <div class="band" style="padding:14px 18px"><div class="lb" style="width:60px;font-size:30px;color:var(--brand)">2</div><div class="stat">เปลี่ยน <span class="mono">?v=</span> ทุก html + <span class="mono">&lt;meta name="build"&gt;</span></div></div>
+        <div class="band" style="padding:14px 18px"><div class="lb" style="width:60px;font-size:30px;color:var(--brand)">3</div><div class="stat">bump <span class="mono">kaidee-deploy/sw.js</span> → <span class="mono">hagd-pos-v{N+1}</span></div></div>
+        <div class="band" style="padding:14px 18px"><div class="lb" style="width:60px;font-size:30px;color:var(--brand)">4</div><div class="stat">zip ส่ง user → อัปไฟล์ <b>ข้างในโฟลเดอร์</b> ขึ้น pages.dev branch main</div></div>
+      </div>
+      <p style="margin-top:20px">ตรวจว่าได้ของใหม่จริง: ฟิตเนส → เมนู “เพิ่มเติม” บรรทัดล่างสุดโชว์เลข build</p></div>
+  </div>
+  <div class="legend"><span>สถานะรอบนี้: sync แล้ว 3 ที่ · <b class="mono">?v=p2-20260730h</b> · <b class="mono">sw hagd-pos-v51</b> · <b>ยังไม่ zip/deploy</b></span></div>
+</section>
+
+</deck-stage>
+<script src="deck-stage.js"></script>
+</body>
+</html>

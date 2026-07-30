@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730b">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Platform Backend Console</title>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0b1220"/><g fill="none" stroke="#4fd6b8" stroke-width="4" stroke-linecap="round"><path d="M30 38l-10 12 10 12"/><path d="M70 38l10 12-10 12"/><path d="M56 32l-12 36"/></g></svg></template>
+<style>
+:root{--bg:#0b1220;--panel:#121b2e;--panel2:#0e1626;--line:#22304d;--ink:#e8eef7;--ink2:#93a4c2;--ink3:#5f7397;--acc:#4fd6b8;--accd:#2ba98a;--warn:#f0b429;--bad:#f4707f;--good:#4fd6b8}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-monospace,"SF Mono","JetBrains Mono","Menlo",monospace;font-size:13.5px;line-height:1.5}
+a{color:var(--acc)}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 20px 60px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#183042,#0e1c2b);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--acc);font-size:19px}
+h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.2px}
+.sub{color:var(--ink3);font-size:12px;margin-top:2px}
+.pill{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);background:var(--panel);border:1px solid var(--line);padding:6px 11px;border-radius:999px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ink3);box-shadow:0 0 0 3px rgba(255,255,255,.03)}
+.dot.on{background:var(--good);box-shadow:0 0 8px var(--good)}
+.dot.off{background:var(--bad)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px 17px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.3px;color:var(--ink3);margin:0 0 13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card h2 .n{width:19px;height:19px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--acc);display:flex;align-items:center;justify-content:center;font-size:11px}
+label{display:block;font-size:11px;color:var(--ink2);margin:11px 0 5px;letter-spacing:.3px}
+label:first-of-type{margin-top:0}
+input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accd)}
+textarea{resize:vertical;min-height:74px;line-height:1.45}
+.row{display:flex;gap:9px}.row>*{flex:1}
+button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 13px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:.12s;letter-spacing:.2px}
+button:hover{border-color:var(--accd);color:#fff}
+button:active{transform:translateY(1px)}
+button.pri{background:linear-gradient(135deg,var(--accd),#1f8f74);border-color:transparent;color:#04140f}
+button.pri:hover{filter:brightness(1.12);color:#04140f}
+button.ghost{background:transparent}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.hint{font-size:11px;color:var(--ink3);margin-top:8px;line-height:1.5}
+.kbd{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11px;color:var(--ink2)}
+/* log */
+.log{background:#060b15;border:1px solid var(--line);border-radius:10px;padding:12px;height:340px;overflow:auto;font-size:12px;line-height:1.55}
+.log .e{padding:5px 0;border-bottom:1px solid #101a2b;white-space:pre-wrap;word-break:break-word}
+.log .e:last-child{border:0}
+.tag{display:inline-block;min-width:52px;text-align:center;border-radius:5px;padding:0 6px;margin-right:8px;font-size:10.5px;font-weight:700;letter-spacing:.5px}
+.tag.get{background:#13324a;color:#6fc5f0}.tag.post{background:#123a2c;color:#5fd6a4}.tag.put{background:#3a3312;color:#e6c25a}
+.tag.patch{background:#332044;color:#c79be6}.tag.del{background:#3a1620;color:#f4707f}.tag.ok{background:#123a2c;color:#5fd6a4}
+.tag.err{background:#3a1620;color:#f4707f}.tag.rt{background:#0f2f3a;color:#4fd6b8}.tag.sys{background:#1b2438;color:#93a4c2}
+.mut{color:var(--ink3)}
+.mono{font-size:11.5px;color:var(--ink2)}
+.st{font-weight:700}.st.g{color:var(--good)}.st.b{color:var(--bad)}
+.full{grid-column:1/-1}
+.chip{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--ink2);margin:2px 4px 2px 0}
+.split{display:grid;grid-template-columns:1fr 340px;gap:16px}
+@media(max-width:820px){.split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">⧉</div>
+    <div>
+      <h1>Platform Backend Console</h1>
+      <div class="sub">ตลาด · ฟิตเนส · สปอนเซอร์ · Labor Win · แพลตฟอร์ม — ทดสอบ &amp; ตรวจ Cloudflare Worker + D1</div>
+    </div>
+    <div class="pill"><span class="dot" id="hdot"></span><span id="hstat">ยังไม่เชื่อม</span></div>
+  </header>
+
+  <div class="card full" style="margin-bottom:16px">
+    <h2><span class="n">0</span> การเชื่อมต่อ</h2>
+    <div class="split">
+      <div>
+        <div class="row">
+          <div style="flex:3"><label>Worker URL</label><input id="base" placeholder="https://platform.xxxxx.workers.dev" spellcheck="false"></div>
+          <div style="flex:0 0 auto;align-self:flex-end"><button class="pri" id="btnPing">Ping /health</button></div>
+        </div>
+        <div class="hint">ตั้งค่าแล้วจำไว้ในเบราว์เซอร์นี้ (localStorage <span class="kbd">plat_api_base</span>) · ยังไม่ deploy = ping ไม่ผ่าน (ปกติ)</div>
+      </div>
+      <div>
+        <label>สถานะ backend</label>
+        <div class="mono" id="hbox" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 11px;min-height:60px">— กด Ping —</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2><span class="n">1</span> Tenant</h2>
+      <label>biz id (tenant)</label>
+      <input id="biz" value="demo-gym" spellcheck="false">
+      <div class="row" style="margin-top:11px">
+        <div><label>type</label><select id="type"><option>fitness</option><option>market</option><option>sponsor</option><option>laborwin</option><option>platform</option></select></div>
+        <div><label>ชื่อ</label><input id="bname" value="ยิมเดโม" spellcheck="false"></div>
+      </div>
+      <div class="btnrow">
+        <button class="pri" id="btnReg">POST /biz (ลงทะเบียน)</button>
+        <button id="btnGetBiz">GET /biz/:id</button>
+      </div>
+      <div class="hint">biz คือรหัสร้าน/ตลาด/ยิม/สปอนเซอร์ — ทุกข้อมูลผูกกับ biz นี้ · แพลตฟอร์ม (wallet/stats/control) ใช้ biz = <span class="kbd">platform</span></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">2</span> Document (sync blob ทั้งก้อน)</h2>
+      <div class="row">
+        <div style="flex:2"><label>doc key</label>
+          <select id="dkey"><option>fitness</option><option>market</option><option>laborwin</option><option>sponsor_entitlement</option><option>sponsor_coupons</option><option>wallet</option><option>stats</option><option>control</option></select>
+        </div>
+        <div style="flex:0 0 auto;align-self:flex-end"><button id="btnGet">GET</button></div>
+      </div>
+      <label>data (JSON)</label>
+      <textarea id="ddata" spellcheck="false">{ "hello": "world", "n": 1 }</textarea>
+      <div class="btnrow">
+        <button class="pri" id="btnPut">PUT (baseRev)</button>
+        <button id="btnPatch">PATCH merge</button>
+        <button id="btnDocs">GET /docs</button>
+        <button class="ghost" id="btnDel">DELETE</button>
+      </div>
+      <div class="hint">PUT ส่ง <span class="kbd">baseRev</span> = rev ที่ถืออยู่ → ถ้ามีเครื่องอื่นเขียนแซง จะได้ <span class="st b">409 conflict</span> พร้อมของล่าสุด (ลองเปิด 2 แท็บ)</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">3</span> Collection (list/append)</h2>
+      <div class="row">
+        <div style="flex:2"><label>collection</label><input id="coll" value="ledger" spellcheck="false"></div>
+        <div style="flex:0 0 auto;align-self:flex-end"><button id="btnList">LIST</button></div>
+      </div>
+      <label>record (JSON) — มี id = update, ไม่มี = เพิ่มใหม่</label>
+      <textarea id="crec" spellcheck="false">{ "type": "topup", "amount": 500 }</textarea>
+      <div class="btnrow">
+        <button class="pri" id="btnAdd">POST add/upsert</button>
+        <button id="btnPatchRec">PATCH :id</button>
+        <button class="ghost" id="btnDelRec">DELETE :id</button>
+      </div>
+      <div class="hint">PATCH/DELETE ใช้ id จาก field <span class="kbd">id</span> ใน record ด้านบน · DELETE เป็น soft-delete (sync การลบข้ามเครื่อง)</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">4</span> PromptPay · Realtime</h2>
+      <label>พร้อมเพย์ (เบอร์/เลขบัตร ปชช.)</label>
+      <div class="row">
+        <input id="ppid" value="0812345678" spellcheck="false">
+        <input id="ppamt" value="120" placeholder="จำนวน (บาท)" style="flex:0 0 130px">
+      </div>
+      <div class="btnrow">
+        <button class="pri" id="btnQR">GET /pay/qr</button>
+        <button id="btnRT">▶ ต่อ realtime (WS)</button>
+        <button class="ghost" id="btnRTstop">■ หยุด</button>
+      </div>
+      <div class="hint">realtime ต่อ <span class="kbd">/ws?biz=</span> ของ tenant ปัจจุบัน · ถ้า worker ไม่ผูก Durable Object จะ fallback poll ทุก 4 วิ อัตโนมัติ · ลองเปิด 2 แท็บ biz เดียวกัน แล้ว PUT ดูอีกแท็บเด้ง</div>
+    </div>
+  </div>
+
+  <div class="card full" style="margin-top:16px">
+    <h2 style="display:flex"><span class="n">≡</span> Log <button class="ghost" style="margin-left:auto;padding:4px 10px;font-size:11px" id="btnClear">ล้าง</button></h2>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const LS_BASE='plat_api_base';
+function base(){ return ($('base').value||'').trim().replace(/\/$/,''); }
+$('base').value=(function(){ try{ return localStorage.getItem(LS_BASE)||''; }catch(e){ return ''; } })();
+
+const logEl=$('log');
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function log(tag,msg,cls){
+  const e=document.createElement('div'); e.className='e';
+  const t=new Date().toTimeString().slice(0,8);
+  e.innerHTML='<span class="mut">'+t+'</span> <span class="tag '+(cls||'sys')+'">'+esc(tag)+'</span>'+esc(msg);
+  logEl.appendChild(e); logEl.scrollTop=logEl.scrollHeight;
+}
+function logJSON(tag,obj,cls){
+  const e=document.createElement('div'); e.className='e';
+  const t=new Date().toTimeString().slice(0,8);
+  let body; try{ body=JSON.stringify(obj,null,2); }catch(_){ body=String(obj); }
+  if(body&&body.length>1400) body=body.slice(0,1400)+' …';
+  e.innerHTML='<span class="mut">'+t+'</span> <span class="tag '+(cls||'sys')+'">'+esc(tag)+'</span><span class="mono">'+esc(body)+'</span>';
+  logEl.appendChild(e); logEl.scrollTop=logEl.scrollHeight;
+}
+$('btnClear').onclick=()=>logEl.innerHTML='';
+
+function biz(){ return ($('biz').value||'').trim(); }
+async function api(method,path,bodyObj,tagCls){
+  const url=base()+path;
+  if(!base()){ log('ERR','ตั้ง Worker URL ก่อน','err'); return null; }
+  const headers={}; const b=biz();
+  if(b) headers['X-Biz']=b;
+  let payload;
+  if(bodyObj){ headers['content-type']='application/json'; payload=JSON.stringify(bodyObj); }
+  log(method,path,tagCls||method.toLowerCase());
+  try{
+    const r=await fetch(url,{method,headers,body:payload});
+    const txt=await r.text(); let j=null; try{ j=txt?JSON.parse(txt):null; }catch(e){ j=txt; }
+    logJSON(r.ok?'✓ '+r.status:'✗ '+r.status, j, r.ok?'ok':'err');
+    return {status:r.status,ok:r.ok,j};
+  }catch(e){ log('ERR',e.message+' — ยังไม่ deploy หรือ URL ผิด?','err'); return null; }
+}
+
+// track rev per doc for conflict demo
+const revs={};
+function dkey(){ return $('dkey').value; }
+function parse(id){ try{ return JSON.parse($(id).value); }catch(e){ log('ERR','JSON ไม่ถูกต้อง: '+e.message,'err'); throw e; } }
+
+// health
+async function ping(){
+  const u=base(); if(!u){ log('ERR','ตั้ง Worker URL ก่อน','err'); return; }
+  try{ localStorage.setItem(LS_BASE,u); }catch(e){}
+  log('GET','/health','get');
+  try{
+    const r=await fetch(u+'/health'); const j=await r.json();
+    logJSON(r.ok?'✓ '+r.status:'✗ '+r.status,j,r.ok?'ok':'err');
+    $('hdot').className='dot '+(j.ok?'on':'off');
+    $('hstat').textContent=j.ok?'เชื่อมแล้ว':'ตอบผิดปกติ';
+    $('hbox').innerHTML=j.ok
+      ? 'service: <span class="st g">'+esc(j.service)+'</span><br>multiTenant: '+j.multiTenant+'<br>realtime: '+(j.realtime?'<span class="st g">พร้อม (WS)</span>':'<span class="st" style="color:var(--warn)">ยังไม่ผูก DO → poll</span>')
+      : 'ตอบกลับผิดรูปแบบ';
+  }catch(e){
+    $('hdot').className='dot off'; $('hstat').textContent='ต่อไม่ได้';
+    $('hbox').innerHTML='<span class="st b">ต่อไม่ได้</span> — '+esc(e.message)+'<br><span class="mut">deploy worker แล้วใส่ URL ให้ถูก</span>';
+    log('ERR','/health ต่อไม่ได้: '+e.message,'err');
+  }
+}
+$('btnPing').onclick=ping;
+
+// tenant
+$('btnReg').onclick=()=>api('POST','/biz',{bizId:biz(),type:$('type').value,name:$('bname').value},'post');
+$('btnGetBiz').onclick=()=>api('GET','/biz/'+encodeURIComponent(biz()),null,'get');
+
+// docs
+$('btnGet').onclick=async()=>{ const r=await api('GET','/doc/'+dkey()+'?biz='+encodeURIComponent(biz()),null,'get'); if(r&&r.j){ revs[dkey()]=r.j.rev||0; if(r.j.data!=null) $('ddata').value=JSON.stringify(r.j.data,null,2); log('SYS','rev ของ '+dkey()+' = '+(r.j.rev||0),'sys'); } };
+$('btnPut').onclick=async()=>{ let d; try{ d=parse('ddata'); }catch(e){ return; } const r=await api('PUT','/doc/'+dkey(),{biz:biz(),data:d,baseRev:revs[dkey()]||0,type:$('type').value,name:$('bname').value},'put'); if(r&&r.j){ if(r.status===409){ log('SYS','conflict! server rev='+r.j.rev+' — โหลดของใหม่มาแล้ว','err'); revs[dkey()]=r.j.rev; if(r.j.data!=null)$('ddata').value=JSON.stringify(r.j.data,null,2); } else if(r.j.rev!=null){ revs[dkey()]=r.j.rev; } } };
+$('btnPatch').onclick=async()=>{ let d; try{ d=parse('ddata'); }catch(e){ return; } const r=await api('PATCH','/doc/'+dkey(),{biz:biz(),patch:d},'patch'); if(r&&r.j&&r.j.rev!=null) revs[dkey()]=r.j.rev; };
+$('btnDel').onclick=()=>{ if(confirm('ลบ doc '+dkey()+' ของ '+biz()+' ?')) api('DELETE','/doc/'+dkey()+'?biz='+encodeURIComponent(biz()),null,'del'); };
+$('btnDocs').onclick=()=>api('GET','/docs?biz='+encodeURIComponent(biz()),null,'get');
+
+// coll
+$('btnList').onclick=()=>api('GET','/coll/'+encodeURIComponent($('coll').value)+'?biz='+encodeURIComponent(biz()),null,'get');
+$('btnAdd').onclick=()=>{ let d; try{ d=parse('crec'); }catch(e){ return; } api('POST','/coll/'+encodeURIComponent($('coll').value),{biz:biz(),record:d},'post'); };
+$('btnPatchRec').onclick=()=>{ let d; try{ d=parse('crec'); }catch(e){ return; } if(!d.id){ log('ERR','ต้องมี id ใน record','err'); return; } api('PATCH','/coll/'+encodeURIComponent($('coll').value)+'/'+encodeURIComponent(d.id),{biz:biz(),patch:d},'patch'); };
+$('btnDelRec').onclick=()=>{ let d; try{ d=parse('crec'); }catch(e){ return; } if(!d.id){ log('ERR','ต้องมี id ใน record','err'); return; } api('DELETE','/coll/'+encodeURIComponent($('coll').value)+'/'+encodeURIComponent(d.id)+'?biz='+encodeURIComponent(biz()),null,'del'); };
+
+// promptpay
+$('btnQR').onclick=()=>api('GET','/pay/qr?id='+encodeURIComponent($('ppid').value)+'&amount='+encodeURIComponent($('ppamt').value),null,'get');
+
+// realtime
+let ws=null,pollT=null;
+function stopRT(){ if(ws){ try{ws.close();}catch(e){} ws=null; } if(pollT){ clearInterval(pollT); pollT=null; } }
+$('btnRTstop').onclick=()=>{ stopRT(); log('SYS','ปิด realtime','sys'); };
+$('btnRT').onclick=()=>{
+  stopRT(); const u=base(); if(!u){ log('ERR','ตั้ง URL ก่อน','err'); return; }
+  const wsUrl=u.replace(/^http/i,'ws')+'/ws?biz='+encodeURIComponent(biz());
+  log('RT','เชื่อม '+wsUrl,'rt');
+  try{ ws=new WebSocket(wsUrl); }catch(e){ log('ERR','WS ล้มเหลว → ลอง poll','err'); startPoll(); return; }
+  ws.onopen=()=>log('RT','เชื่อม WS สำเร็จ','rt');
+  ws.onmessage=e=>{ if(e.data==='pong')return; logJSON('RT ⇩',(()=>{try{return JSON.parse(e.data);}catch(_){return e.data;}})(),'rt'); };
+  ws.onclose=e=>{ log('RT','WS ปิด (code '+e.code+')'+(e.code===1011?' — worker ไม่ผูก DO → poll':''),'rt'); if(e.code===1011){ ws=null; startPoll(); } };
+  ws.onerror=()=>log('ERR','WS error','err');
+};
+function startPoll(){
+  let since=Date.now();
+  log('RT','fallback: poll /docs ทุก 4 วิ','rt');
+  pollT=setInterval(async()=>{ try{ const r=await fetch(base()+'/docs?biz='+encodeURIComponent(biz())); const j=await r.json(); log('RT ⇩ poll','docs rev: '+Object.entries(j.docs||{}).map(([k,v])=>k+'='+v.rev).join(' · '),'rt'); }catch(e){} },4000);
+}
+
+log('SYS','พร้อมใช้งาน — ตั้ง Worker URL แล้วกด Ping /health','sys');
+log('SYS','ยังไม่ deploy? ดู platform-worker/PLATFORM-DEPLOY.md','sys');
+</script>
+</body>
+</html>

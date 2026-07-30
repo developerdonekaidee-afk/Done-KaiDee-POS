@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR โปสเตอร์ร้าน — KaiDee POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sriracha&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+<style>
+  :root{--brand:#17805E;--brand-d:#0f5f45;--ink:#123b30;--rider:#234f86;--bg:#eef5f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"IBM Plex Sans Thai",sans-serif;background:var(--bg);color:var(--ink);padding:26px 16px 60px;}
+  .wrap{max-width:760px;margin:0 auto;}
+  .apphead{display:flex;align-items:center;gap:11px;margin-bottom:18px;}
+  .bi{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--brand),var(--rider));display:flex;align-items:center;justify-content:center;}
+  .apphead b{font-family:"Sriracha",cursive;font-size:24px;color:var(--brand-d);font-weight:400;}
+  .apphead span{display:block;font-size:12.5px;color:#5a726a;}
+  .card{background:#fff;border-radius:16px;padding:18px 18px 20px;box-shadow:0 2px 10px rgba(18,59,48,.07);margin-bottom:18px;}
+  .card h2{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+  .card .n{width:24px;height:24px;border-radius:8px;background:var(--brand);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  .desc{font-size:13px;color:#5a726a;line-height:1.55;margin-bottom:12px;}
+  label{display:block;font-size:12.5px;font-weight:600;margin:10px 0 5px;}
+  input{width:100%;font-family:inherit;font-size:14.5px;padding:11px 13px;border:1.5px solid #d5e3db;border-radius:11px;color:var(--ink);}
+  input:focus{outline:none;border-color:var(--brand);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .toolbar{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px;}
+  .btn{font-family:inherit;font-size:13.5px;font-weight:600;border:none;border-radius:11px;padding:11px 16px;cursor:pointer;}
+  .btn-p{background:var(--brand);color:#fff;}
+  .btn-r{background:var(--rider);color:#fff;}
+  .btn-g{background:#e4efe9;color:var(--brand-d);}
+  .hint{font-size:11.5px;color:#8397907;align-self:center;color:#7c9089;}
+  /* poster */
+  .posters{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-top:8px;}
+  .poster{width:360px;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 4px 18px rgba(18,59,48,.12);}
+  .p-head{position:relative;overflow:hidden;padding:24px 22px 20px;color:#154b37;}
+  .p-head>*{position:relative;z-index:1;}
+  .poster.cust .p-head{background:#bcd6c0;}
+  .poster.rider .p-head{background:#a9cbb0;}
+  .p-brand{display:flex;align-items:center;gap:9px;margin-bottom:16px;}
+  .p-brand .pbi{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#2a7454,#194f38);display:flex;align-items:center;justify-content:center;}
+  .p-brand b{font-family:"Sriracha",cursive;font-weight:400;font-size:18px;color:#154b37;}
+  .p-eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12px;background:rgba(21,75,55,.09);color:#245c44;padding:5px 13px;border-radius:999px;letter-spacing:.01em;}
+  .p-eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:#e0a92e;flex:none;}
+  .p-title{font-family:"Sriracha",cursive;font-weight:400;font-size:34px;line-height:1.12;margin-top:11px;color:#143f2e;}
+  .p-body{padding:22px 22px 8px;text-align:center;}
+  .qrbox{width:236px;height:236px;margin:0 auto;background:#fff;border:3px solid #eef5f0;border-radius:18px;display:flex;align-items:center;justify-content:center;padding:10px;}
+  .qrbox img,.qrbox canvas{width:100%!important;height:100%!important;}
+  .p-shop{font-size:19px;font-weight:700;margin-top:16px;}
+  .p-steps{font-size:13.5px;color:#5a726a;line-height:1.7;margin-top:8px;}
+  .p-foot{margin-top:14px;padding:13px 22px;background:#f3f8f5;font-size:12.5px;color:#5a726a;display:flex;align-items:center;justify-content:center;gap:7px;}
+  .poster.rider .p-foot{background:#eef5f0;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border-radius:999px;padding:5px 12px;font-size:12px;margin-top:12px;font-family:"Sriracha",cursive;}
+  .pchecks{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:12px;}
+  .pchecks label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;}
+  .pchecks input{width:auto;}
+  @media print{
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+    @page{margin:14mm;}
+    body{background:#fff;padding:0;}
+    .noprint{display:none!important;}
+    .posters{gap:0;display:block;}
+    .poster{width:360px;max-width:360px;margin:0 auto;box-shadow:none;border:1px solid #dce7e0;border-radius:22px;overflow:hidden;page-break-after:always;break-after:page;page-break-inside:avoid;break-inside:avoid;}
+    .poster:last-child{page-break-after:auto;break-after:auto;}
+    .pt-off{display:none!important;}
+  }
+</style>
+<script>(function(){var m=document.querySelector('meta[name=build]'),V=m?m.content:"";try{var K="kd_build_v1",old=localStorage.getItem(K);if(V&&old!==V){localStorage.setItem(K,V);if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});}}catch(e){}if("serviceWorker" in navigator&&location.protocol==="https:"){var r=false;navigator.serviceWorker.addEventListener("controllerchange",function(){if(r)return;r=true;location.reload()});addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v="+V).then(function(g){try{g.update()}catch(e){}if(g.waiting)try{g.waiting.postMessage("skip")}catch(e){}}).catch(function(){})})}addEventListener("DOMContentLoaded",function(){try{var b=document.createElement("div");b.textContent="v "+V;b.style.cssText="position:fixed;left:5px;bottom:3px;z-index:99999;font:10px ui-monospace,monospace;color:#9aa3a8;opacity:.55;pointer-events:none";document.body.appendChild(b)}catch(e){}})})();</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="apphead noprint">
+    <div class="bi"><svg width="26" height="26" viewBox="0 0 100 100"><line x1="52" y1="26" x2="52" y2="74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M52 26 A25 24 0 0 1 52 74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><circle cx="32" cy="42" r="6" fill="#fff"/><circle cx="32" cy="58" r="6" fill="#fff"/></svg></div>
+    <div><b>KaiDee POS</b><span>QR โปสเตอร์ร้าน — ปริ้นท์ติดหน้าร้าน / ส่งให้ลูกค้า &amp; ไรเดอร์</span></div>
+  </div>
+
+  <div class="card noprint">
+    <h2><span class="n">1</span> ใส่ข้อมูลร้าน</h2>
+    <div class="desc">กรอกชื่อร้าน + รหัสร้าน → QR จะอัปเดตอัตโนมัติ แล้วกดดาวน์โหลด/ปริ้นท์ได้เลย</div>
+    <div class="grid">
+      <div><label>ชื่อร้าน</label><input id="iName" placeholder="เช่น ก๋วยเตี๋ยวเรือป้าแดง"></div>
+      <div><label>รหัสร้าน (shop id)</label><input id="iShop" placeholder="เช่น kaidee"></div>
+    </div>
+    <label>ลิงก์ลูกค้าสั่งอาหาร (ปล่อยว่างได้ = สร้างจากรหัสร้าน)</label>
+    <input id="iCust" placeholder="https://liff.line.me/2007xxxxxx-xxxx?shop=...">
+    <label>ลิงก์ไรเดอร์รับงาน (ปล่อยว่างได้ = สร้างจากรหัสร้าน)</label>
+    <input id="iRider" placeholder="https://liff.line.me/2007xxxxxx-xxxx?shop=...&role=rider">
+    <label>LINE OA ของร้าน (สำหรับ QR แอดเพื่อน — ใส่ @id หรือลิงก์เต็ม)</label>
+    <input id="iOA" placeholder="เช่น @kaidee หรือ https://line.me/R/ti/p/@kaidee">
+    <label>โลโก้ / รูปร้าน (ไม่บังคับ — แทนไอคอน KaiDee)</label>
+    <input id="iLogo" type="file" accept="image/*" style="padding:8px 10px;">
+    <label>ภาพ Cover ร้าน (ไม่บังคับ — เป็นพื้นหลังหัวโปสเตอร์)</label>
+    <input id="iCover" type="file" accept="image/*" style="padding:8px 10px;">
+  </div>
+
+  <div class="card noprint">
+    <h2><span class="n">2</span> โปสเตอร์ QR</h2>
+    <div class="toolbar">
+      <button class="btn btn-p" id="dlCust">⬇ ดาวน์โหลดโปสเตอร์ลูกค้า</button>
+      <button class="btn btn-r" id="dlRider">⬇ ดาวน์โหลดโปสเตอร์ไรเดอร์</button>
+      <button class="btn btn-p" id="dlOA">⬇ ดาวน์โหลดแอดเพื่อนร้าน</button>
+      <button class="btn btn-p" id="dlKD">⬇ ดาวน์โหลดแอด KaiDee</button>
+      <button class="btn btn-g" onclick="window.print()">🖨️ ปริ้นท์ที่เลือก</button>
+    </div>
+    <div class="pchecks">
+      <span style="font-size:12.5px;color:#5a726a;">เลือกใบที่จะปริ้นท์:</span>
+      <label><input type="checkbox" class="pck" data-t="posterCust" checked> ลูกค้า (สั่งอาหาร)</label>
+      <label><input type="checkbox" class="pck" data-t="posterRider" checked> ไรเดอร์</label>
+      <label><input type="checkbox" class="pck" data-t="posterOA" checked> แอดเพื่อนร้าน</label>
+      <label><input type="checkbox" class="pck" data-t="posterKD" checked> แอด KaiDee</label>
+    </div>
+  </div>
+
+  <div class="posters">
+    <div class="poster cust" id="posterCust">
+      <div class="p-head">
+        <div class="p-brand"><div class="pbi"><svg width="21" height="21" viewBox="0 0 100 100"><line x1="52" y1="26" x2="52" y2="74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M52 26 A25 24 0 0 1 52 74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><circle cx="32" cy="42" r="6" fill="#fff"/><circle cx="32" cy="58" r="6" fill="#fff"/></svg></div><b>KaiDee POS</b></div>
+        <div class="p-eyebrow">สแกนสั่งอาหาร · จ่ายพร้อมเพย์</div>
+        <div class="p-title">สแกนสั่งเลย!</div>
+      </div>
+      <div class="p-body">
+        <div class="qrbox"><div id="qrCust"></div></div>
+        <div class="p-shop" id="nameCust">ร้านของคุณ</div>
+        <div class="p-steps">เปิดกล้อง / LINE สแกน QR<br>เลือกเมนู → กดสั่ง → จ่ายพร้อมเพย์</div>
+      </div>
+      <div class="p-foot">🍽️ สั่งง่าย ได้ไว ไม่ต้องต่อคิว</div>
+    </div>
+
+    <div class="poster rider" id="posterRider">
+      <div class="p-head">
+        <div class="p-brand"><div class="pbi"><svg width="21" height="21" viewBox="0 0 100 100"><line x1="52" y1="26" x2="52" y2="74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M52 26 A25 24 0 0 1 52 74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><circle cx="32" cy="42" r="6" fill="#fff"/><circle cx="32" cy="58" r="6" fill="#fff"/></svg></div><b>KaiDee POS</b></div>
+        <div class="p-eyebrow">สำหรับไรเดอร์ · รับออเดอร์</div>
+        <div class="p-title">ไรเดอร์รับงาน</div>
+      </div>
+      <div class="p-body">
+        <div class="qrbox"><div id="qrRider"></div></div>
+        <div class="p-shop" id="nameRider">ร้านของคุณ</div>
+        <div class="p-steps">สแกนเพื่อดูออเดอร์ที่พร้อมส่ง<br>รับงาน → นำทาง → ยืนยันส่งสำเร็จ</div>
+      </div>
+      <div class="p-foot">🛵 ดูออเดอร์ · รับงานได้ทันที</div>
+    </div>
+
+    <div class="poster cust" id="posterOA">
+      <div class="p-head">
+        <div class="p-brand"><div class="pbi"><svg width="21" height="21" viewBox="0 0 100 100"><line x1="52" y1="26" x2="52" y2="74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M52 26 A25 24 0 0 1 52 74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><circle cx="32" cy="42" r="6" fill="#fff"/><circle cx="32" cy="58" r="6" fill="#fff"/></svg></div><b>KaiDee POS</b></div>
+        <div class="p-eyebrow">แอดเพื่อน LINE · รับโปรก่อนใคร</div>
+        <div class="p-title">แอดเพื่อนร้านเรา</div>
+      </div>
+      <div class="p-body">
+        <div class="qrbox"><div id="qrOA"></div></div>
+        <div class="p-shop" id="nameOA">ร้านของคุณ</div>
+        <div class="p-steps">สแกนด้วยกล้อง / LINE → กดเพิ่มเพื่อน<br>รับข่าวโปรโมชัน · สั่งอาหารสะดวก</div>
+      </div>
+      <div class="p-foot">💬 แอดเพื่อน รับสิทธิพิเศษก่อนใคร</div>
+    </div>
+
+    <div class="poster cust" id="posterKD">
+      <div class="p-head">
+        <div class="p-brand"><div class="pbi kd"><svg width="21" height="21" viewBox="0 0 100 100"><line x1="52" y1="26" x2="52" y2="74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M52 26 A25 24 0 0 1 52 74" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><circle cx="32" cy="42" r="6" fill="#fff"/><circle cx="32" cy="58" r="6" fill="#fff"/></svg></div><b>KaiDee POS</b></div>
+        <div class="p-eyebrow">อยากเปิดร้านขายบน LINE?</div>
+        <div class="p-title">แอด KaiDee POS</div>
+      </div>
+      <div class="p-body">
+        <div class="qrbox"><div id="qrKD"></div></div>
+        <div class="p-shop">KaiDee POS</div>
+        <div class="p-steps">ขายผ่าน LINE · รับเงินพร้อมเพย์<br>สแกนแอดเพื่อน เริ่มเปิดร้านฟรี</div>
+      </div>
+      <div class="p-foot">✨ เปิดร้านบน LINE ใน 1 นาที</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var LIFF='2010720123-HXe3iZJD';
+var KD_OA='@188dfiog';
+function qp(k){return new URLSearchParams(location.search).get(k)||'';}
+var els={name:document.getElementById('iName'),shop:document.getElementById('iShop'),cust:document.getElementById('iCust'),rider:document.getElementById('iRider'),oa:document.getElementById('iOA')};
+els.name.value=qp('name'); els.shop.value=qp('shop'); els.cust.value=qp('cust'); els.rider.value=qp('rider'); els.oa.value=qp('oa');
+function oaUrl(id){id=(id||'').trim(); if(!id)return ''; if(/^https?:\/\//i.test(id))return id; return 'https://line.me/R/ti/p/'+(id[0]==='@'?id:'@'+id);}
+var qrC=null,qrR=null;
+function custUrl(){var v=els.cust.value.trim(); if(v)return v; var s=encodeURIComponent(els.shop.value.trim()||'kaidee'); return 'https://liff.line.me/'+LIFF+'?shop='+s;}
+function riderUrl(){var v=els.rider.value.trim(); if(v)return v; var s=encodeURIComponent(els.shop.value.trim()||'kaidee'); return 'https://liff.line.me/'+LIFF+'?shop='+s+'&role=rider';}
+function mkQR(el,txt,dark){el.innerHTML=''; return new QRCode(el,{text:txt,width:400,height:400,colorDark:dark,colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}
+function render(){
+  var nm=els.name.value.trim()||'ร้านของคุณ';
+  document.getElementById('nameCust').textContent=nm;
+  document.getElementById('nameRider').textContent=nm;
+  mkQR(document.getElementById('qrCust'),custUrl(),'#0f5f45');
+  mkQR(document.getElementById('qrRider'),riderUrl(),'#1d3f6d');
+  document.getElementById('nameOA').textContent=nm;
+  var ou=oaUrl(els.oa.value); var hasOA=!!ou;
+  // ยังไม่กรอก LINE OA ของร้าน → ซ่อนโปสเตอร์ "แอดเพื่อนร้านเรา" (กันเข้าใจผิดว่าเป็น LINE ร้าน ทั้งที่เป็นลิงก์สั่งอาหาร)
+  var pOA=document.getElementById('posterOA'); if(pOA) pOA.style.display=hasOA?'':'none';
+  var dlOAb=document.getElementById('dlOA'); if(dlOAb) dlOAb.style.display=hasOA?'':'none';
+  var ckOA=document.querySelector('.pck[data-t="posterOA"]'); if(ckOA){ ckOA.disabled=!hasOA; if(!hasOA) ckOA.checked=false; var lb=ckOA.closest('label'); if(lb) lb.style.opacity=hasOA?'1':'.4'; }
+  if(hasOA) mkQR(document.getElementById('qrOA'),ou,'#0f5f45');
+  mkQR(document.getElementById('qrKD'),oaUrl(KD_OA),'#0f5f45');
+}
+['name','shop','cust','rider','oa'].forEach(function(k){els[k].addEventListener('input',render);});
+var shopLogo='';
+document.getElementById('iLogo').addEventListener('change',function(e){
+  var f=e.target.files&&e.target.files[0]; if(!f)return;
+  var r=new FileReader(); r.onload=function(){shopLogo=r.result; applyLogo();}; r.readAsDataURL(f);
+});
+function applyLogo(){
+  document.querySelectorAll('.pbi:not(.kd)').forEach(function(b){
+    if(shopLogo){b.innerHTML='<img src="'+shopLogo+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">';b.style.background='#fff';}
+  });
+}
+var shopCover='';
+var HEAD={cust:'#bcd6c0',rider:'#a9cbb0'};
+var HEADOV={cust:'linear-gradient(135deg,rgba(188,214,192,.9),rgba(169,203,176,.9))',rider:'linear-gradient(135deg,rgba(169,203,176,.92),rgba(152,190,161,.92))'};
+document.getElementById('iCover').addEventListener('change',function(e){
+  var f=e.target.files&&e.target.files[0]; if(!f)return;
+  var r=new FileReader(); r.onload=function(){shopCover=r.result; applyCover();}; r.readAsDataURL(f);
+});
+function applyCover(){
+  [['posterCust','cust'],['posterRider','rider']].forEach(function(p){
+    var h=document.querySelector('#'+p[0]+' .p-head');
+    if(shopCover){h.style.background=HEADOV[p[1]]+',url('+shopCover+') center/cover';}
+    else{h.style.background=HEAD[p[1]];}
+  });
+}
+render();
+async function dl(id,file){
+  var node=document.getElementById(id);
+  try{var url=await htmlToImage.toPng(node,{pixelRatio:3,cacheBust:true,backgroundColor:'#ffffff'});
+    var a=document.createElement('a');a.download=file;a.href=url;a.click();
+  }catch(e){alert('ดาวน์โหลดไม่สำเร็จ ลองใหม่');console.error(e);}
+}
+document.getElementById('dlCust').onclick=function(){dl('posterCust','qr-ลูกค้า-'+(els.shop.value||'shop')+'.png');};
+document.getElementById('dlRider').onclick=function(){dl('posterRider','qr-ไรเดอร์-'+(els.shop.value||'shop')+'.png');};
+document.getElementById('dlOA').onclick=function(){dl('posterOA','qr-แอดเพื่อน-'+(els.shop.value||'shop')+'.png');};
+document.getElementById('dlKD').onclick=function(){dl('posterKD','qr-แอด-kaidee.png');};
+document.querySelectorAll('.pck').forEach(function(c){c.addEventListener('change',function(){var p=document.getElementById(c.dataset.t); if(p)p.classList.toggle('pt-off',!c.checked);});});
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260730j">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ควบคุมระบบ — KaiDee Backoffice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#F1F9F7;--ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--bg:#EDF3F1;--card:#fff;--hair:#E4EAE8;--hair-2:#D5DEDB;--gold:#E8992F;--red:#E0533D;--plum:#7a4a8c;--font:"IBM Plex Sans Thai",system-ui,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .mono{font-family:"IBM Plex Mono",monospace;}
+  button{font-family:var(--font);cursor:pointer;}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px;}
+  .top{display:flex;align-items:center;gap:13px;margin-bottom:8px;}
+  .top .lg{width:44px;height:44px;border-radius:12px;background:#fff;overflow:hidden;flex:0 0 auto;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  .top .lg img{width:100%;height:100%;object-fit:cover;}
+  .top h1{font-size:22px;font-weight:700;line-height:1.2;}
+  .top .s{font-size:13px;color:var(--ink-3);}
+  .lead{background:#16211E;color:#cfe6df;border-radius:14px;padding:14px 18px;font-size:13.5px;line-height:1.6;margin:16px 0 22px;}
+  .lead b{color:#fff;}
+  .vcard{background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:20px 22px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,.03);}
+  .vhead{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+  .vic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto;}
+  .vhead h2{font-size:17px;font-weight:700;}
+  .vhead .vs{font-size:12.5px;color:var(--ink-3);}
+  .vhead .cnt{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--brand-ink);background:var(--brand-soft);border-radius:999px;padding:5px 12px;}
+  .vtools{display:flex;gap:8px;margin:12px 0 14px;}
+  .vtools button{font-size:12px;font-weight:600;border:1px solid var(--hair-2);background:#fff;color:var(--ink-2);border-radius:9px;padding:6px 12px;}
+  .chips{display:flex;gap:9px;flex-wrap:wrap;}
+  .chip{border:1.5px solid var(--hair-2);background:#fff;color:var(--ink-3);border-radius:11px;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;transition:all .12s;}
+  .chip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-ink);}
+  .chip .sw{width:32px;height:19px;border-radius:99px;background:var(--hair-2);position:relative;transition:background .15s;flex:0 0 auto;}
+  .chip.on .sw{background:var(--brand);}
+  .chip .sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s;}
+  .chip.on .sw::after{left:15px;}
+  .locked{font-size:11px;color:var(--ink-3);margin-left:4px;}
+  .bar{position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg) 70%,transparent);padding:16px 0 4px;display:flex;gap:12px;align-items:center;}
+  .save{background:var(--brand);color:#fff;border:none;border-radius:13px;padding:13px 26px;font-size:15px;font-weight:700;}
+  .save:active{transform:scale(.98);}
+  .ghost{background:#fff;border:1px solid var(--hair-2);border-radius:13px;padding:13px 20px;font-size:14px;font-weight:600;color:var(--ink-2);}
+  .saved{font-size:13px;color:var(--brand-ink);font-weight:600;}
+  .note{background:var(--brand-softer);border:1px solid var(--hair);border-radius:12px;padding:12px 15px;font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:10px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js?v=p2-20260730j" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js?v=p2-20260730j" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js?v=p2-20260730j" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="platform-api.jsx?v=p2-20260730j"></script>
+<script type="text/babel">
+const { useState } = React;
+const KEY='kd_platform_control_v1';
+// เมนูย่อยต่อ vertical · [key,label,locked?] — locked = ปิดไม่ได้ (แกนหลัก)
+const VERTICALS=[
+  { id:'sales', name:'งานขาย (KaiDee Backoffice)', icon:'📊', color:'#1E73B0', bg:'#E7F1FA',
+    menus:[['sales','ยอดขาย & กำไร',true],['quote','ใบเสนอราคา'],['wallet','กระเป๋าเงินร้าน'],['menu','สินค้า / เมนู'],['stock','สต๊อกสินค้า'],['consign','สินค้าขายฝาก'],['members','สมาชิก (CRM)'],['verify','ตรวจยอดพร้อมเพย์'],['txn','รายงานเงินเข้า'],['reconcile','กระทบยอดเดลิเวอรี'],['docs','เอกสารร้านค้า'],['settings','ตั้งค่า & สิทธิ์'],['copyright','คู่มือลิขสิทธิ์']] },
+  { id:'market', name:'งานตลาด (Market OS)', icon:'🏢', color:'#0E9C88', bg:'#E3F5F1',
+    menus:[['stalls','เช่าแผง',true],['billing','บิล & เก็บเงิน'],['gp','GP & ยอดขาย'],['consign','ขายฝาก'],['settle','นำส่ง/โอนเงิน'],['acct','บัญชี'],['vat','รายงานภาษี'],['bookcfg','การจอง & เรียกเก็บ'],['sub','แพ็กเกจ']] },
+  { id:'fitness', name:'งานฟิตเนส (Fitness POS)', icon:'🏋️', color:'#7a4a8c', bg:'#F1E9F5',
+    menus:[['sell','ขาย',true],['members','สมาชิก'],['checkin','เช็คอิน'],['classes','คลาส'],['pt','เทรนเนอร์ PT'],['stock','สต๊อก/เมนู'],['packages','แพ็กเกจ'],['vouchers','Voucher'],['promos','โปรโมชัน'],['report','รายงาน']] },
+];
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ return {}; } }
+
+function App(){
+  const [cfg,setCfg]=useState(()=>load());
+  const [saved,setSaved]=useState(true);
+  React.useEffect(()=>{ if(!window.PLAT_API) return;
+    const sync=window.PLAT_API.attach({ biz:'platform', type:'platform', key:'control',
+      read:()=>load(), write:(b)=>{try{if(b)localStorage.setItem(KEY,JSON.stringify(b))}catch(e){}}, onRemote:(b)=>b&&setCfg(b), stamp:(b)=>(b&&b.updatedAt)||0 });
+    window.__platCtlSync=sync; return ()=>{ try{sync.stop();}catch(e){} window.__platCtlSync=null; };
+  },[]);
+  const isOn=(v,k)=>{ const c=(cfg[v]||{}); return c[k]!==false; };
+  const toggle=(v,k,locked)=>{ if(locked)return; setCfg(c=>({...c,[v]:{...(c[v]||{}),[k]:!isOn(v,k)}})); setSaved(false); };
+  const setAll=(v,on)=>{ const vv=VERTICALS.find(x=>x.id===v); const o={}; vv.menus.forEach(([k,l,lk])=>{ o[k]= lk?true:on; }); setCfg(c=>({...c,[v]:o})); setSaved(false); };
+  const save=()=>{ const c={...cfg,updatedAt:Date.now()}; try{ localStorage.setItem(KEY,JSON.stringify(c)); }catch(e){} if(window.__platCtlSync)window.__platCtlSync.push(); setSaved(true); };
+  return (<div className="wrap">
+    <div className="top"><div className="lg"><img src="assets/kaidee-logo.png" alt="KaiDee"/></div>
+      <div><h1>ควบคุมระบบ · KaiDee Backoffice</h1><div className="s">ศูนย์กลางแพลตฟอร์ม — เปิด/ปิดเมนูย่อยทุกงาน</div></div></div>
+    <div className="lead">🎛️ <b>ตัวควบคุมกลาง (แพลตฟอร์ม)</b> — เลือกว่าจะให้แต่ละงาน (ขาย / ตลาด / ฟิตเนส) <b>เห็นหรือไม่เห็น</b>เมนูย่อยตัวไหน · การตั้งค่านี้มีผลกับทุกแอปที่เชื่อมระบบ (อ่าน config ร่วมกัน) · เมนูแกนหลักปิดไม่ได้</div>
+    {VERTICALS.map(v=>{ const onN=v.menus.filter(([k])=>isOn(v.id,k)).length; return (
+      <div className="vcard" key={v.id}>
+        <div className="vhead"><div className="vic" style={{background:v.bg,color:v.color}}>{v.icon}</div>
+          <div><h2>{v.name}</h2><div className="vs">เมนูย่อยที่เปิดใช้งาน</div></div>
+          <span className="cnt">เปิด {onN}/{v.menus.length}</span></div>
+        <div className="vtools"><button onClick={()=>setAll(v.id,true)}>เปิดทั้งหมด</button><button onClick={()=>setAll(v.id,false)}>ปิดทั้งหมด</button></div>
+        <div className="chips">{v.menus.map(([k,l,lk])=>{ const on=isOn(v.id,k); return (
+          <button key={k} className={'chip'+(on?' on':'')} onClick={()=>toggle(v.id,k,lk)}>
+            <span className="sw"/>{l}{lk&&<span className="locked">· แกนหลัก</span>}</button>); })}</div>
+      </div>); })}
+    <div className="bar">
+      <button className="save" onClick={save}>บันทึกการตั้งค่า</button>
+      <button className="ghost" onClick={()=>{ if(confirm('รีเซ็ตเป็นเปิดทุกเมนู?')){ setCfg({}); setSaved(false); } }}>รีเซ็ต (เปิดทุกเมนู)</button>
+      {saved?<span className="saved">✓ บันทึกแล้ว · มีผลกับทุกแอปที่เชื่อมระบบ</span>:<span className="saved" style={{color:'var(--gold)'}}>● ยังไม่บันทึก</span>}
+    </div>
+    <div className="note">หมายเหตุ: การตั้งค่าเก็บที่ <span className="mono">{KEY}</span> (localStorage · same-origin) — โปรแกรมตลาด/ฟิตเนส/POS จะอ่านค่านี้เพื่อซ่อนเมนูที่ปิด · เมื่อขึ้นคลาวด์จะซิงค์ข้ามเครื่องอัตโนมัติ</div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
