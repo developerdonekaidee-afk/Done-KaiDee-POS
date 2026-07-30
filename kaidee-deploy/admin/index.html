@@ -338,9 +338,59 @@ function App(){
 }
 
 /* ══ LOGIN ══ */
+function ResetSheet({onClose,onDone}){
+  const [step,setStep]=useState(1); const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState(''); const [msg,setMsg]=useState('');
+  const [phone,setPhone]=useState(''); const [otp,setOtp]=useState('');
+  const [p1,setP1]=useState(''); const [p2,setP2]=useState('');
+  const send=async()=>{ if(busy)return; setBusy(true); setErr(''); setMsg('');
+    try{ const r=await fetch(KD_API_BASE+'/admin/reset/request',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.ok){ setPhone(j.phone||''); setStep(2); setMsg('ส่งรหัส 6 หลักไป'+(j.via==='line'?' ทาง LINE ':' ทาง SMS ')+'เบอร์ '+(j.phone||'')+' · ใช้ได้ 10 นาที'); }
+      else setErr(j.error||('ส่งไม่สำเร็จ (HTTP '+r.status+')'));
+    }catch(e){ setErr('เชื่อมเซิร์ฟเวอร์ไม่ได้'); }
+    setBusy(false); };
+  const confirm=async()=>{ if(busy)return; setErr('');
+    if(otp.replace(/\D/g,'').length!==6){ setErr('กรอกรหัสยืนยัน 6 หลัก'); return; }
+    if(p1.length<6){ setErr('รหัสใหม่อย่างน้อย 6 ตัว'); return; }
+    if(p1!==p2){ setErr('รหัสใหม่สองช่องไม่ตรงกัน'); return; }
+    setBusy(true);
+    try{ const r=await fetch(KD_API_BASE+'/admin/reset/confirm',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({otp:otp.replace(/\D/g,''),next:p1})});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.ok){ if(j.token){ try{ sessionStorage.setItem('kd_admin_tok',j.token); }catch(e){} } setAdminPass(p1); setBusy(false); onDone(!!j.token); return; }
+      setErr(j.error||('ยืนยันไม่สำเร็จ (HTTP '+r.status+')'));
+    }catch(e){ setErr('เชื่อมเซิร์ฟเวอร์ไม่ได้'); }
+    setBusy(false); };
+  const inSt={width:'100%',marginTop:7,padding:'12px 14px'};
+  return (<div style={{position:'fixed',inset:0,background:'rgba(16,22,19,.5)',zIndex:60,display:'flex',alignItems:'center',justifyContent:'center',padding:18}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="card fade" style={{width:'100%',maxWidth:400,padding:22}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+        <div style={{fontWeight:700,fontSize:16.5,flex:1}}>รีเซ็ตรหัสแอดมิน</div>
+        <button className="btn sm" onClick={onClose}>✕</button>
+      </div>
+      <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.6,marginBottom:14}}>ระบบส่งรหัสยืนยัน 6 หลักไปเบอร์เจ้าของระบบที่ลงทะเบียนไว้ (ไม่ต้องกรอกเบอร์ · กันคนอื่นกดรีเซ็ต)</div>
+      {step===1 ? (<React.Fragment>
+        <button className="btn pri" style={{width:'100%',justifyContent:'center',padding:13,opacity:busy?.6:1}} onClick={send}>{busy?'กำลังส่ง…':'ส่งรหัสยืนยัน'}</button>
+      </React.Fragment>) : (<React.Fragment>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)'}}>รหัสยืนยัน 6 หลัก {phone&&<span style={{fontWeight:600,color:'var(--ink-3)'}}>· ส่งไป {phone}</span>}</label>
+        <input className="in mono" inputMode="numeric" maxLength={6} value={otp} onChange={e=>{setOtp(e.target.value);setErr('');}} placeholder="● ● ● ● ● ●" style={{...inSt,letterSpacing:4,fontSize:18,textAlign:'center'}} autoFocus/>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)',display:'block',marginTop:13}}>รหัสใหม่ (อย่างน้อย 6 ตัว)</label>
+        <input className="in" type="password" value={p1} onChange={e=>{setP1(e.target.value);setErr('');}} style={inSt}/>
+        <label style={{fontSize:13,fontWeight:700,color:'var(--ink-2)',display:'block',marginTop:13}}>ยืนยันรหัสใหม่</label>
+        <input className="in" type="password" value={p2} onChange={e=>{setP2(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&confirm()} style={inSt}/>
+        <div style={{display:'flex',gap:9,marginTop:16}}>
+          <button className="btn" style={{flex:'0 0 auto',padding:'13px 14px',opacity:busy?.6:1}} onClick={send}>ส่งใหม่</button>
+          <button className="btn pri" style={{flex:1,justifyContent:'center',padding:13,opacity:busy?.6:1}} onClick={confirm}>{busy?'กำลังตั้งรหัส…':'ตั้งรหัสใหม่ + เข้าระบบ'}</button>
+        </div>
+      </React.Fragment>)}
+      {msg&&!err&&<div style={{color:'var(--brand-ink)',fontSize:12.5,marginTop:11,fontWeight:600,lineHeight:1.6}}>{msg}</div>}
+      {err&&<div style={{color:'var(--danger)',fontSize:12.5,marginTop:11,fontWeight:600,lineHeight:1.6}}>{err}</div>}
+    </div>
+  </div>);
+}
 function Login({onOk}){
   const [pw,setPw]=useState(''); const [err,setErr]=useState('');
-  const [busy,setBusy]=useState(false);
+  const [busy,setBusy]=useState(false); const [reset,setReset]=useState(false);
   const go=async()=>{ if(busy)return; setErr(''); setBusy(true);
     // ลองล็อกอินกับ backend ก่อน (รหัสกลาง แชร์ทุกเครื่อง) — ถ้า backend ล่ม fallback รหัสในเครื่อง
     try{ const r=await fetch(KD_API_BASE+'/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:pw})});
@@ -359,7 +409,8 @@ function Login({onOk}){
     <input className="in" type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr('');}} onKeyDown={e=>e.key==='Enter'&&go()} placeholder="••••••" style={{width:'100%',marginTop:7,padding:'12px 14px'}} autoFocus/>
     {err&&<div style={{color:'var(--danger)',fontSize:13,marginTop:8,fontWeight:600}}>{err}</div>}
     <button className="btn pri" style={{width:'100%',justifyContent:'center',marginTop:16,padding:'13px',opacity:busy?.6:1}} onClick={go}>{busy?'กำลังตรวจสอบ…':'เข้าสู่ระบบ'}</button>
-    <div style={{fontSize:11.5,color:'var(--ink-3)',textAlign:'center',marginTop:14}}>รหัสตั้งต้น: <b className="mono">kaidee2026</b> · เปลี่ยนได้ในตั้งค่า (มีผลทุกเครื่องผ่าน backend)</div>
+    <button className="btn" style={{width:'100%',justifyContent:'center',marginTop:9,padding:'11px',fontWeight:600}} onClick={()=>setReset(true)}>ลืมรหัส? รีเซ็ตด้วยรหัสยืนยันทาง SMS</button>
+    {reset&&<ResetSheet onClose={()=>setReset(false)} onDone={()=>{ setReset(false); onOk(); }}/>}
   </div></div>);
 }
 
