@@ -17,3 +17,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: kaidee-pos-worker
+          wranglerVersion: "4.115.0"
