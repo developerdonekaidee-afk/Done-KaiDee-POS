@@ -35,7 +35,20 @@ repo นี้เก็บ **ทุกอย่างของแพลตฟอ
 2. sync ไฟล์ที่แก้ → `kaidee-deploy/` + `market-deploy/`
 3. เปลี่ยน `?v=` ทุก `<script src>` + `<meta name="build">` ในทุก html ทั้ง 3 ที่
 4. bump `kaidee-deploy/sw.js` `hagd-pos-vN` → `v{N+1}`
-5. อัป `kaidee-deploy/` ขึ้น pages.dev (อัป**ไฟล์ข้างในโฟลเดอร์** · branch `main`)
+5. `git add . && git commit -m "..." && git push` → **Cloudflare Pages build เอง** (ไม่ต้องอัป zip แล้ว)
+
+### Cloudflare Pages (เชื่อม Git)
+| ตั้งค่า | ค่า |
+|---|---|
+| Repository | `developerdonekaidee-afk/Done-KaiDee-POS` · branch `main` |
+| Framework preset | None |
+| Build command | (เว้นว่าง — static ล้วน ไม่มี build step) |
+| Build output directory | `kaidee-deploy` |
+| ฝั่งตลาด | สร้างโปรเจกต์ Pages อีกตัว output = `market-deploy` |
+
+- `_headers` ในแต่ละ output = สั่งไม่ให้ cache `sw.js` / `.html` / `.jsx` / `.js` (กันอาการ deploy แล้วยังเห็นของเก่า) — **ห้ามลบ**
+- ⚠️ โปรเจกต์ Pages ที่เคยสร้างแบบ Direct Upload **เชื่อม Git ทีหลังไม่ได้** ต้องสร้างโปรเจกต์ใหม่แบบ Git (ถ้าอยากได้ชื่อโดเมนเดิม ต้องลบตัวเก่าก่อนแล้วตั้งชื่อเดิม)
+- ยังต้อง bump `?v=` + `sw.js` ทุกครั้งเหมือนเดิม — Pages แค่แทนขั้นตอนอัปไฟล์
 
 ## เวอร์ชันล่าสุด
 - sw: `hagd-pos-v59` · build: `?v=p2-20260730j`
