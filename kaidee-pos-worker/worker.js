@@ -155,6 +155,29 @@ async function getAdminHash(env) {
     if (r) { const j = JSON.parse(r.v || '{}'); if (j.passHash) return j.passHash; } } catch (e) {}
   return await sha256hex('kaidee2026');
 }
+// ── rate limit เข้าสู่ระบบแอดมิน (ต่อ IP) — กัน brute-force รหัสผ่าน ──
+// ผิด 5 ครั้ง → ล็อก 15 นาที · ทายถูกครั้งเดียว = เคลียร์ตัวนับ
+const LOGIN_MAX_FAILS = 5, LOGIN_LOCK_MS = 15 * 60e3;
+let _laReady = false;
+async function ensureLoginAttempts(env) { if (_laReady) return; _laReady = true;
+  try { await env.DB.prepare('CREATE TABLE IF NOT EXISTS login_attempts (ip TEXT PRIMARY KEY, fails INTEGER DEFAULT 0, locked_until INTEGER, updated_at INTEGER)').run(); } catch (e) {} }
+function clientIp(req) { return req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'unknown'; }
+async function loginLockStatus(env, ip) {
+  await ensureLoginAttempts(env);
+  const r = await env.DB.prepare('SELECT * FROM login_attempts WHERE ip=?').bind(ip).first();
+  if (r && r.locked_until && r.locked_until > now()) return { locked: true, retryAfterMs: r.locked_until - now() };
+  return { locked: false };
+}
+async function loginRecordResult(env, ip, ok) {
+  await ensureLoginAttempts(env);
+  if (ok) { await env.DB.prepare('DELETE FROM login_attempts WHERE ip=?').bind(ip).run(); return; }
+  const r = await env.DB.prepare('SELECT * FROM login_attempts WHERE ip=?').bind(ip).first();
+  const fails = (r && r.locked_until && r.locked_until > now() ? r.fails : (r ? r.fails : 0)) + 1;
+  const lockedUntil = fails >= LOGIN_MAX_FAILS ? now() + LOGIN_LOCK_MS : (r ? r.locked_until : null);
+  await env.DB.prepare(`INSERT INTO login_attempts (ip,fails,locked_until,updated_at) VALUES (?,?,?,?)
+    ON CONFLICT(ip) DO UPDATE SET fails=excluded.fails, locked_until=excluded.locked_until, updated_at=excluded.updated_at`)
+    .bind(ip, fails, lockedUntil, now()).run();
+}
 /* ── รีเซ็ตรหัสแอดมินด้วย OTP (เบอร์เจ้าของระบบ = secret ADMIN_PHONE · LINE สำรอง = ADMIN_LINE_USER) ── */
 async function adminCfg(env) {
   try { const r = await env.DB.prepare("SELECT v FROM app_config WHERE k='admin'").first();
@@ -257,7 +280,10 @@ async function ensureCodeReqTable(env){ if(_codeReqReady) return; _codeReqReady 
 let _payReqColsReady = false;
 async function ensurePayReqCols(env){ if(_payReqColsReady) return; _payReqColsReady = true;
   try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN kind TEXT').run(); }catch(e){}
-  try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN addon TEXT').run(); }catch(e){} }
+  try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN addon TEXT').run(); }catch(e){}
+  // audit: ใครอนุมัติ/ปฏิเสธคำขอชำระ + เมื่อไหร่ — PATCH ใช้สองคอลัมน์นี้อยู่แล้วแต่ไม่เคย ALTER ให้มาก่อน (500 ทุกครั้งที่กดอนุมัติ)
+  try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN handled_at INTEGER').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN handled_by TEXT').run(); }catch(e){} }
 // idempotent: ตาราง wallets/wallet_txns/wallet_accounts (กระเป๋าเงินปิด — จ่ายค่าบริการระบบเท่านั้น, ยอด/ประวัติเป็นความจริงที่ฝั่งเซิร์ฟเท่านั้น)
 let _walletReady = false;
 async function ensureWallet(env){ if(_walletReady) return; _walletReady = true;
@@ -481,11 +507,16 @@ export default {
 
       /* ── ADMIN AUTH (Back Office) ── */
       if (seg[0] === 'admin') {
-        // POST /admin/login {pass} → { ok, token }
+        // POST /admin/login {pass} → { ok, token } · rate-limited ต่อ IP กัน brute-force
         if (req.method === 'POST' && seg[1] === 'login') {
+          const ip = clientIp(req);
+          const lock = await loginLockStatus(env, ip);
+          if (lock.locked) return json({ ok: false, error: `ลองผิดหลายครั้งเกินไป กรุณารอ ${Math.ceil(lock.retryAfterMs / 60e3)} นาทีแล้วลองใหม่`, retryAfterMs: lock.retryAfterMs }, req, 429);
           const b = await readBody();
           const want = await getAdminHash(env);
-          if (await sha256hex(b.pass || '') === want) return json({ ok: true, token: await makeToken(env) }, req);
+          const ok = await sha256hex(b.pass || '') === want;
+          await loginRecordResult(env, ip, ok);
+          if (ok) return json({ ok: true, token: await makeToken(env) }, req);
           return json({ ok: false, error: 'รหัสไม่ถูกต้อง' }, req, 401);
         }
         // POST /admin/verify {token} → { ok }
