@@ -1752,7 +1752,7 @@ export default {
         }
         // POST /consignment/delivery-note {locationId, lines:[{name,sku,qty,price,settleModel,sharePct,costWholesale,rentalFee,unit}], handledBy, handledByName, note}
         //   → เจนเลข CSD-YYYYMMXXXX · หักสต๊อกคลังหลักทันที (TRANSFER out) · สถานะ In_Transit (ยังไม่เข้าคลังปลายทางจนกดยืนยันรับ)
-        if (req.method === 'POST' && seg[1] === 'delivery-note') {
+        if (req.method === 'POST' && seg[1] === 'delivery-note' && !seg[2]) {
           const b = await readBody();
           const lines = (b.lines || []).filter(l => l.name && (+l.qty) > 0).map(l => ({
             name: l.name, sku: l.sku || '', qty: +l.qty || 0, price: l.price | 0, unit: l.unit || 'pcs',
