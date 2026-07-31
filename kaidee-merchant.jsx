@@ -442,7 +442,7 @@ function AddCatSheet({ onClose, onAdd, initial, onDelete }){
           <div style={{ width:64, height:64, borderRadius:16, background:'var(--brand-soft)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>{emoji}</div>
           <div style={{ flex:1 }}>
             <div style={{ fontSize:13, fontWeight:600, color:'var(--ink-2)', margin:'0 2px 6px' }}>{lang==='th'?'ชื่อหมวด':'Category name'}</div>
-            <input className="kd-input" value={th} onChange={e=>setTh(e.target.value)} placeholder={lang==='th'?'เช่น อาหารเช้า, เซ็ตสุดคุ้ม':'e.g. Breakfast, Combo'} autoFocus/>
+            <input className="kd-input" value={th} onChange={e=>setTh(e.target.value)} placeholder={lang==='th'?'เช่น อาหารเช้า, เซ็ตสุดคุ้ม':'e.g. Breakfast, Combo'}/>
           </div>
         </div>
         <div style={{ fontSize:13, fontWeight:600, color:'var(--ink-2)', margin:'0 2px 8px' }}>{lang==='th'?'เลือกไอคอน':'Pick an icon'}</div>

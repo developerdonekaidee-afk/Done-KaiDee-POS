@@ -175,7 +175,8 @@ function CrmLanding({ onSignup, onCancel, onEnter }){
     const lu=(typeof window!=='undefined'&&window.__lineUser)||null;
     if(lu&&lu.userId&&window.KD_API&&window.KD_API.getMyShop){ window.KD_API.getMyShop(lu.userId).then(sh=>{ const o=sh&&(sh.ownerLine||(sh.owner&&sh.owner.line)); if(sh&&sh.shopId&&o===lu.userId) setExisting(sh); }).catch(()=>{}); }
   },[]);
-  const enterShop=()=>{ try{ if(existing&&existing.shopId) localStorage.setItem('kd_shop',existing.shopId); }catch(e){} onEnter&&onEnter('merchant'); };
+  // กัน race: ปุ่มโชว์ "เข้าสู่ระบบ" ตอน existing ยังไม่ resolve เสร็จ (ก่อนกดจริง existing หาย) → กันเข้า merchant ทั้งที่ไม่มีร้าน
+  const enterShop=()=>{ if(!(existing&&existing.shopId)){ onSignup&&onSignup(); return; } try{ localStorage.setItem('kd_shop',existing.shopId); }catch(e){} onEnter&&onEnter('merchant'); };
   const feats = [
     {ic:'📲',bg:'var(--brand-soft)',c:'var(--brand)',t:'ระบบ LINE OA ครบชุด',s:'ร้านมีหน้าร้านบน LINE ลูกค้าแอดเพื่อน กดสั่ง จ่ายพร้อมเพย์ เงินเข้าบัญชีร้านตรง'},
     {ic:'📱',bg:'var(--accent-soft)',c:'var(--accent)',t:'สั่งออเดอร์ผ่านมือถือ',s:'ลูกค้าเปิดเมนู สั่งเอง จ่ายเอง จากมือถือ ไม่ต้องต่อคิว'},

@@ -621,7 +621,9 @@ function KaiDeeApp(){
     const hardTimer=setTimeout(fallback, 4500);
     const attempt=()=>{
       if(cancelled||done) return;
-      let hasLocal=false; try{ const st=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}'); hasLocal=!!(st.shop&&st.shop.shopId); }catch(e){}
+      let hasLocal=false, localOwnerLine=''; try{ const st=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}'); hasLocal=!!(st.shop&&st.shop.shopId); localOwnerLine=(st.shop&&st.shop.owner&&st.shop.owner.line)||''; }catch(e){}
+      // ⭐ กันปนร้าน (shared device): เครื่องนี้มีร้านแคชไว้ แต่คนที่ล็อกอิน LINE ตอนนี้เป็นคนละคนกับเจ้าของร้านที่แคช → ห้ามเชื่อแคชนี้ ให้ไปเช็คร้านจริงของคนที่ล็อกอินอยู่แทน
+      { const lu0=(typeof window!=='undefined'&&window.__lineUser)||null; if(hasLocal && lu0 && lu0.userId && localOwnerLine && lu0.userId!==localOwnerLine) hasLocal=false; }
       if(hasLocal){
         let lid=''; try{ const st=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}'); lid=(st.shop&&st.shop.shopId)||''; }catch(e){}
         let sat=0; try{ sat=+(sessionStorage.getItem('kd_signed_at')||0); }catch(e){}
@@ -740,7 +742,7 @@ function KaiDeeApp(){
       {role==='checking' && <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'var(--bg,#fff)' }}>
         <div style={{ fontSize:34 }}>{(brand&&brand.logo)?<img src={brand.logo} alt="" style={{width:54,height:54,borderRadius:14,objectFit:'cover'}}/>:<img src="logo.jpg" alt="" style={{width:54,height:54,borderRadius:14,objectFit:'cover'}}/>}</div>
         <div style={{ width:26, height:26, borderRadius:999, border:'3px solid var(--brand-soft,#e3efe9)', borderTopColor:'var(--brand,#1e9e6a)', animation:'kdspin 0.7s linear infinite' }}/>
-        <div style={{ fontSize:15.5, color:'var(--ink,#222)', fontWeight:800 }}>{(()=>{ let fs=false; try{ fs=sessionStorage.getItem('kd_fresh_signup')==='1'; }catch(e){} const signup = fs || /(?:[?&]|liff\.state)[^]*?(go%3[dD]signup|go=signup|role%3[dD]signup|role=signup)/.test(location.href); let hasReg=false; try{ const st=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}'); hasReg=!!(st.shop&&st.shop.shopId); }catch(e){} return (hasReg && store.shop&&store.shop.name&&!signup) ? ((store.lang!=='en')?('กำลังเข้าสู่ระบบ '+store.shop.name+'…'):('Signing in · '+store.shop.name+'…')) : ((store.lang!=='en')?'กำลังโหลด…':'Loading…'); })()}</div>
+        <div style={{ fontSize:15.5, color:'var(--ink,#222)', fontWeight:800 }}>{(()=>{ let fs=false; try{ fs=sessionStorage.getItem('kd_fresh_signup')==='1'; }catch(e){} const signup = fs || /(?:[?&]|liff\.state)[^]*?(go%3[dD]signup|go=signup|role%3[dD]signup|role=signup)/.test(location.href); let hasReg=false, mismatch=false; try{ const st=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}'); hasReg=!!(st.shop&&st.shop.shopId); const ownerLine=st.shop&&st.shop.owner&&st.shop.owner.line; const lu=(typeof window!=='undefined'&&window.__lineUser)||null; if(lu&&lu.userId&&ownerLine&&lu.userId!==ownerLine) mismatch=true; }catch(e){} return (hasReg && store.shop&&store.shop.name&&!signup&&!mismatch) ? ((store.lang!=='en')?('กำลังเข้าสู่ระบบ '+store.shop.name+'…'):('Signing in · '+store.shop.name+'…')) : ((store.lang!=='en')?'กำลังโหลด…':'Loading…'); })()}</div>
         <div style={{ fontSize:12, color:'var(--ink-3,#8a8f98)' }}>{(store.lang!=='en')?'ครั้งแรกอาจใช้เวลาสักครู่':'First time may take a moment'}</div>
         <style>{'@keyframes kdspin{to{transform:rotate(360deg)}}'}</style>
       </div>}

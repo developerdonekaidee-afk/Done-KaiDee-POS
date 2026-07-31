@@ -411,14 +411,29 @@ function TabBar({ tabs, active, onChange }){
 }
 
 // bottom sheet
+// ยึด max-height ตาม visualViewport แทน % ตายตัว — กันคีย์บอร์ดมือถือเด้งมาทับปุ่มด้านล่างชีต (เช่นปุ่มบันทึกเมนู/หมวดหมู่)
+function useViewportH(){
+  const [h,setH] = useState(()=> (typeof window!=='undefined' && window.visualViewport) ? window.visualViewport.height : (typeof window!=='undefined' ? window.innerHeight : 800));
+  useEffect(()=>{
+    if(typeof window==='undefined' || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const onResize = ()=> setH(vv.height);
+    vv.addEventListener('resize', onResize);
+    onResize();
+    return ()=> vv.removeEventListener('resize', onResize);
+  },[]);
+  return h;
+}
 function Sheet({ open, onClose, children, height }){
+  const vh = useViewportH();
   if(!open) return null;
+  const pct = (parseFloat(height)||86)/100;
   return (
     <div onClick={onClose} style={{ position:'absolute', inset:0, zIndex:40,
       background:'rgba(15,25,20,.42)', display:'flex', alignItems:'flex-end',
       animation:'kdFade .2s ease' }}>
       <div className="kd-slideup" onClick={e=>e.stopPropagation()} style={{ width:'100%',
-        background:'#fff', borderRadius:'26px 26px 0 0', maxHeight:height||'86%',
+        background:'#fff', borderRadius:'26px 26px 0 0', maxHeight:Math.round(vh*pct),
         display:'flex', flexDirection:'column', overflow:'hidden', paddingBottom:24 }}>
         <div style={{ display:'flex', justifyContent:'center', padding:'10px 0 4px' }}>
           <div style={{ width:40, height:5, borderRadius:3, background:'var(--hair-2)' }}/>
