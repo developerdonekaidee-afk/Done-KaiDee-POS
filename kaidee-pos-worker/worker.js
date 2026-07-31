@@ -285,6 +285,53 @@ async function walletPending(env, biz){
   const r = await env.DB.prepare("SELECT COUNT(*) n, COALESCE(SUM(amount),0) s FROM wallet_txns WHERE biz_id=? AND type='topup' AND status='pending'").bind(biz).first();
   return { count: (r && r.n) || 0, amount: (r && r.s) || 0 };
 }
+// ยืนยัน topup ที่ pending → เข้ายอด wallet จริง (ใช้ร่วมกันทั้งแอดมินกดมือ และ auto-match แจ้งเตือนธนาคาร)
+// conditional UPDATE (status='pending' เท่านั้นถึงจะเปลี่ยนได้) กันยืนยันซ้ำ/แข่งกัน — คืน {ok:false} ถ้าโดนจัดการไปแล้ว
+async function confirmWalletTopup(env, txnId, by){
+  const cur = await env.DB.prepare('SELECT * FROM wallet_txns WHERE id=?').bind(txnId).first();
+  if (!cur) return { ok: false, error: 'transaction not found' };
+  if (cur.status !== 'pending') return { ok: false, error: 'รายการนี้ถูกจัดการไปแล้ว' };
+  const lock = await env.DB.prepare("UPDATE wallet_txns SET status='confirmed',by=?,handled_at=? WHERE id=? AND status='pending'")
+    .bind(by || 'admin', now(), txnId).run();
+  if (!(lock.meta && lock.meta.changes)) return { ok: false, error: 'รายการนี้ถูกจัดการไปแล้ว' };
+  const w = await walletRow(env, cur.biz_id);
+  const bal = Math.round((w.balance + cur.amount) * 100) / 100;
+  await env.DB.prepare(`INSERT INTO wallets (biz_id,balance,auto,updated_at) VALUES (?,?,1,?)
+    ON CONFLICT(biz_id) DO UPDATE SET balance=excluded.balance, updated_at=excluded.updated_at`).bind(cur.biz_id, bal, now()).run();
+  await env.DB.prepare('UPDATE wallet_txns SET balance_after=? WHERE id=?').bind(bal, txnId).run();
+  return { ok: true, status: 'confirmed', balance: bal, bizId: cur.biz_id, amount: cur.amount };
+}
+// idempotent: log การจับคู่แจ้งเตือนธนาคาร → wallet topup (แยกจาก bank_alerts ที่ใช้กับบิลขาย POS)
+let _wbaReady = false;
+async function ensureWalletBankAlerts(env){ if(_wbaReady) return; _wbaReady = true;
+  try{ await env.DB.prepare('CREATE TABLE IF NOT EXISTS wallet_bank_alerts (id TEXT PRIMARY KEY, raw TEXT, amount INTEGER, matched_txn TEXT, matched_biz TEXT, created_at INTEGER)').run(); }catch(e){} }
+// จับคู่ข้อความแจ้งเงินเข้า (บัญชีกลางของระบบ ที่ร้านโอนมาเติมกระเป๋า) → topup ที่ pending อยู่ ไม่ผูก shop เดียว (เทียบทุกร้าน)
+// จับคู่ด้วยยอดตรงกัน (คลาดเคลื่อนได้ 0.5) เอาอันที่ pending ค้างนานสุดก่อน (FIFO) — เหมือนหลักการ autoMatchAlert ของบิลขาย
+async function autoMatchWalletTopup(env, text){
+  await ensureWallet(env); await ensureWalletBankAlerts(env);
+  const entries = parseCredits(text || ''); const ts = now(); const matched = [];
+  if (entries.length) {
+    const { results: rows } = await env.DB.prepare("SELECT * FROM wallet_txns WHERE type='topup' AND status='pending' ORDER BY created_at ASC LIMIT 500").all();
+    const used = new Set();
+    for (const e of entries) {
+      const cand = rows.filter(r => !used.has(r.id) && Math.abs(Math.round(r.amount) - e.amount) < 0.5);
+      const aid = 'wba' + ts + Math.random().toString(36).slice(2, 5);
+      if (cand.length) {
+        const r = cand[0]; used.add(r.id);
+        const res = await confirmWalletTopup(env, r.id, 'auto-bank-match');
+        if (res.ok) {
+          await env.DB.prepare('INSERT INTO wallet_bank_alerts (id,raw,amount,matched_txn,matched_biz,created_at) VALUES (?,?,?,?,?,?)')
+            .bind(aid, (e.raw || '').slice(0, 200), Math.round(e.amount), r.id, r.biz_id, ts).run();
+          matched.push({ amount: e.amount, txnId: r.id, bizId: r.biz_id });
+        }
+      } else {
+        await env.DB.prepare('INSERT INTO wallet_bank_alerts (id,raw,amount,matched_txn,matched_biz,created_at) VALUES (?,?,?,?,?,?)')
+          .bind(aid, (e.raw || '').slice(0, 200), Math.round(e.amount), null, null, ts).run();
+      }
+    }
+  }
+  return { parsed: entries.length, matched: matched.length, matches: matched };
+}
 // idempotent: ตาราง delivery_settlement_logs (กระทบยอดเดลิเวอรี · Expected vs Actual รายวัน แยกช่องทาง)
 let _delSetReady = false;
 async function ensureDeliverySettle(env){ if(_delSetReady) return; _delSetReady = true;
@@ -1008,15 +1055,17 @@ export default {
           if (!(r.meta && r.meta.changes)) return json({ ok: false, error: 'รายการนี้ถูกจัดการไปแล้ว' }, req, 409);
           return json({ ok: true, status: 'rejected' }, req);
         }
-        const lock = await env.DB.prepare("UPDATE wallet_txns SET status='confirmed',by=?,handled_at=? WHERE id=? AND status='pending'")
-          .bind(b.by || 'admin', now(), seg[1]).run();
-        if (!(lock.meta && lock.meta.changes)) return json({ ok: false, error: 'รายการนี้ถูกจัดการไปแล้ว' }, req, 409);
-        const w = await walletRow(env, cur.biz_id);
-        const bal = Math.round((w.balance + cur.amount) * 100) / 100;
-        await env.DB.prepare(`INSERT INTO wallets (biz_id,balance,auto,updated_at) VALUES (?,?,1,?)
-          ON CONFLICT(biz_id) DO UPDATE SET balance=excluded.balance, updated_at=excluded.updated_at`).bind(cur.biz_id, bal, now()).run();
-        await env.DB.prepare('UPDATE wallet_txns SET balance_after=? WHERE id=?').bind(bal, seg[1]).run();
-        return json({ ok: true, status: 'confirmed', balance: bal }, req);
+        const res = await confirmWalletTopup(env, seg[1], b.by || 'admin');
+        return json(res, req, res.ok ? 200 : 409);
+      }
+
+      /* ── WALLET-BANK-ALERT (ข้อความแจ้งเงินเข้าบัญชีกลาง → auto จับคู่กับ topup ที่ pending อยู่ ไม่ผูกร้านเดียว) ── */
+      if (seg[0] === 'wallet-bank-alert' && req.method === 'POST') {
+        const tok = req.headers.get('X-Admin-Token');
+        if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+        const b = await readBody();
+        const r = await autoMatchWalletTopup(env, b.text || b.message || '');
+        return json({ ok: true, ...r }, req);
       }
 
       /* ── WALLET-ACCOUNT — บัญชีรับเงินกลางของระบบ (ปลายทางที่ร้านโอนมาเติมกระเป๋า) ── */
