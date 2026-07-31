@@ -20,7 +20,7 @@ async function kdInitLiff(){
     await liff.init({ liffId: KD_LIFF_ID });
     window.KD_LIFF.inClient = liff.isInClient();
     // จอแสดงคิว (role=board) = จอแสดงผลเฉยๆ ไม่ต้องรู้ตัวตน LINE → ข้าม forced-login (กันแชร์ไปเปิดเครื่องอื่นแล้วเด้งหน้าสมัคร)
-    const _isBoard = (()=>{ try{ const u=new URL(location.href); let g=u.searchParams.get('role'); if(!g){ const st=u.searchParams.get('liff.state'); if(st){ g=new URLSearchParams(st.replace(/^[/?]+/,'')).get('role'); } } if(g==='board'||g==='kds') return true; }catch(e){} try{ if(sessionStorage.getItem('kd_dl_board')==='1'||sessionStorage.getItem('kd_dl_kds')==='1') return true; }catch(e){} return false; })();
+    const _isBoard = (()=>{ try{ const u=new URL(location.href); let g=u.searchParams.get('role'); if(!g){ const st=u.searchParams.get('liff.state'); if(st){ g=new URLSearchParams(st.replace(/^[/?]+/,'')).get('role'); } } if(g==='board'||g==='kds'||g==='market') return true; }catch(e){} try{ if(sessionStorage.getItem('kd_dl_board')==='1'||sessionStorage.getItem('kd_dl_kds')==='1'||sessionStorage.getItem('kd_dl_market')==='1') return true; }catch(e){} return false; })();
     if(!liff.isLoggedIn() && !_isBoard){
       if(liff.isInClient()){ liff.login(); return window.KD_LIFF; }  // ในแอป LINE → login เงียบ แล้ว redirect กลับ
     }

@@ -674,6 +674,15 @@ export default {
           const s = await getShopByOwner(env, line);   // ไม่มี line/ไม่เจอ = null (คืน null ให้ client รู้ว่าว่าง)
           return json(s ? rowShop(s) : null, req);
         }
+        // GET /shops/by-market?market=<slug> — ร้านทั้งหมดในตลาด/พื้นที่เดียวกัน (หน้า "ร้านในตลาดนี้" ฝั่งลูกค้า) · ต้องอยู่ก่อน /:id
+        // market เก็บใน extra JSON เหมือน lat/lng/week ฯลฯ — ตั้งผ่าน PATCH /shops/:id {market:'...'}
+        if (req.method === 'GET' && seg[1] === 'by-market') {
+          const market = url.searchParams.get('market');
+          if (!market) return json([], req);
+          const { results } = await env.DB.prepare("SELECT * FROM shops WHERE status='active' ORDER BY is_open DESC, name").all();
+          const list = results.map(rowShop).filter(s => s.market === market);
+          return json(list, req);
+        }
         // ── OWNER LOGIN (Backoffice) : POST /shops/:id/owner-login {line} | {pin} → owner token ──
         if (req.method === 'POST' && seg[1] && seg[2] === 'owner-login') {
           const b = await readBody();
@@ -825,7 +834,7 @@ export default {
           const f = (k, d) => (b[k] !== undefined ? b[k] : d);
           // extended fields → เก็บใน extra JSON (lat/lng/map/week/hoursMode/pause/delivery/features)
           let extra = {}; try { extra = cur.extra ? JSON.parse(cur.extra) : {}; } catch (e) {}
-          ['lat','lng','map','week','hoursMode','pause','delivery','features','cover','addons'].forEach(k => { if (b[k] !== undefined) extra[k] = b[k]; });
+          ['lat','lng','map','week','hoursMode','pause','delivery','features','cover','addons','market'].forEach(k => { if (b[k] !== undefined) extra[k] = b[k]; });
           // backfill เจ้าของ: ผูก owner_line ได้เฉพาะตอนยังว่าง (กันคนอื่นแย่งสิทธิ์ร้าน)
           let ownerLine = cur.owner_line;
           if (b.ownerLine && !cur.owner_line) ownerLine = b.ownerLine;
