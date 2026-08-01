@@ -884,6 +884,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
   const [resetCode,setResetCode] = m2State(''); const [resetCodeIn,setResetCodeIn] = m2State('');
   const openReset=()=>{ setResetCode(String(Math.floor(1000+Math.random()*9000))); setResetCodeIn(''); setResetOk(false); setResetSheet(true); };
   const [menuMgrOpen,setMenuMgrOpen] = m2State(false);
+  const [marketSheet,setMarketSheet] = m2State(false);
   // มาจาก "ตั้งเวลาเปิด-ปิดร้านก่อน" (กดจากหน้าเงินสด) → เปิดชีตตั้งค่าร้านให้เลย
   React.useEffect(()=>{ try{ if(window.__kdOpenHours){ window.__kdOpenHours=false; setShopSheet(true); } }catch(e){} }, []);
   const grouped = cats.map(c=>({ cat:c, items:menu.filter(m=>m.cat===c.id) }));
@@ -960,6 +961,17 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
             <div style={{ flex:1 }}>
               <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'จัดการเมนู · สินค้าที่โชว์หน้าขาย':'Manage menu · items on Sell'}</div>
               <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?`${menu.length} เมนู · ${cats.length} หมวด — เพิ่ม/แก้ราคา ต้นทุน แล้วโชว์หน้าขาย`:`${menu.length} items · ${cats.length} categories`}</div>
+            </div>
+            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
+          </button>
+          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ขายบนแพลตฟอร์ม :Done KaiDee':'Sell on :Done KaiDee'}</div>
+          <div style={{ fontSize:11, color:'var(--ink-3)', margin:'-2px 4px 2px', lineHeight:1.45 }}>{lang==='th'?'เปิดแล้วร้านคุณจะขึ้นหน้า “ร้านทั้งหมด” ให้ลูกค้าทั่วไปกดสั่งได้ — ไม่หัก GP ลูกค้าจ่ายเงินเข้าร้านตรง':'Your shop appears in the customer directory — no commission, customers pay you directly'}</div>
+          <button onClick={()=>setMarketSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
+            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
+            <span style={{ width:38, height:38, borderRadius:11, background:'var(--brand-soft)', color:'var(--brand)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🏬</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ตลาด/ทำเลของร้าน · เปิดขายบนแพลตฟอร์ม':'Market & platform listing'}</div>
+              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{shop.market ? (lang==='th'?`เปิดอยู่ · ${shop.market}`:`Listed · ${shop.market}`) : (lang==='th'?'ยังไม่เปิด — แตะเพื่อเลือกตลาด':'Not listed — tap to choose a market')}</div>
             </div>
             <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
           </button>
@@ -1163,6 +1175,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
         onDelete={()=>{ const delId=editing.id; setMenu(prev=>prev.filter(m=>m.id!==delId)); setEditing(null);
           // ลบบนเซิร์ฟเวอร์ด้วย (push เมนูเป็น upsert อย่างเดียว — ไม่ลบให้) ไม่งั้นเมนูที่ลบจะกลับมาตอนโหลดใหม่/เปิดอีกเครื่อง
           try{ if(window.KD_LIVE && window.KD_API && window.KD_API.deleteMenuItem) window.KD_API.deleteMenuItem(delId).catch(()=>{}); }catch(e){} }} />}
+      {marketSheet && <MarketJoinSheet shop={shop} setShop={setShop} onClose={()=>setMarketSheet(false)} />}
       {paySheet && <PaySettingsSheet pay={pay} setPay={setPay} onClose={()=>setPaySheet(false)} />}
       {memSheet && <MembersSheet members={members} pay={pay} setPay={setPay} onClose={()=>setMemSheet(false)} />}
       {shopSheet && <ShopProfileSheet shop={shop} setShop={setShop} regOpen={register&&register.open} onClose={()=>setShopSheet(false)} />}
@@ -1179,6 +1192,75 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
       {saleModeOpen && <ManageSaleModesSheet chanCfg={chanCfg} toggleSaleMode={toggleSaleMode} removeSaleMode={removeSaleMode} setChannelGp={setChannelGp} onAdd={()=>{ setSaleModeOpen(false); setSmAddOpen(true); }} onClose={()=>setSaleModeOpen(false)} />}
       {smAddOpen && <AddSaleModeSheet onClose={()=>{ setSmAddOpen(false); setSaleModeOpen(true); }} onAdd={(def)=>{ addSaleMode&&addSaleMode(def); setSmAddOpen(false); setSaleModeOpen(true); }} />}
     </div>
+  );
+}
+
+/* ══════════════ ขายบนแพลตฟอร์ม :Done KaiDee (ตลาด/ทำเลของร้าน) ══════════════
+   ร้านที่ตั้ง "ตลาด" ไว้ = โผล่ในหน้า "ร้านทั้งหมด" (?role=market) ให้ลูกค้าทั่วไปกดสั่งได้
+   สินค้าที่ลูกค้าเห็น = เมนูที่ติ๊กช่องทาง "ขายบน :Done KaiDee" ในหน้าแก้เมนู (ไม่ติ๊ก = ขายทุกช่องทาง) */
+function MarketJoinSheet({ shop, setShop, onClose }){
+  const { lang } = useT(); const TH = lang!=='en';
+  const [val,setVal]   = m2State(shop.market||'');
+  const [list,setList] = m2State([]);
+  const [busy,setBusy] = m2State(false);
+  const [msg,setMsg]   = m2State('');
+  React.useEffect(()=>{ let alive=true;
+    (async()=>{
+      try{ if(window.KD_API && window.KD_API.getShop){ const s=await window.KD_API.getShop();
+        if(alive && s && s.market && !shop.market){ setVal(s.market); setShop(p=>({ ...p, market:s.market })); } } }catch(e){}
+      try{ if(window.KD_API && window.KD_API.getShopsDirectory){ const d=await window.KD_API.getShopsDirectory();
+        if(alive && Array.isArray(d)) setList(Array.from(new Set(d.map(s=>s.market).filter(Boolean)))); } }catch(e){}
+    })();
+    return ()=>{ alive=false; };
+  },[]);
+  const save = async (next)=>{
+    setBusy(true); setMsg('');
+    try{
+      if(window.KD_API && window.KD_API.updateShop) await window.KD_API.updateShop(null, { market: next });
+      setShop(s=>({ ...s, market: next }));
+      setMsg(next ? (TH?'บันทึกแล้ว · ร้านคุณขึ้นหน้า “ร้านทั้งหมด” แล้ว':'Saved · your shop is now listed')
+                  : (TH?'ปิดแล้ว · ร้านจะไม่โชว์บนแพลตฟอร์ม':'Removed from the directory'));
+    }catch(e){ setMsg(TH?'บันทึกไม่สำเร็จ — เช็คเน็ตแล้วลองใหม่':'Save failed — check your connection'); }
+    setBusy(false);
+  };
+  return (
+    <Sheet open={true} onClose={onClose} height="90%">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'4px 20px 12px' }}>
+        <div>
+          <div style={{ fontSize:19, fontWeight:700 }}>{TH?'ขายบนแพลตฟอร์ม :Done KaiDee':'Sell on :Done KaiDee'}</div>
+          <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:1 }}>{TH?'ไม่หัก GP · ลูกค้าจ่ายเข้าร้านตรง':'No commission · customers pay you directly'}</div>
+        </div>
+        <button onClick={onClose} style={{ border:'none', background:'var(--bg)', width:34, height:34, borderRadius:999, cursor:'pointer' }}>{IC.x}</button>
+      </div>
+      <div style={{ overflowY:'auto', padding:'0 20px 20px', flex:1 }}>
+        <div style={{ background:'var(--brand-soft)', color:'var(--brand-ink)', borderRadius:12, padding:'11px 13px', fontSize:12.5, lineHeight:1.55, marginBottom:14 }}>
+          {TH?'ใส่ชื่อตลาด/ทำเลที่ร้านคุณตั้งอยู่ — ลูกค้าจะเห็นป้ายนี้บนการ์ดร้าน และรู้ว่าต้องมารับที่ไหน · ร้านในตลาดเดียวกันจะอยู่ในลิงก์ตลาดเดียวกันด้วย'
+             :'Enter the market/area your shop is in. Customers see it on your card and know where to pick up.'}
+        </div>
+        <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', marginBottom:6 }}>{TH?'ชื่อตลาด / ทำเล':'Market / area'}</div>
+        <input className="kd-input" value={val} onChange={e=>setVal(e.target.value)} placeholder={TH?'เช่น ตลาดลาดสวาย':'e.g. Ladsawai Market'} style={{ width:'100%' }}/>
+        {list.length>0 && <>
+          <div style={{ fontSize:12, color:'var(--ink-3)', margin:'12px 0 7px' }}>{TH?'ตลาดที่มีร้านอื่นอยู่แล้ว — แตะเพื่อใช้ชื่อเดียวกัน':'Existing markets — tap to reuse'}</div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
+            {list.map(m=>(
+              <button key={m} onClick={()=>setVal(m)} style={{ border:'none', cursor:'pointer', fontFamily:'var(--font)', fontSize:12.5, fontWeight:600,
+                padding:'7px 12px', borderRadius:999, background: val===m?'var(--brand)':'var(--bg)', color: val===m?'#fff':'var(--ink-2)' }}>📍 {m}</button>
+            ))}
+          </div>
+        </>}
+        <div style={{ background:'var(--bg)', borderRadius:12, padding:'11px 13px', fontSize:12.5, color:'var(--ink-2)', lineHeight:1.55, margin:'16px 0 4px' }}>
+          {TH?'สินค้าที่ลูกค้าบนแพลตฟอร์มเห็น = เมนูที่ติ๊กช่องทาง “ขายบน :Done KaiDee” ในหน้าแก้เมนู (ไม่ติ๊กช่องทางไหนเลย = ขายทุกช่องทาง) และตั้งราคาแยกต่อช่องทางได้'
+             :'Customers on the platform see items ticked for the “:Done KaiDee” channel in the item editor. Per-channel prices are supported.'}
+        </div>
+        {msg && <div style={{ fontSize:12.5, fontWeight:700, color:'var(--brand-ink)', margin:'10px 2px 0' }}>{msg}</div>}
+      </div>
+      <div style={{ flex:'0 0 auto', padding:'11px 20px calc(11px + env(safe-area-inset-bottom))', borderTop:'1px solid var(--hair)', display:'flex', flexDirection:'column', gap:9 }}>
+        <button onClick={()=>save(val.trim())} disabled={busy||!val.trim()} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:14, opacity:(busy||!val.trim())?.5:1 }}>
+          {busy?(TH?'กำลังบันทึก…':'Saving…'):(TH?'บันทึก · เปิดขายบนแพลตฟอร์ม':'Save · list my shop')}</button>
+        {shop.market && <button onClick={()=>{ setVal(''); save(''); }} disabled={busy} style={{ border:'none', background:'none', cursor:'pointer', fontFamily:'var(--font)', fontSize:12.5, color:'var(--danger)', textDecoration:'underline' }}>
+          {TH?'ปิดการขายบนแพลตฟอร์ม (เอาร้านออกจากหน้าร้านทั้งหมด)':'Remove my shop from the directory'}</button>}
+      </div>
+    </Sheet>
   );
 }
 

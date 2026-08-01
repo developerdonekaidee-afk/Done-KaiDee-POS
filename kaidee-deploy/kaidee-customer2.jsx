@@ -452,7 +452,13 @@ function CustomerApp({ store }){
   // สินค้าขายฝากที่คงเหลือ 0 → โชว์ "สินค้าหมด" real-time (รีเฟรชตามรอบ poll ออเดอร์)
   const [csStock,setCsStock] = c2State({});
   React.useEffect(()=>{ if(typeof window!=='undefined' && window.KD_LIVE && window.KD_API && window.KD_API.listConsignStock){ window.KD_API.listConsignStock().then(r=>{ if(Array.isArray(r)){ const m={}; r.forEach(c=>{ m[c.id]=c.stock; }); setCsStock(m); } }).catch(()=>{}); } },[store.orders]);
-  const menuView = React.useMemo(()=> (store.menu||[]).map(m=> (m.consign && m.consignId && csStock[m.consignId]!=null && csStock[m.consignId]<=0) ? {...m, off:true} : m), [store.menu, csStock]);
+  // เปิดจากหน้า "ร้านทั้งหมด / ตลาด" ของแพลตฟอร์ม (?via=market) → เห็นเฉพาะเมนูที่ร้านติ๊กช่องทาง
+  // "ขายบน :Done KaiDee" ไว้ และใช้ราคาของช่องทางนั้น (ร้านตั้งราคาแยกต่อช่องทางได้ในหน้าแก้เมนู)
+  const viaMarket = React.useMemo(()=> (typeof kdViaMarket==='function' ? kdViaMarket() : false), []);
+  const menuView = React.useMemo(()=>{
+    const list = (viaMarket && typeof marketMenuView==='function') ? marketMenuView(store.menu) : (store.menu||[]);
+    return list.map(m=> (m.consign && m.consignId && csStock[m.consignId]!=null && csStock[m.consignId]<=0) ? {...m, off:true} : m);
+  }, [store.menu, csStock, viaMarket]);
   const [placed,setPlaced] = c2State(null);
   const cartCount = Object.values(cart).reduce((a,e)=>a+((e&&e.qty)||0),0);
   const myActive = store.orders.filter(o=>o.mine && o.status!=='done').length;

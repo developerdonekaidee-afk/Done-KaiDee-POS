@@ -485,7 +485,7 @@ function CrmVertical({ onPick, onBack }){
         <div style={{fontSize:13.5,opacity:.92,marginTop:9,lineHeight:1.5}}>ระบบจะเปิดโมดูล + เมนูตั้งต้นให้ตรงประเภท — เลือกได้ข้อเดียว</div>
       </div>
       <div className="kd-body"><div style={{padding:'16px 16px 26px'}}>
-        {CRM_VERTICALS.filter(v=>v.id!=='fitness'&&v.id!=='laborwin').map(v=>{ const on=sel===v.id; const fit=v.id==='fitness'; return (
+        {CRM_VERTICALS.map(v=>{ const on=sel===v.id; const fit=v.id==='fitness'; return (
           <button key={v.id} onClick={()=>setSel(v.id)} style={{width:'100%',textAlign:'left',display:'flex',gap:13,alignItems:'center',background:'#fff',border:on?'2px solid var(--brand)':'1.5px solid var(--hair-2)',borderRadius:15,padding:'14px 15px',cursor:'pointer',marginBottom:11,fontFamily:'var(--font)',boxShadow:on?'0 4px 16px rgba(14,156,136,.12)':'none'}}>
             <div style={{width:46,height:46,borderRadius:13,flex:'0 0 auto',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,background:fit?'#EAF3F1':'var(--brand-soft)'}}>{v.emoji}</div>
             <div style={{flex:1,minWidth:0}}>

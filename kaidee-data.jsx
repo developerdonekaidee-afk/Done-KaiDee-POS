@@ -316,10 +316,13 @@ const CHANNELS = {
   shopee:  { th:'ShopeeFood',    en:'ShopeeFood',   c:'#EE4D2D', prefix:'S', ic:IC.moto,  online:true },
   panda:   { th:'foodpanda',     en:'foodpanda',    c:'#D70F64', prefix:'P', ic:IC.moto,  online:true },
   delivery:{ th:'เดลิเวอรีร้าน', en:'Own delivery', c:'#8257C4', prefix:'D', ic:IC.moto,  online:true },
+  // แพลตฟอร์มของเราเอง — ลูกค้าเปิดจากหน้า "ร้านทั้งหมด/ตลาด" แล้วสั่งตรงกับร้าน
+  // online:false เพราะร้านรับเงินเอง (ไม่มี GP ไม่ต้องรอแพลตฟอร์มโอนให้)
+  market:  { th:'ขายบน :Done KaiDee', en:'DoneKaiDee', c:'#26619C', prefix:'K', ic:IC.store, online:false },
 };
 
 /* ── sale-mode config (ช่องทางสำหรับ "คีย์บันทึกการขายเอง" — ไม่ใช่รับออเดอร์อัตโนมัติ) ── */
-const DEFAULT_SALEMODES = ['takeaway','dinein','walkin','grab','linemn','shopee'];
+const DEFAULT_SALEMODES = ['takeaway','dinein','walkin','market','grab','linemn','shopee'];
 function chMeta(cfg, k){
   return (cfg && cfg.custom && cfg.custom[k]) || CHANNELS[k] || { th:k, en:k, c:'#57635C', prefix:(String(k)[0]||'Q').toUpperCase(), online:false };
 }
@@ -334,6 +337,14 @@ function activeSaleModes(cfg){ cfg=cfg||{}; return allSaleModes(cfg).filter(k=> 
 function isPlatform(cfg, k){ return !!chMeta(cfg,k).online; }
 // เมนูขายช่องทางนี้ไหม (ไม่กำหนด = ขายได้ทุกช่องทาง)
 function menuSellsOn(item, k){ const ch=item&&item.channels; return (!ch||!ch.length) ? true : ch.indexOf(k)>=0; }
+// ลูกค้าเข้ามาจากหน้า "ร้านทั้งหมด/ตลาด" ของแพลตฟอร์มไหม (?via=market · รองรับ liff.state ที่ LINE ห่อมา)
+function kdViaMarket(){ try{ const u=new URL(location.href);
+  if(u.searchParams.get('via')==='market') return true;
+  const st=u.searchParams.get('liff.state');
+  if(st) return new URLSearchParams(st.replace(/^[/?]+/,'')).get('via')==='market';
+}catch(e){} return false; }
+// เมนูชุดที่ลูกค้าฝั่งแพลตฟอร์มเห็น: เฉพาะที่ติ๊กช่องทาง market + ใช้ราคาของช่องทางนั้น
+function marketMenuView(menu){ return (menu||[]).filter(m=>menuSellsOn(m,'market')).map(m=>({ ...m, price: priceFor(m,'market') })); }
 // ราคาต่อช่องทาง (ไม่ตั้ง = ใช้ราคาปกติ)
 function priceFor(item, k){ const pc=item&&item.priceByCh; const v=pc?pc[k]:null; return (v!=null && v!=='') ? (Number(v)||0) : Number((item&&item.price)||0); }
 // สูตรตัดสต๊อกต่อช่องทาง (แพ็กเกจต่างกัน) — ไม่ตั้ง = ใช้สูตรเริ่มต้น
@@ -486,6 +497,7 @@ Object.assign(window, {
   DICT, tr, LangCtx, useT, DataCtx, useCats, money, money2, Icon, IC, FARE, calcFare, kdShopOpen, kdShiftExpired,
   CATS, MENU, menuById, SEED_SALES, saleTotal, saleCost, kdVat, CHANNELS, qLabel, PAYS, RIDER_JOBS,
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
+  kdViaMarket, marketMenuView,
   deliveryCfg, deliveryFee, customerPaysDelivery,
   RUNITS, runit, TRACK_UNIT, buyUnitsFor, convQty, rawValue, RAW_CATS, RAW, rawById, SEED_PURCHASES, effItemCost, effSaleCost,
   TopBar, TabBar, Sheet, useToast, Stat, FoodTile,

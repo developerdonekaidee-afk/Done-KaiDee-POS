@@ -40,6 +40,7 @@ function MarketHome({ store }){
     const u = new URL(location.href);
     u.searchParams.set('shop', s.id);
     u.searchParams.set('role', 'customer');
+    u.searchParams.set('via', 'market');   // → เห็นเฉพาะเมนู/ราคาที่ร้านเปิดขายบนแพลตฟอร์ม
     u.searchParams.delete('liff.state');
     location.href = u.toString();
   };

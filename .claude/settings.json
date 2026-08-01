@@ -134,7 +134,13 @@
       "Bash(npm i *)",
       "Bash(cp kaidee-merchant2.jsx kaidee-deploy/kaidee-merchant2.jsx)",
       "Bash(sed -i '' 's|kaidee-merchant2.jsx?v=p2-20260731a|kaidee-merchant2.jsx?v=p2-20260801b|' index.html kaidee-deploy/index.html)",
-      "Bash(git commit -q -m ' *)"
+      "Bash(git commit -q -m ' *)",
+      "Bash(node -e \"console.log\\(require\\('puppeteer/package.json'\\).version\\)\")",
+      "Bash(node testmenu.js)",
+      "Bash(grep -n \"shop=\\\\${\\\\|role=customer\\\\|role=board\\\\|role=kds\\\\|role=rider\\\\|role=staff\" kaidee-home.jsx)",
+      "Bash(sed -i '' \"s/await click\\('ร้านค้า'\\)/await click\\('ตั้งค่าร้าน'\\)/; s|/merchant-menu.png|/merchant-menu2.png|\" live-merchant.js)",
+      "Bash(sed -i '' \"s/for\\(let i=0;i<10;i++\\)/for\\(let i=0;i<3;i++\\)/\" live-merchant.js)",
+      "Bash(node live-merchant.js)"
     ]
   }
 }

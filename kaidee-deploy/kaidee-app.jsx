@@ -489,7 +489,8 @@ function KaiDeeApp(){
           setShop(s=>{ const f={ ...(s.features||{}) };
             if(mods){ ['orders','delivery','reports','stock'].forEach(k=>{ if(mods[k]===false) f[k]=false; }); }
             return { ...s, name:sh.name, emoji:sh.emoji||s.emoji, phone:sh.phone||s.phone,
-              address:sh.address||s.address, open:sh.open||s.open, close:sh.close||s.close, isOpen:sh.isOpen, seats:sh.seats, features:f }; });
+              address:sh.address||s.address, open:sh.open||s.open, close:sh.close||s.close, isOpen:sh.isOpen, seats:sh.seats,
+              market:(sh.market!=null?sh.market:s.market), features:f }; });
           setPay(p=>({ ...p, shopName:sh.name, promptpay: sh.promptpayId || p.promptpay }));
           if(sh.plan || sh.expiry) setSub(su=>({ ...su, plan: sh.plan||su.plan, expiry: sh.expiry||su.expiry, status: sh.status||su.status }));
         }
@@ -587,7 +588,11 @@ function KaiDeeApp(){
   const registerStaff=(o)=>{ const nm=String((o&&o.name)||'').trim(); if(!nm) return; const line=(o&&o.line)||''; setStaffList(p=>{ if(line&&p.some(s=>s.line===line)) return p; return [...p,{ id:'st'+Date.now(), name:nm, phone:String((o&&o.phone)||'').trim(), pin:'', line, role:'staff', status:'pending' }]; }); };
   const removeStaff=(id)=>setStaffList(p=>p.filter(s=>s.id!==id));
   // keep a live menu registry so menuById() resolves real shop prices (not just seed)
-  if(typeof window!=='undefined'){ window.__kdMenu = menu; window.__kdPay = pay; }
+  // ลูกค้าที่เข้ามาจากหน้าแพลตฟอร์ม (?via=market) ต้องคิดเงินด้วยราคาช่องทาง market ทั้งตะกร้า/หน้าจ่าย
+  if(typeof window!=='undefined'){
+    window.__kdMenu = (typeof kdViaMarket==='function' && kdViaMarket() && typeof marketMenuView==='function') ? marketMenuView(menu) : menu;
+    window.__kdPay = pay;
+  }
   const store = { menu, setMenu, cats, setCats, addCat, updateCat, deleteCat, chanCfg, setChanCfg, addSaleMode, toggleSaleMode, removeSaleMode, sales, addSale, settleSale, verifySale, unverifySale, patchSale, settlePlatform, addKitchenTicket, orders, setOrders, addOrder, patchOrder, nextQueue, pay, setPay, members, setMembers, staffList, addStaff, removeStaff, updateStaff, registerStaff, shop, setShop, sub, setSub,
     costMode, setCostMode, raw, setRaw, addRaw, updateRaw, deleteRaw, purchases, addPurchase, wastes, addWaste, deleteWaste,
     register, openRegister, addCashMove, closeRegister, reopenDay, cashDays, startNewShop, quotes, addQuote, updateQuote, deleteQuote,
