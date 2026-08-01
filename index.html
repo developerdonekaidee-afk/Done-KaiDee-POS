@@ -181,6 +181,13 @@
     };
     // (ปุ่มลอย "อัปเดตระบบ" ถูกเอาออกตามคำสั่ง — ยังเรียกด้วยมือได้ที่ console: KD_HARD_UPDATE())
   </script>
+  <script>
+    // ดักจับ "ติดตั้งเป็นแอป" (PWA) ไว้ตั้งแต่ต้น — ร้านค้ากดติดตั้งลงหน้าจอโฮมได้จากเช็คลิสต์เปิดร้าน
+    // Android/Chrome เท่านั้นที่ยิง event นี้ · iOS Safari ไม่รองรับ ต้องสอนกดปุ่มแชร์ → เพิ่มไปยังหน้าจอโฮมแทน
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.__kdInstallPrompt = e; });
+    window.__kdIsStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    window.__kdIsIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  </script>
   <script type="text/babel">
     (async () => {
       // init LINE LIFF ก่อน render — ได้โปรไฟล์ผู้ใช้ (ถ้าเปิดในแอป LINE), fallback เดโมถ้าเปิดในเบราว์เซอร์

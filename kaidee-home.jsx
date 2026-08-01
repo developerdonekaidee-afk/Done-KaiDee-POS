@@ -404,6 +404,20 @@ function HomeScreen({ shop, setShop, sub, setSub, menu, orders, sales, onGo, onU
   const testDone = (orders||[]).length>0 || (sales||[]).length>0;
   const lineDone = !!(shop && shop.tasks && shop.tasks.line);
   const setLineDone = (v)=> setShop(p=>({ ...p, tasks:{ ...(p.tasks||{}), line:v } }));
+  const [installDone, setInstallDone] = hState(()=> (typeof window!=='undefined' && window.__kdIsStandalone && window.__kdIsStandalone()) || false);
+  const installApp = async () => {
+    if (typeof window==='undefined') return;
+    if (window.__kdInstallPrompt) {
+      window.__kdInstallPrompt.prompt();
+      const { outcome } = await window.__kdInstallPrompt.userChoice;
+      window.__kdInstallPrompt = null;
+      if (outcome === 'accepted') setInstallDone(true);
+    } else if (window.__kdIsIOS && window.__kdIsIOS()) {
+      alert(TH ? 'วิธีติดตั้งบน iPhone:\n1. แตะปุ่มแชร์ 📤 ด้านล่าง (หรือแถบที่อยู่บนบางเครื่อง)\n2. เลือก "เพิ่มไปยังหน้าจอโฮม"' : 'On iPhone:\n1. Tap the Share button 📤\n2. Choose "Add to Home Screen"');
+    } else {
+      alert(TH ? 'เปิดเมนูเบราว์เซอร์ (⋮ มุมขวาบน) แล้วเลือก "ติดตั้งแอป" หรือ "เพิ่มไปยังหน้าจอโฮม"' : 'Open the browser menu (⋮) and choose "Install app" or "Add to Home Screen"');
+    }
+  };
   const steps = [
     { k:'menu', done:menuDone, auto:true, go:()=>onGo('store'),
       t:TH?'เพิ่มเมนูอาหาร':'Add menu items', s:TH?'ใส่ชื่อ ราคา รูป อย่างน้อย 1 รายการ':'Add at least one item with price' },
@@ -411,6 +425,8 @@ function HomeScreen({ shop, setShop, sub, setSub, menu, orders, sales, onGo, onU
       t:TH?'ผูก Rich menu LINE':'Link LINE Rich menu', s:TH?'วางลิงก์ลูกค้าในเมนู LINE OA ของร้าน':'Paste customer link into your LINE OA menu' },
     { k:'test', done:testDone, auto:true, go:()=>onGo('sell'),
       t:TH?'ลองขาย/สั่งทดสอบ 1 ครั้ง':'Make one test sale', s:TH?'กดขายเองดูว่ายอด/ออเดอร์เข้าระบบ':'Ring up a sale to see it flow in' },
+    { k:'install', done:installDone, auto:true, go:installApp,
+      t:TH?'ติดตั้งเป็นแอปบนมือถือ':'Install as an app', s:TH?'กดครั้งเดียว เปิดใช้งานได้เหมือนแอปจริง ไม่ต้องเข้าเบราว์เซอร์':'One tap — opens full-screen like a real app' },
   ];
   const doneN = steps.filter(s=>s.done).length;
   const allDone = doneN===steps.length;
