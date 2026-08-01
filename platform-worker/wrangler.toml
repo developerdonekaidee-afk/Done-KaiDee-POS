@@ -7,7 +7,7 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "platform"
-database_id = "PUT-YOUR-D1-DATABASE-ID-HERE"
+database_id = "9aa67698-cab2-433a-b94f-dcbd593319ba"
 
 # ── Durable Object (realtime WebSocket) — ไม่ผูกก็ deploy ได้ แต่ /ws จะคืน 501 (client fallback poll) ──
 [[durable_objects.bindings]]
