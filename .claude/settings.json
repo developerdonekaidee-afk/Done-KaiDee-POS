@@ -129,7 +129,12 @@
       "Bash(git commit *)",
       "Bash(curl -s -m 20 https://kaidee-pos-worker.oneday-pos.workers.dev/shops/directory)",
       "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/73697519-8c75-4cfe-a925-6cff5102936c/scratchpad/checkcols.js)",
-      "Bash(node --check kaidee-pos-worker/worker.js)"
+      "Bash(node --check kaidee-pos-worker/worker.js)",
+      "Bash(npx --yes @babel/cli@7 --version)",
+      "Bash(npm i *)",
+      "Bash(cp kaidee-merchant2.jsx kaidee-deploy/kaidee-merchant2.jsx)",
+      "Bash(sed -i '' 's|kaidee-merchant2.jsx?v=p2-20260731a|kaidee-merchant2.jsx?v=p2-20260801b|' index.html kaidee-deploy/index.html)",
+      "Bash(git commit -q -m ' *)"
     ]
   }
 }
