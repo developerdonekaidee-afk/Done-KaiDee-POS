@@ -120,7 +120,8 @@ function KaiDeeApp(){
       // ⭐ FX-001: เครื่องนี้มีร้านอยู่แล้ว = เจ้าของร้านกลับมาใช้งาน → เข้าแอปตรง ไม่เด้งหน้าสมัคร
       try{ const st=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}');
         if(st && st.shop && (st.shop.shopId || st.shop.name)) return; }catch(e){}
-      try{ if(localStorage.getItem('kd_shop')) return; }catch(e){}
+      // 'kaidee' = ค่า fallback ของ kaidee-api ไม่ใช่ร้านจริงของเครื่องนี้ → ยังต้องให้เลือกระบบก่อน
+      try{ const _ks=localStorage.getItem('kd_shop'); if(_ks && _ks!=='kaidee') return; }catch(e){}
       location.replace('Signup Chooser.html');
     }catch(e){} })();
     if(qp('go')==='signup' && !qp('shop') && !qp('role')) return 'crm';

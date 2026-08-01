@@ -24,7 +24,9 @@ function kdShopId() {
   } catch (e) { return 'kaidee'; }
 }
 let KD_SHOP = kdShopId();
-try { localStorage.setItem('kd_shop', KD_SHOP); } catch (e) {}
+// เขียนลงเครื่องเฉพาะเมื่อรู้ร้านจริง — ห้ามเขียนค่า fallback 'kaidee' ลงไปเอง
+// (ไม่งั้นเครื่องใหม่จะถูกนับว่า "มีร้านแล้ว" แล้วข้ามหน้า "สมัครใช้งาน · เลือกระบบ" ไปเลย)
+try { if (KD_SHOP !== 'kaidee' || localStorage.getItem('kd_shop')) localStorage.setItem('kd_shop', KD_SHOP); } catch (e) {}
 
 function _withShop(path, method) {
   // แนบ ?shop= ให้ GET/DELETE (body จะแนบ shopId แทนใน POST/PATCH)
