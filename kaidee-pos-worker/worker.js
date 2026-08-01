@@ -851,9 +851,12 @@ export default {
           if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return json({ ok: false, error: 'ไม่มีสิทธิ์' }, req, 403);
           const cur = await getShop(env, seg[1]);
           if (!cur) return err('shop not found', req, 404);
-          const tbls = ['orders','sales','members','menu','raw','purchases','cash_days','quotes','settings','devices','counters'];
+          const tbls = ['orders','sales','members','menu','raw','purchases','cash_days','quotes','settings','devices','counters',
+            'pay_requests','vendors','locations','consignment_stock','consignment_documents','inventory_transactions',
+            'delivery_settlement_logs','refunds','code_requests','line_pairs','admin_access_log','bank_alerts'];
           for (const t of tbls) { try { await env.DB.prepare(`DELETE FROM ${t} WHERE shop_id=?`).bind(seg[1]).run(); } catch (e) {} }
-          try { await env.DB.prepare('DELETE FROM pay_requests WHERE shop_id=?').bind(seg[1]).run(); } catch (e) {}
+          // wallet ผูกด้วย biz_id ไม่ใช่ shop_id — ลบแยก
+          for (const t of ['wallets','wallet_txns','wallet_accounts']) { try { await env.DB.prepare(`DELETE FROM ${t} WHERE biz_id=?`).bind(seg[1]).run(); } catch (e) {} }
           await env.DB.prepare('DELETE FROM shops WHERE id=?').bind(seg[1]).run();
           return json({ ok: true, deleted: seg[1] }, req);
         }
