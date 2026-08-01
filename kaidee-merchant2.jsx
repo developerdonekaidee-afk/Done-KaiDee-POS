@@ -3032,7 +3032,9 @@ function MerchantApp({ store }){
   const _inLine = typeof window!=='undefined' && window.KD_LIFF && window.KD_LIFF.mode==='line';
   if(_owner && _owner.line && _inLine && _lu && _lu.userId !== _owner.line) return <OwnerBlocked lang={lang}/>;
   if(!devOk) return <DeviceLimitScreen lang={lang} info={devInfo} store={store}/>;
-  const freeTier = sub.plan!=='paid' && expDays < 0;
+  // เชื่อผลจากเซิร์ฟเวอร์ (_licActive) ก่อนเสมอถ้าเคยเช็คสำเร็จแล้ว — กันแก้ sub.plan/expiry ใน localStorage เพื่อปลดล็อกเอง
+  // ยังไม่เคยเช็ค (_licActive undefined) → fallback วันหมดอายุจาก local ไปก่อน กันแอปสะดุดตอนโหลดครั้งแรก/ออฟไลน์
+  const freeTier = sub._licActive === true ? false : sub._licActive === false ? true : (sub.plan!=='paid' && expDays < 0);
   const LOCKED = freeTier ? ['sell','orders','reports','stock'] : [];
   const isLocked = (k)=> LOCKED.includes(k);
   const TH = lang!=='en';
