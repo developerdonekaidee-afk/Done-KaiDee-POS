@@ -260,11 +260,32 @@ async function ensureRefundTable(env){ if(_refundReady) return; _refundReady = t
 let _memberColsReady = false;
 async function ensureMemberCols(env){ if(_memberColsReady) return; _memberColsReady = true;
   try{ await env.DB.prepare('ALTER TABLE members ADD COLUMN phone TEXT').run(); }catch(e){} }
-// idempotent: ผูกเมนูกับสินค้าขายฝาก (is_consignment) — consign flag + consign_id → ตัดจากคลังฝากตอนขาย
+// idempotent: คอลัมน์เมนูที่ INSERT ด้านล่างใช้ แต่ไม่ได้อยู่ใน DDL ตั้งต้น
+//   recipe/off  — ขาดไปตั้งแต่แรก ทำให้ POST /menu พัง 500 ทุกครั้ง (เมนูไม่เคย sync ขึ้นเซิร์ฟเวอร์เลย)
+//   consign/consign_id — ผูกเมนูกับสินค้าขายฝาก → ตัดจากคลังฝากตอนขาย
+// มีคอลัมน์อยู่แล้ว = ALTER throw แล้วกลืน
 let _menuConsignReady = false;
 async function ensureMenuConsignCols(env){ if(_menuConsignReady) return; _menuConsignReady = true;
+  try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN recipe TEXT').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN off INTEGER DEFAULT 0').run(); }catch(e){}
   try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN consign INTEGER DEFAULT 0').run(); }catch(e){}
   try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN consign_id TEXT').run(); }catch(e){} }
+// idempotent: ตารางฝั่งร้านที่ไม่เคยถูกสร้างจริงบน D1 (settings/raw/purchases/cash_days/quotes)
+//   → ก่อนหน้านี้ทุก endpoint เหล่านี้ 500 เงียบๆ ข้อมูลร้านเลยอยู่แค่ในเครื่อง ย้ายเครื่อง = หาย
+let _shopTablesReady = false;
+async function ensureShopTables(env){ if(_shopTablesReady) return; _shopTablesReady = true;
+  const ddl = [
+    `CREATE TABLE IF NOT EXISTS settings ( shop_id TEXT PRIMARY KEY, data TEXT, updated_at INTEGER )`,
+    `CREATE TABLE IF NOT EXISTS raw ( shop_id TEXT NOT NULL, id TEXT NOT NULL, cat TEXT, th TEXT, unit TEXT,
+       stock REAL DEFAULT 0, avg_cost REAL DEFAULT 0, low REAL DEFAULT 0, updated_at INTEGER, PRIMARY KEY (shop_id,id) )`,
+    `CREATE TABLE IF NOT EXISTS purchases ( shop_id TEXT NOT NULL, id TEXT NOT NULL, date TEXT, note TEXT,
+       lines TEXT, total INTEGER, created_at INTEGER, PRIMARY KEY (shop_id,id) )`,
+    `CREATE TABLE IF NOT EXISTS cash_days ( shop_id TEXT NOT NULL, id TEXT NOT NULL, date TEXT, data TEXT,
+       created_at INTEGER, PRIMARY KEY (shop_id,id) )`,
+    `CREATE TABLE IF NOT EXISTS quotes ( shop_id TEXT NOT NULL, id TEXT NOT NULL, status TEXT, data TEXT,
+       created_at INTEGER, PRIMARY KEY (shop_id,id) )`,
+  ];
+  for (const q of ddl) { try{ await env.DB.prepare(q).run(); }catch(e){} } }
 // idempotent: log การเข้าดู Backoffice ร้านโดยแอดมินแอป (PDPA — เก็บร่องรอยการเข้าถึงข้อมูลร้าน)
 let _adminLogReady = false;
 async function ensureAdminLog(env){ if(_adminLogReady) return; _adminLogReady = true;
@@ -1574,6 +1595,7 @@ export default {
 
       /* ── RAW MATERIALS (สต๊อก) — client เป็นเจ้าของค่า · server เก็บอย่างเดียว ── */
       if (seg[0] === 'raw') {
+        await ensureShopTables(env);
         if (req.method === 'GET') {
           const { results } = await env.DB.prepare('SELECT * FROM raw WHERE shop_id=? ORDER BY cat,id').bind(shop).all();
           return json(results.map(r => ({ id:r.id, cat:r.cat, th:r.th, unit:r.unit, stock:r.stock, avgCost:r.avg_cost, low:r.low })), req);
@@ -1592,6 +1614,7 @@ export default {
 
       /* ── PURCHASES (ซื้อของเข้า) ── */
       if (seg[0] === 'purchases') {
+        await ensureShopTables(env);
         if (req.method === 'GET') {
           const { results } = await env.DB.prepare('SELECT * FROM purchases WHERE shop_id=? ORDER BY date DESC, created_at DESC LIMIT 500').bind(shop).all();
           return json(results.map(p => ({ id:p.id, date:p.date, note:p.note, lines:JSON.parse(p.lines||'[]'), total:p.total })), req);
@@ -1611,6 +1634,7 @@ export default {
 
       /* ── CASH DAYS (ปิดวัน) ── */
       if (seg[0] === 'cash-days') {
+        await ensureShopTables(env);
         if (req.method === 'GET') {
           const { results } = await env.DB.prepare('SELECT * FROM cash_days WHERE shop_id=? ORDER BY created_at DESC LIMIT 500').bind(shop).all();
           return json(results.map(d => ({ id:d.id, ...JSON.parse(d.data||'{}') })), req);
@@ -1625,6 +1649,7 @@ export default {
 
       /* ── QUOTES (ใบเสนอราคา) ── */
       if (seg[0] === 'quotes') {
+        await ensureShopTables(env);
         if (req.method === 'GET') {
           const { results } = await env.DB.prepare('SELECT * FROM quotes WHERE shop_id=? ORDER BY created_at DESC LIMIT 500').bind(shop).all();
           return json(results.map(q => ({ id:q.id, ...JSON.parse(q.data||'{}') })), req);
@@ -1942,6 +1967,7 @@ export default {
 
       /* ── SETTINGS (costMode/register/week/holidayNote) ── */
       if (seg[0] === 'settings') {
+        await ensureShopTables(env);
         if (req.method === 'GET') {
           const r = await env.DB.prepare('SELECT data FROM settings WHERE shop_id=?').bind(shop).first();
           return json(r ? JSON.parse(r.data||'{}') : {}, req);
