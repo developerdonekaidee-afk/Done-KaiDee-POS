@@ -115,33 +115,51 @@ function MarketHome({ store }){
           </div>
         )}
 
-        {filtered && filtered.map(s => (
-          <button key={s.id} onClick={() => openShop(s)} style={{
-            display:'flex', flexDirection:'column', textAlign:'left', cursor:'pointer', border:'none', padding:0,
-            background:'var(--card,#fff)', borderRadius:18, overflow:'hidden',
-            boxShadow:'0 2px 10px rgba(20,40,32,.08)', fontFamily:'inherit',
-          }}>
-            {/* cover — รูปร้านถ้ามี ไม่งั้นใช้พื้นไล่เฉดสีแบรนด์ + อีโมจิใหญ่ (แบบการ์ด Grab) */}
-            <div style={{ width:'100%', height:104, position:'relative',
-              background: s.logo ? undefined : 'linear-gradient(135deg,var(--brand-soft,#E9EFF5),var(--card,#fff))' }}>
-              {s.logo ? <img src={s.logo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
-                      : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>{s.emoji || '🍽️'}</div>}
-              <div style={{
-                position:'absolute', top:10, right:10, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:999,
-                background: s.isOpen ? 'rgba(255,255,255,.94)' : 'rgba(30,30,30,.7)',
-                color: s.isOpen ? 'var(--brand-ink,#13304E)' : '#fff',
-              }}>{s.isOpen ? (TH ? '🟢 เปิดอยู่' : '🟢 Open') : (TH ? 'ปิดแล้ว' : 'Closed')}</div>
-              {directory && s.market && <div style={{ position:'absolute', bottom:10, left:10, fontSize:10.5, fontWeight:700, padding:'3px 9px', borderRadius:999,
-                background:'rgba(255,255,255,.94)', color:'var(--accent-ink,#1F5C99)' }}>📍{s.market}</div>}
-            </div>
-            <div style={{ padding:'11px 14px 13px' }}>
-              <div style={{ fontWeight:700, fontSize:15, color:'var(--ink,#1B2420)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{s.name}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3,#8A948E)', marginTop:3 }}>{s.cat ? s.cat + ' · ' : ''}{s.open}–{s.close}</div>
-            </div>
-          </button>
-        ))}
+        {filtered && cat === 'all' && !q && cats.length > 1 ? (
+          // จัดเป็นหมวดหมู่ (แบบ Grab/LINE MAN) — เฉพาะตอนไม่ได้ค้นหา/กรองอยู่ ไม่งั้นแสดงลิสต์แบบเรียบ
+          cats.map(c => {
+            const inCat = filtered.filter(s => s.cat === c);
+            if (!inCat.length) return null;
+            return (
+              <div key={c} style={{ marginBottom:4 }}>
+                <div style={{ fontWeight:800, fontSize:15.5, color:'var(--ink,#1B2420)', margin:'2px 0 10px' }}>{c}</div>
+                <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                  {inCat.map(s => <ShopCard key={s.id} s={s} directory={directory} TH={TH} onOpen={openShop}/>)}
+                </div>
+              </div>
+            );
+          })
+        ) : (filtered && filtered.map(s => <ShopCard key={s.id} s={s} directory={directory} TH={TH} onOpen={openShop}/>))}
       </div>
     </div>
+  );
+}
+
+function ShopCard({ s, directory, TH, onOpen }){
+  return (
+    <button onClick={() => onOpen(s)} style={{
+      display:'flex', flexDirection:'column', textAlign:'left', cursor:'pointer', border:'none', padding:0,
+      background:'var(--card,#fff)', borderRadius:18, overflow:'hidden',
+      boxShadow:'0 2px 10px rgba(20,40,32,.08)', fontFamily:'inherit',
+    }}>
+      {/* cover — รูปร้านถ้ามี ไม่งั้นใช้พื้นไล่เฉดสีแบรนด์ + อีโมจิใหญ่ (แบบการ์ด Grab) */}
+      <div style={{ width:'100%', height:104, position:'relative',
+        background: s.logo ? undefined : 'linear-gradient(135deg,var(--brand-soft,#E9EFF5),var(--card,#fff))' }}>
+        {s.logo ? <img src={s.logo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
+                : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>{s.emoji || '🍽️'}</div>}
+        <div style={{
+          position:'absolute', top:10, right:10, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:999,
+          background: s.isOpen ? 'rgba(255,255,255,.94)' : 'rgba(30,30,30,.7)',
+          color: s.isOpen ? 'var(--brand-ink,#13304E)' : '#fff',
+        }}>{s.isOpen ? (TH ? '🟢 เปิดอยู่' : '🟢 Open') : (TH ? 'ปิดแล้ว' : 'Closed')}</div>
+        {directory && s.market && <div style={{ position:'absolute', bottom:10, left:10, fontSize:10.5, fontWeight:700, padding:'3px 9px', borderRadius:999,
+          background:'rgba(255,255,255,.94)', color:'var(--accent-ink,#1F5C99)' }}>📍{s.market}</div>}
+      </div>
+      <div style={{ padding:'11px 14px 13px' }}>
+        <div style={{ fontWeight:700, fontSize:15, color:'var(--ink,#1B2420)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{s.name}</div>
+        <div style={{ fontSize:12, color:'var(--ink-3,#8A948E)', marginTop:3 }}>{s.cat ? s.cat + ' · ' : ''}{s.open}–{s.close}</div>
+      </div>
+    </button>
   );
 }
 
