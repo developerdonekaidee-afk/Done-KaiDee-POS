@@ -1,31 +1,92 @@
 # KaiDee POS (":Done KaiDee POS") — SESSION HANDOFF
 
-แอป POS ผ่าน LINE สำหรับร้านอาหาร (คนละโปรเจกต์กับ Promotion Management System)
-Deploy: **Cloudflare Pages · kaidee-app.pages.dev** (Direct Upload — Remove all → ลากไฟล์ใน `kaidee-deploy/` → Save and deploy → hard refresh)
+แอป POS ผ่าน LINE สำหรับร้านอาหาร + ระบบตลาด/แรงงาน (Labor Win) ในเครือเดียวกัน
+Deploy: Cloudflare Workers (git-integrated, auto-deploy on push to `main`)
+- Frontend: `kaidee-git` worker (serves `./kaidee-deploy`) — auto-deploy ผ่าน Cloudflare's native git integration
+- Backend: `kaidee-pos-worker/`, `license-worker/`, `platform-worker/` — auto-deploy ผ่าน `.github/workflows/deploy-worker.yml` (GitHub Actions)
 
-## ไฟล์แอป (root)
-- `KaiDee POS.html` — shell (title ":Done KaiDee POS", โหลด kaidee-*.jsx ทั้งหมด, ต่อ `kaidee-license.jsx` แล้ว)
-- `kaidee-app.jsx` (store กลาง + license check), `kaidee-data.jsx` (helpers: activeSaleModes/priceFor/recipeFor/deliveryFee), `kaidee-merchant.jsx` (SellScreen + ChannelPicker + best-seller popup), `kaidee-merchant2.jsx` (Store/ItemEditor/Dashboard + print reports), `kaidee-stock.jsx` (RecipeEditor per-channel + copy), `kaidee-cash.jsx` (เปิด/ปิดร้าน + reconcile), `kaidee-customer.jsx`/`kaidee-customer2.jsx` (ลูกค้า LIFF + map pin), `kaidee-rider.jsx` (proof/nav), `kaidee-map.jsx` (Leaflet/OSM ฟรี), `kaidee-home.jsx`, `kaidee-crm.jsx`, `kaidee-help.jsx`, `kaidee-api.jsx`, `kaidee-liff.jsx`, `ios-frame.jsx`
-- `KaiDee Back Office.html` (แอดมิน · responsive · เมนู "🔐 สิทธิ์ร้าน" → License Admin), `License Admin.html`
-- `kaidee-deploy/` = ชุดพร้อมอัป (index.html = KaiDee POS.html)
+---
 
-## ✅ ทำเสร็จรอบนี้
-1. **Sale mode หลายช่องทาง (คีย์บันทึกยอดเอง — ไม่ใช่รับออเดอร์อัตโนมัติ)**: หน้าขายเลือก/เพิ่ม/เปิด-ปิดช่องทาง (ChannelPicker แนวตั้ง + ป้ายสีแบรนด์) · เมนูกำหนดช่องทางที่ขาย + ราคาต่อช่องทาง (ItemEditor) · สูตรแยกช่องทาง + ปุ่มคัดลอกสูตร · ปิดบิลแพลตฟอร์ม = tender ตามชื่อ (ไม่รับเงินสด → ยอดค้างรับ)
-2. **สต๊อกตัดตามสูตรของช่องทาง** (consumeStock รับ channel) · แจ้งเตือนใกล้หมด (badge + popup + สั่น + LINE hook)
-3. **สรุป/รายงาน**: แยกช่องทางขาย + ช่องทางชำระ (เงินสด/โอน/พร้อมเพย์) + ยอดค้างรับแพลตฟอร์ม (กด "รับยอดแล้ว" ใส่ยอดรับจริง → กระทบยอด) · กราฟรายชั่วโมง toggle รวม/แยกช่องทาง · เลือกดู รายวัน/เดือน/ทั้งหมด · **พิมพ์ 3 รายงาน: สรุป · รายบิล(ทุกช่องทาง) · กระทบยอดแพลตฟอร์ม**
-4. **เปิด/ปิดร้าน**: ต้องเปิดกะ (register.open) ก่อนขาย · ปิดร้าน reconcile เงินสด/โอน/QR/แพลตฟอร์ม · ปิดบิลขายเด้งเป็นตั๋วครัวหน้าออเดอร์อัตโนมัติ (fromSale, กันนับยอด/ตัดสต๊อกซ้ำ)
-5. **ค่าส่งไรเดอร์ 3 โหมด** (ลูกค้าจ่าย/ร้านออก/ตามระยะจากหมุด) + payout สิ้นวัน/ต่อรอบ · ลูกค้าปักหมุด map ฟรี + เบอร์ · ไรเดอร์ โทร/นำทาง/แนบรูปหลักฐาน + เงื่อนไขตอนสมัคร · เปิด-ปิด delivery/pickup แยก
-6. **ป้ายขายดีหน้าลูกค้า** ดึงจากยอดขายจริง · footer © + Privacy/Terms · โลโก้ :Done · **ล้างข้อมูลตัวอย่าง** (เริ่มสะอาด)
-7. **⭐ ระบบกันแก้วันหมดอายุ (deploy จริงแล้ว)**: `license-worker/worker.js` (Cloudflare Worker + KV `KAIDEE_LICENSE` binding `LIC` + env `ADMIN_TOKEN`) — **live: `https://kaidee-license.oneday-pos.workers.dev`** · endpoints: `/shop/:id/status`, `/shop/:id/payreq`, `/admin/pending`, `/admin/approve`, `/admin/set` (graceDays/maxDevices/expiry/resetDevices) · `kaidee-license.jsx` (LICENSE_ENDPOINT ตั้งค่าแล้ว · cache+grace 5 วัน · fallback demo) · `kaidee-app.jsx` useEffect เรียก KD_LICENSE.check → set sub จากเซิร์ฟเวอร์ · `License Admin.html` (Back Office เมนู 🔐) เชื่อม Worker ด้วย token `kd_9x7Qw2Lp8vTz`
-8. **วิดีโอโปรโมต 2 เวอร์ชัน** (เสียงพากย์ไทยผู้ชาย TTS + ซับ): `KaiDee POS Promo 9-16.html` (Reels/TikTok/Story) · `KaiDee POS Video.html` (YouTube/Facebook 16:9) · ไฟล์ scene: `kdidee-common.jsx`, `kdidee-narration.jsx` (kdSpeakScene/Caption/CaptionBar/SoundToggle), `kdidee-vertical-a/b.jsx` (9:16), `kdidee-scenes-a/b.jsx` (16:9) · ข้อความชู "เปิดในไลน์ ไม่ต้องโหลดแอป + คีย์บันทึกหลายช่องทาง" · CTA "สแกน QR สมัครเปิดร้านฟรี" (ไม่มี @ ที่ต้องเสียเงิน) · ⚠️ TTS เล่นสดเท่านั้น export MP4 เสียงไม่ติด → screen record
+## 🗓️ Session 2026-08-01 (คืนยาว — audit เต็มระบบ + business strategy + Labor Win)
 
-## ⏳ งานค้าง / ที่คุยไว้
-- **login บัญชีร้าน** (ตอนนี้ license ผูกด้วย shopId/device — ยังไม่มีระบบล็อกอินจริง) · **soft-lock UI ตอนหมดอายุ** (Worker คืน active=false แล้ว แต่แอปยังไม่ได้เด้งหน้าปิดการขาย — มีแค่แบนเนอร์เตือน)
-- **หน้าอนุมัติสลิปในแอปลูกค้า** (submitPayReq มีใน kaidee-license.jsx แล้ว แต่ UI ปุ่มต่ออายุยังไม่เรียก · Back Office ใช้ License Admin.html แยก)
-- **1:1 square video** (user บอก B ไม่ต้องทำ — ข้ามไป)
-- payment gateway ตัดบัตรอัตโนมัติ (ยังไม่ทำ · ใช้โอน+สลิป+อนุมัติมือพอ)
-- **LINE @ Premium** (`@kaideepos`) ยังไม่ซื้อ — เริ่มด้วย Basic ID ฟรี · `@kaideepos` ในโค้ด CRM/qr-poster เป็น placeholder
+### ✅ บั๊กที่แก้ + deploy แล้ว (kaidee-pos-worker)
+1. `POST /consignment/delivery-note/:id/confirm` ถูก route อื่น (`delivery-note` ไม่มี `seg[2]` guard) บังจนใช้งานไม่ได้ — แก้แล้ว
+2. `.github/workflows/deploy-worker.yml` พังทั้งไฟล์ — `hashFiles()` อยู่ผิดที่ (job-level `if:` ไม่รองรับ, ต้องอยู่ใน `steps.*` เท่านั้น) → **deploy พังมาตั้งแต่ก่อน session นี้ อาจทำให้งานก่อนหน้าไม่เคยขึ้น production จริง** — แก้แล้ว, CI เขียวปกติแล้ว
+3. `pay_requests` table ขาดคอลัมน์ `handled_at`/`handled_by` ที่โค้ด PATCH ใช้อยู่แล้ว → 500 ทุกครั้งที่แอดมินกดอนุมัติ/ปฏิเสธคำขอชำระเงิน — แก้แล้ว (เพิ่ม ALTER ใน `ensurePayReqCols`)
+4. `POST /line-webhook` **ใช้งานไม่ได้เลยตั้งแต่แรก** — ติด global gate `if (!shop) return err(...)` เพราะ LINE เรียก URL นี้จริงไม่มี `?shop=` มาด้วย (ต้อง resolve เองผ่าน group→shop mapping) → ย้าย handler ไปอยู่ก่อน gate แล้ว — ยืนยันแล้วว่า group pairing + bank-alert auto-match ทำงานจริง
+5. `DELETE /shops/:id` ลบข้อมูลไม่ครบ — เหลือ wallet/vendors/consignment/inv-tx/refunds/code-requests/line-pairs/admin-log ค้าง (ปัญหา PDPA) — แก้แล้ว ลบครบทุกตารางที่เกี่ยวข้อง (wallet ใช้ `biz_id` แยกจาก `shop_id`)
+6. Paywall (`freeTier` gate ใน `kaidee-merchant2.jsx`) เชื่อ `sub.plan`/`sub.expiry` ที่มาจาก localStorage เป็นหลัก — แก้ localStorage เองข้ามล็อกได้ → เปลี่ยนให้เชื่อ `sub._licActive` (ค่าจากเซิร์ฟเวอร์) ก่อนเสมอเมื่อเช็คสำเร็จแล้ว, fallback local date-math เฉพาะก่อนเช็คครั้งแรก/ออฟไลน์
 
-## ⚠️ หมายเหตุ
-- ทุก edit อยู่ root · `kaidee-deploy/` = สำเนาพร้อมอัป (sync ล่าสุดแล้ว) — ถ้าแก้ root ใหม่ ต้อง copy เข้า kaidee-deploy ก่อนแพ็ก
-- ราคาแพ็กเกจ: ทดลองฟรี 30 วัน → ฿299/เดือน หรือ ฿2,990/ปี (ถูก-กลางตลาด · จุดขาย = ไม่ต้องซื้อเครื่อง + เปิดในไลน์ + รวมเดลิเวอรี)
+### 🚨 ช่องโหว่ความปลอดภัยวิกฤต — แก้แล้วทั้ง 2 worker
+**Pattern**: endpoint แอดมินเช็คแบบ `if (env.ADMIN_SECRET && !verifyToken(...))` — ถ้า `ADMIN_SECRET` ไม่ถูกตั้งค่า เงื่อนไขทั้งก้อน short-circuit เป็น false → **ข้ามการเช็คสิทธิ์ทั้งหมด ไม่ต้องมี token ก็เรียกได้**
+- **`kaidee-pos-worker`**: ยืนยันแล้วว่า exploitable จริง (ดึงข้อมูล wallet จริงได้แบบไม่ auth ก่อนแก้) → ตั้ง `ADMIN_SECRET` ใหม่แล้ว (เก็บนอกไฟล์นี้ — ไม่ใช่รหัสผ่าน login เป็นแค่ signing key)
+- **`platform-worker`**: ตั้ง `ADMIN_SECRET` + `ADMIN_PASS` ใหม่แล้วเช่นกัน (พบตอน deploy คืนนี้ ก่อนหน้านี้ทั้งสอง secret ไม่เคยถูกตั้งเลย ใช้ fallback ที่ public บน GitHub)
+- เพิ่ม **rate limit login แอดมิน** (`kaidee-pos-worker`): ผิด 5 ครั้ง ล็อก IP 15 นาที (ก่อนหน้านี้ brute-force ได้ไม่จำกัด)
+
+**⏳ ยังไม่ได้ทำ (ต้องเจ้าของระบบทำเอง)**:
+- เปลี่ยนรหัสผ่าน login แอดมิน `kaidee-pos-worker` (อาจยังเป็นค่า default `kaidee2026` ที่ public บน GitHub) — ต้องผ่าน Back Office + OTP มือถือ/LINE เจ้าของ
+- เช็คว่าช่องโหว่เคยถูกใช้จริงก่อนคืนนี้ไหม (ดู `admin_access_log`, ยอด wallet ทุกร้าน, เลขบัญชีกลาง `wallet-account`)
+- **รหัสผ่านแอดมิน `platform-worker` ใหม่**: `e5421493868dfe121a99f5587fbdee51` (ให้ผู้ใช้ไปแล้วในแชท ควรเปลี่ยนเองผ่าน `/admin/password` เมื่อสะดวก)
+
+### 🐛 บั๊กเล็กที่แก้ (platform-worker, เจอโดย agent test)
+`GET /pool/jobs/near` และ `/pool/workers/near` — ถ้าไม่ส่ง `lat`/`lng` มา `+null` กลายเป็น `0` (ไม่ใช่ `NaN`) ทำให้กรองระยะทางเทียบกับพิกัด (0,0) แทนที่จะไม่กรองเลย → แก้แล้ว (เช็ค presence ของ param ก่อน)
+
+### ✅ ฟีเจอร์ใหม่ + deploy แล้ว
+1. **Auto-verify wallet topup** (`kaidee-pos-worker`) — จับคู่ข้อความแจ้งเงินเข้าบัญชีกลาง (ส่งผ่าน `POST /wallet-bank-alert`, admin-gated) กับ topup ที่ pending อยู่ข้ามทุกร้าน ยืนยันอัตโนมัติถ้ายอดตรง (tolerance 0.5, FIFO ถ้ายอดชนกัน) — ลดงานแอดมินตรวจสลิปมือ
+2. **MarketHome** — หน้า "ร้านในตลาดนี้" ฝั่งลูกค้า (`kaidee-market-home.jsx`, ใหม่) เข้าทาง `?role=market&market=<ชื่อตลาด>` (ไม่บังคับ LINE login, เหมือน board/kds) แสดงร้านในตลาดเดียวกัน (กรองจาก field `market` ใหม่ใน `shops.extra` JSON) กดร้าน → navigate เต็มหน้าเข้า flow สั่งอาหารเดิม backend: `GET /shops/by-market?market=`, ตั้งค่าผ่าน `PATCH /shops/:id {market:'...'}`
+   - **ตั้งใจให้เป็น "ตลาดเดียวต่อลิงก์" ไม่ใช่มาร์เก็ตเพลสรวมทั้งเมืองแบบ Grab** — แต่ละตลาดมี query param `market=` แยกกัน สร้างกี่ตลาดก็ได้แค่เปลี่ยนชื่อ ไม่ต้องเพิ่มโค้ด
+   - โหมดปัจจุบัน = สั่ง/จองล่วงหน้า → มารับเอง เท่านั้น (ยังไม่มีเดลิเวอรี/ไรเดอร์เชื่อมเข้ามา)
+3. **platform-worker deploy จริงครั้งแรก** — `wrangler.toml` เคยมี `database_id` เป็น placeholder ทำให้ CI deploy ล้มเหลวตลอด (เคยเอา job ออกจาก CI ไปก่อนตอนต้นคืน) → เจอ D1 database "platform" ที่เคยสร้างไว้แล้ว (uuid `9aa67698-cab2-433a-b94f-dcbd593319ba`) ใส่กลับเข้า config, apply schema, deploy จริง, เพิ่ม CI job กลับเข้าไป — **ระบบ Market/Pool (Labor Win) ใช้งานได้จริงแล้ว ไม่ใช่แค่โค้ดเฉยๆ**
+
+### 🎪 Demo data สร้างไว้ใน production (kaidee-pos-worker) — ใช้พรีเซ้นต์ร้านค้าได้เลย
+4 ตลาดสาธิต พร้อมร้าน+เมนูจริง ทดสอบ end-to-end แล้ว:
+- `ตลาดสาธิต (Demo)` — 4 ร้าน (ส้มตำ/ก๋วยเตี๋ยว/น้ำปั่น/ขนมหวาน)
+- `ตลาดลาดสวาย` — 3 ร้าน (ผัดไทย/ลาบก้อย/กาแฟโบราณ)
+- `ตลาดสี่มุมเมือง` — 3 ร้าน **ราคาส่ง B2B** (ผัก/ผลไม้/เนื้อสัตว์ ขายเป็นกิโล) — ไอเดีย: แม่ค้าตลาดลาดสวายสั่งวัตถุดิบจากที่นี่ผ่านแอปเดียวกับที่ขายลูกค้าตัวเอง
+- `ตลาดนานาเพลส` — 3 ร้าน (ซูชิ/สลัด/เบเกอรี่)
+
+ลิงก์: `https://kaidee-git.oneday-pos.workers.dev/?role=market&market=<ชื่อตลาด URL-encoded>`
+
+Labor Win demo (platform-worker, ใช้งานได้จริงแล้วหลัง deploy คืนนี้): `https://kaidee-git.oneday-pos.workers.dev/Labor%20Win%20App%20v2.html?role=<market|shop|worker|win>`
+
+---
+
+## 💡 การตัดสินใจเชิงกลยุทธ์ (คุยคืนนี้ ยังไม่ได้ลงมือ เว้นที่ระบุว่าทำแล้ว)
+
+### โมเดลธุรกิจ — ยืนยันแล้ว
+- **Zero-GP**: ร้านไม่โดนหักค่าคอมมิชชั่นต่อออเดอร์ (ต่างจาก Grab ที่หัก 20-35% + บังคับร้านบวกราคาหน้าร้าน) รายได้ KaiDee มาจากค่าสมัครรายเดือน (฿299 "ร้าน" / ฿599 "โปร") ทดลองฟรี 30 วัน
+- **ไม่ต้องซื้อเครื่อง Sunmi** (เป็น PWA เปิดผ่าน LINE, ไม่ต้อง install แอปแยก — ต่างจาก Grab/Wongnai ที่ต้องมีแท็บเล็ต)
+- **กลยุทธ์เจาะตลาดเดียวก่อน (beachhead)**: ห้ามทำมาร์เก็ตเพลสรวมทั้งเมืองตอนนี้ (จะกลายเป็นหน้าว่างเปล่า) — เลือก 1 ตลาดที่มีคนรู้จัก onboard มือ (white-glove) 10-20 ร้านแรกก่อน ค่อยขยาย
+
+### Go-to-market
+- Pitch หลัก: "ราคาเท่าตลาด ไม่บวกเพิ่ม" — สู้ Grab ไม่ได้เรื่องส่วนลดหวือหวา (Grab subsidize หนัก) แต่สู้ได้เรื่องราคาจริง/กำไรเต็มร้าน สำหรับกลุ่มลูกค้าประจำที่ไว้ใจร้านอยู่แล้ว (ไม่ใช่นักล่าดีล)
+- ร้านมีพื้นที่ทำโปรเองได้มากกว่าร้านบน Grab (เพราะไม่มี GP กินกำไรไปก่อน) — ใช้จุดนี้ชวนแบรนด์มีชื่อที่ margin ดีอยู่แล้วได้ด้วย
+- เฟส 1 ให้ KaiDee ออกค่าคูปอง/ส่วนลดเองก่อน (จากงบการตลาด) ไม่รอสปอนเซอร์จริง ไม่เก็บร้าน — ใช้กลไก `Sponsor Console.html` ที่มี prototype อยู่แล้ว (ยังไม่ได้ integrate)
+- ไอเดียต่อยอด B2B: ตลาดสี่มุมเมือง (ค้าส่ง) ↔ ตลาดลาดสวาย (ค้าปลีก) แม่ค้าปลีกสั่งวัตถุดิบผ่านแอปเดียวกับที่ขายลูกค้า — ยังไม่ทำ แค่สร้าง demo data ไว้
+
+### ระบบไรเดอร์/แรงงาน — decision สำคัญคืนนี้
+- **ทางเลือก A (ตัดสินใจแล้ว ใช้ทางนี้)**: ลูกค้าจ่ายค่าอาหารตรงร้าน (PromptPay) + จ่ายค่าไรเดอร์ตรงไรเดอร์ (สด/โอน) — **แพลตฟอร์มไม่แตะเงินเลยในเฟสแรก** หลีกเลี่ยงประเด็นกฎหมาย e-money ของ ธปท.
+- **ไรเดอร์สมัครอิสระ ไม่ผ่านหัวหน้าวิน** — ตัดสินใจแล้วว่าไม่ใช้โมเดลหักค่าคอมให้หัวหน้าวิน (ขัดกับหลัก zero-GP) ใช้ระบบ Worker Pool ที่มีอยู่แล้ว (`platform-worker` `/pool/*`) เป็นทางหลัก — สมัครเองได้ทันที ไม่ต้องรอใครอนุมัติ
+- **ป้องกันไรเดอร์ทิ้งงาน**: เฟสนี้ (เพิ่งเริ่ม) แก้ด้วยคนก่อน — คัดไรเดอร์ที่รู้จัก ไม่เปิดสมัครอิสระวงกว้าง พอมีปริมาณงานจริงค่อยเพิ่ม timeout auto-release + strike counter (ยังไม่ได้สร้าง)
+- **ช่องว่างเรื่องตรวจเอกสาร (KYC)**: ระบบ Pool ตอนนี้สมัครได้ทันทีไม่มีการตรวจตัวตนเลย (ต่างจาก Grab ที่บังคับส่งบัตร ปชช./ใบขับขี่ก่อน) — มีไฟล์ `kaidee-rider.jsx` ที่มีแนวคิดตรวจเอกสารอยู่แล้วแต่ไม่ได้เชื่อมกับ Pool — ยังไม่ได้ทำ, เป็นความเสี่ยงด้านความปลอดภัยที่ต้องคิดต่อ
+
+### ระบบวิน (Labor Win) — ข้อค้นพบ
+- โครงสร้าง 3 สถานะ: สังกัดวินอย่างเดียว / สังกัดวิน+รับงานนอก / ฟรีแลนซ์ล้วน — ของเดิมมีแนวคิด "งานนอกหัวหน้าวินไม่เห็นรายละเอียด" (ป้องกัน worker แต่ hidden ค่าคอมยังหักอัตโนมัติ 2%)
+- ถกกันยาวเรื่อง "หัวหน้าวินควรเห็นงานนอกไหม" — **สรุปสุดท้าย: ไม่ใช้ระบบวินเป็นทางหลักแล้ว** (ดูหัวข้อไรเดอร์ด้านบน) ประเด็นนี้เลยไม่ต้อง action ต่อ
+- ระบบรองรับ **bottom-up onboarding อยู่แล้ว**: ใครก็สร้างตลาดเองได้ (`POST /biz`, ไม่ต้องมีเจ้าของตลาดจริงมาก่อน) ออกโค้ดเชิญได้เอง, ร้านค้าเพิ่มตลาดใหม่ได้เองจากหน้า shop ถ้ายังไม่เจอในลิสต์ (sync ผ่าน shared state key `demo-laborwin2` by default หรือ `?biz=` กำหนดเอง)
+- **หมายเหตุความปลอดภัย**: `POST /biz` ไม่มีการล็อกสิทธิ์เลย ใครก็สร้าง/อ้างสิทธิ์ตลาดได้ — ยอมรับได้สำหรับตอนนี้ (เราใช้เอง) แต่ถ้าเปิดสาธารณะจริงในอนาคตต้องเพิ่มการยืนยันตัวตน
+
+### ยังไม่ได้ทำ (ของที่คุยไว้เป็นไอเดีย ยังไม่แตะโค้ด)
+1. **แชทบอทตอบลูกค้าทาง LINE** — มีดีไซน์ 4 ชั้นแล้ว (rich menu ปุ่มลัด → บอทจับคำสำคัญใน `line-webhook` → เปิดเคสหาแอดมิน (pattern เดียวกับ pay-requests) → เช็คสถานะเคส) ยังไม่ได้สร้างโค้ดสักบรรทัด
+2. **ป้ายโปรบนการ์ดร้าน** ใน MarketHome — เสนอเป็นขั้นต่อไปที่ต่อยอดง่ายจาก `market` field ที่มีอยู่ ยังไม่ทำ
+3. **Backend เชื่อมเมนูข้ามสาขา** (แบรนด์หลายสาขาอัปเดตเมนูครั้งเดียว sync ทุกสาขา) — ตัดสินใจแล้วว่ายังไม่ทำ รอมีแบรนด์จริงมาขอก่อน
+4. **Timeout auto-release + strike counter** สำหรับไรเดอร์ทิ้งงาน — ยังไม่ทำ รอมีปริมาณงานจริงก่อน
+5. **KYC/ตรวจเอกสารไรเดอร์** ก่อนเข้าระบบ Pool — ยังไม่เชื่อมกับ `kaidee-rider.jsx` ที่มีแนวคิดอยู่แล้ว
+
+---
+
+## ⚠️ หมายเหตุสำคัญสำหรับ session ถัดไป
+- **Deploy pipeline คืนนี้แก้เสร็จและเชื่อถือได้แล้ว** — push ขึ้น `main` แล้ว deploy อัตโนมัติจริง (เคยพังมาก่อน อย่าสันนิษฐานว่า "push แล้ว = ขึ้นจริง" โดยไม่เช็ค `gh run list --workflow=deploy-worker.yml` ก่อน แม้จะแก้แล้วก็ตาม เป็นนิสัยที่ดี)
+- **root กับ `kaidee-deploy/` ต้อง sync มือทุกครั้งที่แก้ frontend .jsx/index.html** — ไม่มี build step อัตโนมัติ ลืม sync ไฟล์จะไม่อัปเดตจริงแม้ push ไปแล้ว
+- **`kaidee-pos-worker`, `platform-worker`, `license-worker` เป็นคนละ D1 database คนละ deploy กัน** — อย่าสับสนว่าแก้ worker หนึ่งแล้วอีกตัวจะได้ผลด้วย
+- ก่อนแก้ endpoint แอดมินใหม่ในอนาคต **ห้ามใช้ pattern `if (env.ADMIN_SECRET && !verifyToken(...))`** — ใช้ `if (!verifyToken(...))` ตรงๆ เสมอ (แบบ platform-worker ทำถูกอยู่แล้วในบางจุด) ป้องกันบั๊กเดิมเกิดซ้ำ
