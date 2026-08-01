@@ -126,7 +126,10 @@
       "Bash(npx --yes playwright screenshot --viewport-size=512,512 file://__TRACKED_VAR__/logo-final.html logo-final.png)",
       "Bash(sips -Z 64 /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/398aa0f2-1532-482b-ab56-0219fca868ce/scratchpad/logo-final.png --out /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/398aa0f2-1532-482b-ab56-0219fca868ce/scratchpad/logo-final-64.png)",
       "Bash(open /Users/oneday/Desktop/Done-KaiDee-POS/logo.jpg)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(curl -s -m 20 https://kaidee-pos-worker.oneday-pos.workers.dev/shops/directory)",
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/73697519-8c75-4cfe-a925-6cff5102936c/scratchpad/checkcols.js)",
+      "Bash(node --check kaidee-pos-worker/worker.js)"
     ]
   }
 }

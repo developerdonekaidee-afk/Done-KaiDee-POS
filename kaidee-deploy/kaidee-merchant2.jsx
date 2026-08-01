@@ -1160,7 +1160,9 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
       </div>
 
       {editing && <ItemEditor item={editing} onSave={save} onClose={()=>setEditing(null)} costMode={costMode} raw={raw} addRaw={addRaw} chanCfg={chanCfg} addSaleMode={addSaleMode} toggleSaleMode={toggleSaleMode} removeSaleMode={removeSaleMode}
-        onDelete={()=>{ setMenu(prev=>prev.filter(m=>m.id!==editing.id)); setEditing(null); }} />}
+        onDelete={()=>{ const delId=editing.id; setMenu(prev=>prev.filter(m=>m.id!==delId)); setEditing(null);
+          // ลบบนเซิร์ฟเวอร์ด้วย (push เมนูเป็น upsert อย่างเดียว — ไม่ลบให้) ไม่งั้นเมนูที่ลบจะกลับมาตอนโหลดใหม่/เปิดอีกเครื่อง
+          try{ if(window.KD_LIVE && window.KD_API && window.KD_API.deleteMenuItem) window.KD_API.deleteMenuItem(delId).catch(()=>{}); }catch(e){} }} />}
       {paySheet && <PaySettingsSheet pay={pay} setPay={setPay} onClose={()=>setPaySheet(false)} />}
       {memSheet && <MembersSheet members={members} pay={pay} setPay={setPay} onClose={()=>setMemSheet(false)} />}
       {shopSheet && <ShopProfileSheet shop={shop} setShop={setShop} regOpen={register&&register.open} onClose={()=>setShopSheet(false)} />}
