@@ -11,9 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --brand:#0E9C88;--brand-ink:#0A6E60;--brand-soft:#E3F5F1;--brand-softer:#EFFAF7;
+    --brand:#26619C;--brand-ink:#13304E;--brand-soft:#E9EFF5;--brand-softer:#F1F5F9;
     --blue:#1E73B0;--blue-ink:#155a8c;--blue-soft:#E6F0F8;
-    --hero:linear-gradient(152deg,#14A886 0%,#1E73B0 100%);
+    --hero:linear-gradient(152deg,#1F4F86 0%,#26619C 100%);
     --gold:#E8992F;--gold-soft:#FDF0E2;--danger:#E0533D;--danger-soft:#FCEEEA;
     --ink:#16211E;--ink-2:#54615B;--ink-3:#8A948E;--bg:#F4F7F6;--card:#fff;
     --hair:#E9EEEC;--hair-2:#DCE4E1;--sidebar:#0E2A2A;
@@ -108,7 +108,7 @@
 <body>
 <div id="root"></div>
 <template id="__bundler_thumbnail">
-  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E2A2A"/><rect x="20" y="30" width="26" height="40" rx="4" fill="#14A886"/><rect x="52" y="22" width="26" height="48" rx="4" fill="#1E73B0"/><rect x="20" y="76" width="58" height="6" rx="3" fill="#EFFAF7"/></svg>
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0E1A2A"/><rect x="20" y="30" width="26" height="40" rx="4" fill="#26619C"/><rect x="52" y="22" width="26" height="48" rx="4" fill="#1E73B0"/><rect x="20" y="76" width="58" height="6" rx="3" fill="#F1F5F9"/></svg>
 </template>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -1271,7 +1271,7 @@ function CodeRequests(){
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontWeight:700}}>{r.shop_name||r.shop_id}</div>
           <div style={{fontSize:12.5,color:'var(--ink-3)'}} className="mono">{r.shop_id} · {dt(r.created_at)}</div>
-          {issued[r.id] && <div style={{marginTop:5,fontWeight:800,color:'var(--brand-ink,#0A6E60)'}}>รหัส: <span className="mono" style={{fontSize:16,letterSpacing:'2px'}}>{issued[r.id]}</span> — แจ้งร้าน (ส่งให้เจ้าของทาง LINE แล้ว)</div>}
+          {issued[r.id] && <div style={{marginTop:5,fontWeight:800,color:'var(--brand-ink,#13304E)'}}>รหัส: <span className="mono" style={{fontSize:16,letterSpacing:'2px'}}>{issued[r.id]}</span> — แจ้งร้าน (ส่งให้เจ้าของทาง LINE แล้ว)</div>}
         </div>
         <button className="btn danger sm" onClick={()=>reject(r)}>ปฏิเสธ</button>
         <button className="btn pri sm" onClick={()=>gen(r)}>ออกรหัส</button>

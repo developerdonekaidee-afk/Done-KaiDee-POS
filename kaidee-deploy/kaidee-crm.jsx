@@ -191,7 +191,7 @@ function CrmLanding({ onSignup, onCancel, onEnter }){
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
           <div style={{display:'flex',alignItems:'center',gap:9}}>
             <div style={{width:34,height:34,borderRadius:10,background:'rgba(255,255,255,.22)',display:'flex',alignItems:'center',justifyContent:'center'}}><svg width="21" height="21" viewBox="0 0 100 100"><line x1="52" y1="26" x2="52" y2="74" fill="none" stroke="#fff" strokeWidth="12" strokeLinecap="round"/><path d="M52 26 A25 24 0 0 1 52 74" fill="none" stroke="#fff" strokeWidth="12" strokeLinecap="round"/><circle cx="32" cy="42" r="6" fill="#fff"/><circle cx="32" cy="58" r="6" fill="#fff"/></svg></div>
-            <b style={{fontSize:15}}>KaiDee POS</b>
+            <b style={{fontSize:15}}>:Done KaiDee</b>
           </div>
           <button onClick={onCancel} style={{background:'rgba(255,255,255,.18)',border:'none',color:'#fff',borderRadius:999,padding:'6px 12px',fontFamily:'var(--font)',fontWeight:600,fontSize:12.5,cursor:'pointer'}}>← หน้าหลัก</button>
         </div>
@@ -463,7 +463,7 @@ function CrmChooser({ onDone, onBack }){
             <div style={{width:26,height:26,borderRadius:8,flex:'0 0 auto',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:700,fontSize:15,background:on?'var(--brand)':'transparent',border:on?'none':'2px solid var(--hair-2)'}}>{on?'✓':''}</div>
           </label>
         );})}
-        <div style={{background:'var(--brand-softer,#EFFAF7)',border:'1px solid var(--hair)',borderRadius:13,padding:'12px 13px',display:'flex',gap:9,alignItems:'flex-start',marginTop:4}}>
+        <div style={{background:'var(--brand-softer,#F1F5F9)',border:'1px solid var(--hair)',borderRadius:13,padding:'12px 13px',display:'flex',gap:9,alignItems:'flex-start',marginTop:4}}>
           <span style={{fontSize:16}}>💡</span>
           <div style={{fontSize:12,color:'var(--brand-ink)',lineHeight:1.5}}>ไม่ต้องรีบตัดสินใจ — โมดูลที่ไม่ได้เปิดจะซ่อนไว้ ไม่รกหน้าจอ เปิดเพิ่มได้ทุกเมื่อที่ “ร้านค้า”</div>
         </div>
@@ -495,7 +495,7 @@ function CrmVertical({ onPick, onBack }){
             <div style={{width:24,height:24,borderRadius:999,flex:'0 0 auto',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:700,fontSize:14,background:on?'var(--brand)':'transparent',border:on?'none':'2px solid var(--hair-2)'}}>{on?'✓':''}</div>
           </button>
         );})}
-        {sel==='fitness' && <div style={{background:'var(--brand-softer,#EFFAF7)',border:'1px solid var(--hair)',borderRadius:13,padding:'12px 13px',display:'flex',gap:9,alignItems:'flex-start',marginTop:2}}>
+        {sel==='fitness' && <div style={{background:'var(--brand-softer,#F1F5F9)',border:'1px solid var(--hair)',borderRadius:13,padding:'12px 13px',display:'flex',gap:9,alignItems:'flex-start',marginTop:2}}>
           <span style={{fontSize:16}}>🏋️</span>
           <div style={{fontSize:12,color:'var(--brand-ink)',lineHeight:1.5}}>โหมดฟิตเนสจะเปิดโมดูลสมาชิก/ต่ออายุ · เช็คอิน NFC · คลาส · เทรนเนอร์ PT — <b>ล็อกไว้เฉพาะชุดนี้ เปลี่ยนเป็นร้านอาหารภายหลังไม่ได้</b> (ปิดเดลิเวอรีอัตโนมัติ)</div>
         </div>}

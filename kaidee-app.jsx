@@ -796,7 +796,7 @@ function Launcher({ onPick, onHelp, brand={} }){
     { key:'rider',    ic:IC.moto,  title:t('rider'),    sub:t('riderSub'),    tone:'var(--ink)', bg:'#ECEEED' },
   ];
   return (
-    <div className="kd-screen" style={{ background:'linear-gradient(180deg,#F1FAF5,var(--bg))' }}>
+    <div className="kd-screen" style={{ background:'linear-gradient(180deg,#EAF0F7,var(--bg))' }}>
       <div className="kd-body" style={{ padding:'80px 22px 30px', display:'flex', flexDirection:'column' }}>
         {/* logo */}
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:6 }}>

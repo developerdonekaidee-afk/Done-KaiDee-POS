@@ -255,7 +255,7 @@ function ModuleToolsSheet({ shop, setShop, lang, onClose }){
       {view==='hub' && <>
         {nav(TH?'โมดูล & เครื่องมือ':'Modules & tools', TH?'เปิดเฉพาะที่ร้านใช้':'Turn on only what you use')}
         <div style={{ flex:1, overflow:'auto', padding:'15px 15px 24px' }}>
-          <button onClick={()=>setView('explain')} style={{ width:'100%', border:'none', cursor:'pointer', fontFamily:'var(--font)', textAlign:'left', background:'linear-gradient(152deg,#14A886 0%,#1E73B0 100%)', color:'#fff', borderRadius:15, padding:'14px 15px', display:'flex', alignItems:'center', gap:12, marginBottom:15, boxShadow:'0 8px 20px -8px rgba(20,110,96,.5)' }}>
+          <button onClick={()=>setView('explain')} style={{ width:'100%', border:'none', cursor:'pointer', fontFamily:'var(--font)', textAlign:'left', background:'linear-gradient(152deg,#1F4F86 0%,#26619C 100%)', color:'#fff', borderRadius:15, padding:'14px 15px', display:'flex', alignItems:'center', gap:12, marginBottom:15, boxShadow:'0 8px 20px -8px rgba(20,110,96,.5)' }}>
             <span style={{ fontSize:24 }}>❓</span><div style={{ flex:1 }}><b style={{ fontSize:13.5, display:'block' }}>{TH?'LINE OA กับ Mobile Order ต่างกันยังไง?':'LINE OA vs Mobile Order?'}</b><span style={{ fontSize:11.5, opacity:.9 }}>{TH?'งงอยู่ใช่ไหม — แตะอ่านสั้น ๆ 1 นาที':'Confused? Tap for a 1-min read'}</span></div><span style={{ fontSize:18, opacity:.85 }}>›</span>
           </button>
           {MODS.map(m=>(<React.Fragment key={m.k}>
@@ -289,7 +289,7 @@ function ModuleToolsSheet({ shop, setShop, lang, onClose }){
       {view==='explain' && <>
         {nav(TH?'LINE OA & Mobile Order':'LINE OA & Mobile Order', TH?'2 อย่างนี้ต่างกันยังไง':'How they differ')}
         <div style={{ flex:1, overflow:'auto', padding:'15px 15px 24px' }}>
-          <div style={{ background:'linear-gradient(152deg,#14A886 0%,#1E73B0 100%)', color:'#fff', borderRadius:18, padding:'18px 17px', marginBottom:13 }}>
+          <div style={{ background:'linear-gradient(152deg,#1F4F86 0%,#26619C 100%)', color:'#fff', borderRadius:18, padding:'18px 17px', marginBottom:13 }}>
             <div style={{ display:'flex', alignItems:'center', gap:9, marginBottom:11 }}><span style={{ background:'rgba(255,255,255,.2)', borderRadius:10, padding:'7px 11px', fontWeight:700, fontSize:12 }}>💬 LINE OA</span><span style={{ fontSize:18, fontWeight:700 }}>≠</span><span style={{ background:'rgba(255,255,255,.2)', borderRadius:10, padding:'7px 11px', fontWeight:700, fontSize:12 }}>📱 Mobile Order</span></div>
             <div style={{ fontSize:17, fontWeight:700, lineHeight:1.3 }}>{TH?'คนละเครื่องมือ คนละหน้าที่':'Two different tools'}</div>
             <div style={{ fontSize:12, opacity:.92, lineHeight:1.55, marginTop:7 }}>{TH?'หลายร้านคิดว่าเป็นอันเดียว — จริง ๆ แยกกันชัดเจน':'Many think they are the same — they are not.'}</div>
@@ -305,7 +305,7 @@ function ModuleToolsSheet({ shop, setShop, lang, onClose }){
             {[['🔳',TH?'QR โต๊ะ/โปสเตอร์':'Table/poster QR',TH?'ไม่ต้องมี LINE':'no LINE'],['🔗',TH?'ลิงก์เว็บ/โซเชียล':'Web/social link',TH?'ไม่ต้องมี LINE':'no LINE'],['💬','LINE OA · Rich Menu','']].map((s,i)=>(
               <div key={i} style={{ display:'flex', alignItems:'center', gap:9, background:'rgba(255,255,255,.07)', borderRadius:10, padding:'9px 11px', marginBottom:7, fontSize:11.5, fontWeight:600 }}><span style={{ fontSize:16 }}>{s[0]}</span>{s[1]}{s[2]&&<span style={{ marginLeft:'auto', fontSize:9, fontFamily:'var(--mono)', padding:'2px 7px', borderRadius:999, background:'rgba(6,199,85,.2)', color:'#5EE89A' }}>{s[2]}</span>}</div>))}
             <div style={{ textAlign:'center', color:'rgba(255,255,255,.35)', fontSize:14, padding:'3px 0' }}>↓ ↓ ↓</div>
-            <div style={{ background:'linear-gradient(152deg,#14A886 0%,#1E73B0 100%)', borderRadius:11, padding:'12px 13px', display:'flex', alignItems:'center', gap:10 }}><span style={{ fontSize:20 }}>📱</span><div><b style={{ fontSize:13, fontWeight:700 }}>{TH?'หน้า Mobile Order':'Mobile Order page'}</b><span style={{ fontSize:10.5, opacity:.85, display:'block' }}>{TH?'เมนู · ตะกร้า · ชำระเงิน':'Menu · cart · checkout'}</span></div></div>
+            <div style={{ background:'linear-gradient(152deg,#1F4F86 0%,#26619C 100%)', borderRadius:11, padding:'12px 13px', display:'flex', alignItems:'center', gap:10 }}><span style={{ fontSize:20 }}>📱</span><div><b style={{ fontSize:13, fontWeight:700 }}>{TH?'หน้า Mobile Order':'Mobile Order page'}</b><span style={{ fontSize:10.5, opacity:.85, display:'block' }}>{TH?'เมนู · ตะกร้า · ชำระเงิน':'Menu · cart · checkout'}</span></div></div>
           </div>
         </div>
       </>}
@@ -374,7 +374,7 @@ function ReferFriend({ shop, lang }){
   const canShare = typeof navigator!=='undefined' && !!navigator.share;
   const row = { k:'app', label:TH?'แอป KaiDee POS':'KaiDee POS app', url, tone:'var(--brand)' };
   return (
-    <div className="kd-card" style={{ padding:'16px 17px', marginBottom:15, background:'linear-gradient(152deg,#14A886 0%,#1E73B0 100%)', color:'#fff', boxShadow:'none' }}>
+    <div className="kd-card" style={{ padding:'16px 17px', marginBottom:15, background:'linear-gradient(152deg,#1F4F86 0%,#26619C 100%)', color:'#fff', boxShadow:'none' }}>
       <div style={{ fontWeight:700, fontSize:15.5, display:'flex', alignItems:'center', gap:7 }}>🎁 {TH?'ชวนเพื่อนมาใช้ KaiDee POS':'Invite a friend to KaiDee POS'}</div>
       <div style={{ fontSize:12.5, opacity:.9, margin:'5px 0 12px', lineHeight:1.5 }}>{TH?'แชร์ให้ร้านเพื่อน — เปิดร้าน รับออเดอร์ ดูยอดขายได้ในแอปเดียว':'Share with fellow shop owners — sell, take orders, track sales in one app'}</div>
       <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,.16)', borderRadius:12, padding:'8px 8px 8px 12px' }}>

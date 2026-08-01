@@ -404,14 +404,14 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
   const _dd=(iso)=>{ if(!iso) return '-'; try{ return new Date(iso).toLocaleDateString(TH?'th-TH':'en-US',{day:'2-digit',month:'short',year:'2-digit'}); }catch(e){ return iso; } };
   const _no=(s)=>s&&s.no?('#'+s.no):('#'+String((s&&s.id)||'').slice(-4));
   const _printOut=(title,inner)=>{
-    const css="*{margin:0;padding:0;box-sizing:border-box}@page{size:A4;margin:15mm}body{font-family:'IBM Plex Sans Thai',sans-serif;color:#132a20;font-size:13px;line-height:1.5}.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #0E9C88;padding-bottom:12px;margin-bottom:16px}.shop{font-size:20px;font-weight:700;color:#0A6E60}.doct{font-size:22px;font-weight:800;color:#0E9C88}.meta{font-size:11px;color:#555;margin-top:5px;text-align:right}.grid{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.box{flex:1;min-width:130px;background:#EAF6F1;border-radius:8px;padding:10px 13px}.bl{font-size:11px;color:#0E9C88;font-weight:700}.bv{font-size:18px;font-weight:800;margin-top:2px}h3{font-size:14px;color:#0A6E60;margin:15px 0 7px}table{width:100%;border-collapse:collapse;margin-bottom:6px}th{background:#0A6E60;color:#fff;font-size:11.5px;padding:7px 9px;text-align:left}td{padding:7px 9px;border-bottom:1px solid #e5eae7;font-size:12px}.c{text-align:center}.r{text-align:right}tfoot td{font-weight:800;border-top:2px solid #0E9C88;color:#0A6E60}.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}";
+    const css="*{margin:0;padding:0;box-sizing:border-box}@page{size:A4;margin:15mm}body{font-family:'IBM Plex Sans Thai',sans-serif;color:#132a20;font-size:13px;line-height:1.5}.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #26619C;padding-bottom:12px;margin-bottom:16px}.shop{font-size:20px;font-weight:700;color:#13304E}.doct{font-size:22px;font-weight:800;color:#26619C}.meta{font-size:11px;color:#555;margin-top:5px;text-align:right}.grid{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.box{flex:1;min-width:130px;background:#E9EFF5;border-radius:8px;padding:10px 13px}.bl{font-size:11px;color:#26619C;font-weight:700}.bv{font-size:18px;font-weight:800;margin-top:2px}h3{font-size:14px;color:#13304E;margin:15px 0 7px}table{width:100%;border-collapse:collapse;margin-bottom:6px}th{background:#13304E;color:#fff;font-size:11.5px;padding:7px 9px;text-align:left}td{padding:7px 9px;border-bottom:1px solid #e5eae7;font-size:12px}.c{text-align:center}.r{text-align:right}tfoot td{font-weight:800;border-top:2px solid #26619C;color:#13304E}.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}";
     const doc='<!DOCTYPE html><ht'+'ml><he'+'ad><meta charset="utf-8"><ti'+'tle>'+_esc(title)+'</ti'+'tle><li'+'nk href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;700;800&display=swap" rel="stylesheet"><sty'+'le>'+css+'</sty'+'le></he'+'ad><bo'+'dy><div class="head"><div><div class="shop">'+_esc(_shopName)+'</div><div style="color:#666;font-size:11px;margin-top:2px">'+_esc((store&&store.shop&&store.shop.address)||'')+'</div></div><div style="text-align:right"><div class="doct">'+_esc(title)+'</div><div class="meta"><b>'+(TH?'พิมพ์เมื่อ':'Printed')+'</b> '+_esc(new Date().toLocaleString(TH?'th-TH':'en-US',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}))+'</div></div></div>'+inner+'</bo'+'dy></ht'+'ml>';
     try{ const ifr=document.createElement('iframe'); ifr.setAttribute('aria-hidden','true'); ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
       ifr.onload=()=>{ setTimeout(()=>{ try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }catch(e){ try{ window.print(); }catch(_){} } setTimeout(()=>{ try{ document.body.removeChild(ifr); }catch(e){} },900); },350); };
       document.body.appendChild(ifr); const d=ifr.contentWindow.document; d.open(); d.write(doc); d.close();
     }catch(e){}
   };
-  const _repCss=".kdrep{font-family:var(--font);color:#132a20;font-size:13px;line-height:1.5}.kdrep .grid{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.kdrep .box{flex:1;min-width:120px;background:#EAF6F1;border-radius:10px;padding:11px 13px}.kdrep .bl{font-size:11px;color:#0E9C88;font-weight:700}.kdrep .bv{font-size:18px;font-weight:800;margin-top:2px}.kdrep h3{font-size:14px;color:#0A6E60;margin:15px 0 7px}.kdrep table{width:100%;border-collapse:collapse;margin-bottom:6px}.kdrep th{background:#0A6E60;color:#fff;font-size:11.5px;padding:7px 9px;text-align:left}.kdrep td{padding:7px 9px;border-bottom:1px solid #e5eae7;font-size:12px}.kdrep .c{text-align:center}.kdrep .r{text-align:right}.kdrep tfoot td{font-weight:800;border-top:2px solid #0E9C88;color:#0A6E60}.kdrep .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}";
+  const _repCss=".kdrep{font-family:var(--font);color:#132a20;font-size:13px;line-height:1.5}.kdrep .grid{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.kdrep .box{flex:1;min-width:120px;background:#E9EFF5;border-radius:10px;padding:11px 13px}.kdrep .bl{font-size:11px;color:#26619C;font-weight:700}.kdrep .bv{font-size:18px;font-weight:800;margin-top:2px}.kdrep h3{font-size:14px;color:#13304E;margin:15px 0 7px}.kdrep table{width:100%;border-collapse:collapse;margin-bottom:6px}.kdrep th{background:#13304E;color:#fff;font-size:11.5px;padding:7px 9px;text-align:left}.kdrep td{padding:7px 9px;border-bottom:1px solid #e5eae7;font-size:12px}.kdrep .c{text-align:center}.kdrep .r{text-align:right}.kdrep tfoot td{font-weight:800;border-top:2px solid #26619C;color:#13304E}.kdrep .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}";
   const buildSummary=()=>{
     const box=(l,v,col)=>'<div class="box"><div class="bl">'+l+'</div><div class="bv" style="color:'+(col||'#132a20')+'">'+v+'</div></div>';
     const chRows=Object.entries(byCh).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<tr><td>'+_esc(chName(k))+'</td><td class="r">'+_M(v)+'</td></tr>').join('')||'<tr><td colspan="2" class="c" style="color:#888">-</td></tr>';
@@ -419,7 +419,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
     const payRows=['cash','promptpay','platform'].filter(k=>byPay[k]).map(k=>'<tr><td>'+_esc(payMap[k])+'</td><td class="r">'+_M(byPay[k])+'</td></tr>').join('')||'<tr><td colspan="2" class="c" style="color:#888">-</td></tr>';
     const dueRows=recvKeys.map(k=>'<tr><td>'+_esc(chName(k))+'</td><td class="r" style="color:#B26A00">'+_M(platformRecv[k])+'</td></tr>').join('');
     const bestRows=best.map(([id,q],i)=>{ const m=menuById(id); return '<tr><td class="c">'+(i+1)+'</td><td>'+_esc((m&&(m[lang]||m.th))||id)+'</td><td class="r">'+q+'</td></tr>'; }).join('')||'<tr><td colspan="3" class="c" style="color:#888">-</td></tr>';
-    const inner='<div class="grid">'+box(TH?'รายรับ':'Revenue',_M(rev),'#0A6E60')+box(TH?'กำไร':'Profit',_M(profit),'#0A6E60')+box(TH?'ต้นทุน':'Cost',_M(cost),'#B26A00')+box(TH?'บิล':'Bills',orders)+'</div>'
+    const inner='<div class="grid">'+box(TH?'รายรับ':'Revenue',_M(rev),'#13304E')+box(TH?'กำไร':'Profit',_M(profit),'#13304E')+box(TH?'ต้นทุน':'Cost',_M(cost),'#B26A00')+box(TH?'บิล':'Bills',orders)+'</div>'
       +'<h3>'+(TH?'ยอดตามช่องทางขาย':'By channel')+'</h3><table><tbody>'+chRows+'</tbody></table>'
       +'<h3>'+(TH?'ช่องทางการชำระเงิน':'By payment')+'</h3><table><tbody>'+payRows+'</tbody></table>'
       +(dueRows?'<h3>'+(TH?'ยอดค้างรับจากแพลตฟอร์ม':'Platform due')+'</h3><table><tbody>'+dueRows+'<tr><td style="font-weight:800">'+(TH?'รวม':'Total')+'</td><td class="r" style="font-weight:800;color:#B26A00">'+_M(recvTotal)+'</td></tr></tbody></table>':'')
@@ -435,7 +435,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
     const parts=vatMonth.split('-'); const monTxt=parts[1]+'/'+parts[0];
     const grid='<div class="grid">'
       +'<div class="box"><div class="bl">'+(TH?'มูลค่าก่อน VAT':'Before VAT')+'</div><div class="bv">'+_M(tb)+'</div></div>'
-      +'<div class="box"><div class="bl">'+(TH?'ภาษีขาย':'Output VAT')+' '+Math.round(r*100)+'%</div><div class="bv" style="color:#0A6E60">'+_M(tv)+'</div></div>'
+      +'<div class="box"><div class="bl">'+(TH?'ภาษีขาย':'Output VAT')+' '+Math.round(r*100)+'%</div><div class="bv" style="color:#13304E">'+_M(tv)+'</div></div>'
       +'<div class="box"><div class="bl">'+(TH?'รวม':'Total')+'</div><div class="bv">'+_M(tg)+'</div></div>'
       +'<div class="box"><div class="bl">'+(TH?'จำนวนใบ':'Invoices')+'</div><div class="bv">'+recs.length+'</div></div></div>';
     const trs = recs.map(x=>'<tr><td>'+_dd(x.s.date)+'</td><td>'+_no(x.s)+'</td><td>'+_esc(chName(x.s.channel))+'</td><td class="r">'+x.base.toFixed(2)+'</td><td class="r">'+x.vat.toFixed(2)+'</td><td class="r">'+x.g.toFixed(2)+'</td></tr>').join('')
@@ -489,7 +489,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
     const inner='<div style="font-size:12px;color:#555;margin-bottom:12px">'+(TH?'สรุปยื่นแบบ ภ.พ.30 ประจำเดือน ':'P.P.30 summary ')+monTxt+((store.pay&&store.pay.taxId)?(' · '+(TH?'เลขผู้เสียภาษี ':'Tax ID ')+_esc(store.pay.taxId)):'')+'</div>'
       +'<table><tbody>'
       +'<tr><td>'+(TH?'ยอดขาย (ก่อน VAT)':'Sales (before VAT)')+'</td><td class="r">'+outBase.toFixed(2)+'</td></tr>'
-      +'<tr><td><b>'+(TH?'ภาษีขาย (Output Tax)':'Output tax')+'</b></td><td class="r" style="color:#0A6E60"><b>'+outV.toFixed(2)+'</b></td></tr>'
+      +'<tr><td><b>'+(TH?'ภาษีขาย (Output Tax)':'Output tax')+'</b></td><td class="r" style="color:#13304E"><b>'+outV.toFixed(2)+'</b></td></tr>'
       +'<tr><td>'+(TH?'ยอดซื้อ (ก่อน VAT)':'Purchases (before VAT)')+'</td><td class="r">'+inBase.toFixed(2)+'</td></tr>'
       +'<tr><td><b>'+(TH?'ภาษีซื้อ (Input Tax)':'Input tax')+'</b></td><td class="r" style="color:#B26A00"><b>'+inV.toFixed(2)+'</b></td></tr>'
       +'</tbody><tfoot><tr><td>'+(net>=0?(TH?'ภาษีที่ต้องชำระ':'VAT payable'):(TH?'ภาษีชำระเกิน (ยกไปเดือนหน้า)':'VAT credit (carry forward)'))+'</td><td class="r">'+Math.abs(net).toFixed(2)+'</td></tr></tfoot></table>'
@@ -511,8 +511,8 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
     const totGot=chs.reduce((a,c)=>a+byChP[c].received,0);
     const totDue=chs.reduce((a,c)=>a+byChP[c].due,0);
     const totFee=chs.reduce((a,c)=>a+(byChP[c].grossSettled-byChP[c].received),0);
-    const rows=chs.map(c=>{ const o=byChP[c]; return '<tr><td>'+_esc(chName(c))+'</td><td class="c">'+o.bills+'</td><td class="r">'+_M(o.gross)+'</td><td class="r" style="color:#0A6E60">'+_M(o.received)+'</td><td class="r" style="color:#B26A00">'+_M(o.due)+'</td><td class="r" style="color:#B26A00">'+_M(o.grossSettled-o.received)+'</td><td class="c">'+(o.lastDate?_dd(o.lastDate):'-')+'</td></tr>'; }).join('')||'<tr><td colspan="7" class="c" style="color:#888;padding:14px">'+(TH?'ไม่มีบิลแพลตฟอร์ม':'No platform sales')+'</td></tr>';
-    const inner='<div class="grid">'+('<div class="box"><div class="bl">'+(TH?'รับแล้ว':'Received')+'</div><div class="bv" style="color:#0A6E60">'+_M(totGot)+'</div></div>')+('<div class="box"><div class="bl">'+(TH?'ค้างรับ':'Due')+'</div><div class="bv" style="color:#B26A00">'+_M(totDue)+'</div></div>')+('<div class="box"><div class="bl">'+(TH?'ค่าคอม/ส่วนต่าง':'Fee/diff')+'</div><div class="bv" style="color:#B26A00">'+_M(totFee)+'</div></div>')+'</div>'
+    const rows=chs.map(c=>{ const o=byChP[c]; return '<tr><td>'+_esc(chName(c))+'</td><td class="c">'+o.bills+'</td><td class="r">'+_M(o.gross)+'</td><td class="r" style="color:#13304E">'+_M(o.received)+'</td><td class="r" style="color:#B26A00">'+_M(o.due)+'</td><td class="r" style="color:#B26A00">'+_M(o.grossSettled-o.received)+'</td><td class="c">'+(o.lastDate?_dd(o.lastDate):'-')+'</td></tr>'; }).join('')||'<tr><td colspan="7" class="c" style="color:#888;padding:14px">'+(TH?'ไม่มีบิลแพลตฟอร์ม':'No platform sales')+'</td></tr>';
+    const inner='<div class="grid">'+('<div class="box"><div class="bl">'+(TH?'รับแล้ว':'Received')+'</div><div class="bv" style="color:#13304E">'+_M(totGot)+'</div></div>')+('<div class="box"><div class="bl">'+(TH?'ค้างรับ':'Due')+'</div><div class="bv" style="color:#B26A00">'+_M(totDue)+'</div></div>')+('<div class="box"><div class="bl">'+(TH?'ค่าคอม/ส่วนต่าง':'Fee/diff')+'</div><div class="bv" style="color:#B26A00">'+_M(totFee)+'</div></div>')+'</div>'
       +'<div style="font-size:12px;color:#555;margin-bottom:10px">'+(TH?'แพลตฟอร์มโอนเงินให้ทีหลัง (T+1 หรือตามรอบ) — ตารางสรุปตามแพลตฟอร์ม กด “รับยอดแล้ว” ที่หน้าสรุปเพื่อลงวันรับจริง':'Platforms pay out later (T+1) — grouped by platform')+'</div>'
       +'<h3>'+(TH?'สรุปยอดรับตามแพลตฟอร์ม':'By platform')+'</h3><table><thead><tr><th>'+(TH?'แพลตฟอร์ม':'Platform')+'</th><th class="c">'+(TH?'บิล':'Bills')+'</th><th class="r">'+(TH?'ยอดขาย':'Gross')+'</th><th class="r">'+(TH?'รับแล้ว':'Received')+'</th><th class="r">'+(TH?'ค้างรับ':'Due')+'</th><th class="r">'+(TH?'ค่าคอม':'Fee')+'</th><th class="c">'+(TH?'วันรับล่าสุด':'Last paid')+'</th></tr></thead><tbody>'+rows+'</tbody></table>';
     return { title:(TH?'สรุปยอดรับแพลตฟอร์ม':'Platform payouts'), inner };
@@ -524,8 +524,8 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
     const totAll=bills.reduce((a,s)=>a+saleTotal(s),0);
     const byPayLocal={}; bills.forEach(s=>{ const k=s.pay||'cash'; byPayLocal[k]=(byPayLocal[k]||0)+saleTotal(s); });
     const payBoxes=['cash','promptpay','platform'].filter(k=>byPayLocal[k]).map(k=>'<div class="box"><div class="bl">'+_esc(payMap[k])+'</div><div class="bv">'+_M(byPayLocal[k])+'</div></div>').join('');
-    const inner='<div class="grid">'+('<div class="box"><div class="bl">'+(TH?'จำนวนบิล':'Bills')+'</div><div class="bv">'+bills.length+'</div></div>')+('<div class="box"><div class="bl">'+(TH?'ยอดรวม':'Total')+'</div><div class="bv" style="color:#0A6E60">'+_M(totAll)+'</div></div>')+payBoxes+'</div>'
-      +'<table><thead><tr><th class="c" style="width:30px">#</th><th class="c">'+(TH?'เลขที่บิล':'Bill#')+'</th><th class="c">'+(TH?'เลขออเดอร์':'Order#')+'</th><th>'+(TH?'ช่องทาง':'Channel')+'</th><th>'+(TH?'ชำระ':'Payment')+'</th><th class="c">'+(TH?'วันที่':'Date')+'</th><th class="r">'+(TH?'ยอด':'Amount')+'</th><th class="c">'+(TH?'สถานะ':'Status')+'</th></tr></thead><tbody>'+rows+'<tr><td colspan="6" style="font-weight:800">'+(TH?'รวมทั้งหมด':'Total')+'</td><td class="r" style="font-weight:800;color:#0A6E60">'+_M(totAll)+'</td><td></td></tr></tbody></table>';
+    const inner='<div class="grid">'+('<div class="box"><div class="bl">'+(TH?'จำนวนบิล':'Bills')+'</div><div class="bv">'+bills.length+'</div></div>')+('<div class="box"><div class="bl">'+(TH?'ยอดรวม':'Total')+'</div><div class="bv" style="color:#13304E">'+_M(totAll)+'</div></div>')+payBoxes+'</div>'
+      +'<table><thead><tr><th class="c" style="width:30px">#</th><th class="c">'+(TH?'เลขที่บิล':'Bill#')+'</th><th class="c">'+(TH?'เลขออเดอร์':'Order#')+'</th><th>'+(TH?'ช่องทาง':'Channel')+'</th><th>'+(TH?'ชำระ':'Payment')+'</th><th class="c">'+(TH?'วันที่':'Date')+'</th><th class="r">'+(TH?'ยอด':'Amount')+'</th><th class="c">'+(TH?'สถานะ':'Status')+'</th></tr></thead><tbody>'+rows+'<tr><td colspan="6" style="font-weight:800">'+(TH?'รวมทั้งหมด':'Total')+'</td><td class="r" style="font-weight:800;color:#13304E">'+_M(totAll)+'</td><td></td></tr></tbody></table>';
     return { title:(TH?'รายงานรายบิล (ทุกช่องทาง)':'Bill-by-bill'), inner };
   };
   const buildVerify=()=>{
@@ -539,14 +539,14 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
     const payMap={promptpay:TH?'พร้อมเพย์':'PromptPay',transfer:TH?'เงินโอน':'Transfer'};
     const byDay={}; digi.forEach(s=>{ const d=s.date||'-'; const o=byDay[d]||(byDay[d]={bills:0,sys:0,act:0,unv:0}); o.bills++; o.sys+=saleTotal(s); if(s.verified) o.act+=(actOf(s)||0); else o.unv+=saleTotal(s); });
     const days=Object.keys(byDay).sort();
-    const dayRows=days.map(d=>{ const o=byDay[d]; return '<tr><td>'+_dd(d)+'</td><td class="c">'+o.bills+'</td><td class="r">'+_M(o.sys)+'</td><td class="r" style="color:#0A6E60">'+_M(o.act)+'</td><td class="r" style="color:'+(o.unv?'#B26A00':'#888')+'">'+_M(o.unv)+'</td></tr>'; }).join('')||'<tr><td colspan="5" class="c" style="color:#888;padding:14px">'+(TH?'ไม่มีบิลโอน/พร้อมเพย์':'No transfer/PromptPay bills')+'</td></tr>';
+    const dayRows=days.map(d=>{ const o=byDay[d]; return '<tr><td>'+_dd(d)+'</td><td class="c">'+o.bills+'</td><td class="r">'+_M(o.sys)+'</td><td class="r" style="color:#13304E">'+_M(o.act)+'</td><td class="r" style="color:'+(o.unv?'#B26A00':'#888')+'">'+_M(o.unv)+'</td></tr>'; }).join('')||'<tr><td colspan="5" class="c" style="color:#888;padding:14px">'+(TH?'ไม่มีบิลโอน/พร้อมเพย์':'No transfer/PromptPay bills')+'</td></tr>';
     const bills=[...digi].sort((a,b)=>((a.date||'')+(a.t||'')).localeCompare((b.date||'')+(b.t||'')));
     const billRows=bills.map((s,i)=>{ const act=actOf(s); const sys=saleTotal(s); const diff= act!=null?Math.round(act-sys):0;
        const st = !s.verified ? '<span class="pill" style="background:#FBEAD7;color:#B26A00">'+(TH?'ค้างตรวจ':'Unchecked')+'</span>' : (diff!==0 ? '<span class="pill" style="background:#FBEAD7;color:#B26A00">'+(TH?'ต่าง ':'diff ')+(diff>0?'+':'')+diff+'</span>' : '<span class="pill" style="background:#E3F5EF;color:#0A6E60">'+(TH?'ตรง ✓':'OK ✓')+'</span>');
-       return '<tr><td class="c">'+(i+1)+'</td><td class="c">'+_no(s)+'</td><td>'+_esc(payMap[s.pay]||s.pay)+'</td><td class="c">'+_dd(s.date)+(s.t?' '+_esc(s.t):'')+'</td><td class="r">'+_M(sys)+'</td><td class="r" style="color:'+(act!=null?'#0A6E60':'#888')+'">'+(act!=null?_M(act):'-')+'</td><td class="c">'+(s.slipUrl?'📎':'-')+'</td><td class="c">'+st+'</td></tr>'; }).join('')||'<tr><td colspan="8" class="c" style="color:#888;padding:14px">'+(TH?'ไม่มีบิล':'No bills')+'</td></tr>';
+       return '<tr><td class="c">'+(i+1)+'</td><td class="c">'+_no(s)+'</td><td>'+_esc(payMap[s.pay]||s.pay)+'</td><td class="c">'+_dd(s.date)+(s.t?' '+_esc(s.t):'')+'</td><td class="r">'+_M(sys)+'</td><td class="r" style="color:'+(act!=null?'#13304E':'#888')+'">'+(act!=null?_M(act):'-')+'</td><td class="c">'+(s.slipUrl?'📎':'-')+'</td><td class="c">'+st+'</td></tr>'; }).join('')||'<tr><td colspan="8" class="c" style="color:#888;padding:14px">'+(TH?'ไม่มีบิล':'No bills')+'</td></tr>';
     const inner='<div class="grid">'
       +'<div class="box"><div class="bl">'+(TH?'ยอดระบบ':'System')+'</div><div class="bv">'+_M(sysTot)+'</div></div>'
-      +'<div class="box"><div class="bl">'+(TH?'ยืนยันแล้ว (จริง)':'Verified')+'</div><div class="bv" style="color:#0A6E60">'+_M(verTot)+'</div></div>'
+      +'<div class="box"><div class="bl">'+(TH?'ยืนยันแล้ว (จริง)':'Verified')+'</div><div class="bv" style="color:#13304E">'+_M(verTot)+'</div></div>'
       +'<div class="box"><div class="bl">'+(TH?'ค้างตรวจ':'Unchecked')+'</div><div class="bv" style="color:#B26A00">'+_M(unv)+'</div></div>'
       +'<div class="box"><div class="bl">'+(TH?'ยอดไม่ตรง':'Mismatch')+'</div><div class="bv" style="color:'+(mism?'#B26A00':'#888')+'">'+(mism>0?'+':'')+_M(mism)+'</div></div>'
       +'</div>'
@@ -557,7 +557,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
   const buildSamples=()=>{
     const note='<div style="font-size:12px;color:#B26A00;background:#FFF3E0;border-radius:9px;padding:9px 12px;margin-bottom:14px;line-height:1.5">'+(TH?'นี่คือ<b>ตัวอย่าง</b>หน้าตารายงาน (ข้อมูลสมมติ) — เมื่อเริ่มขายจริง แต่ละปุ่มจะสรุปจากยอดขายของร้านให้อัตโนมัติ':'These are <b>sample</b> reports (demo data). Once you start selling, each button summarises your real sales.')+'</div>';
     const s1='<h3 style="font-size:15px">1 · '+(TH?'รายงานยอดรวม':'Summary')+'</h3>'
-      +'<div class="grid"><div class="box"><div class="bl">'+(TH?'รายรับ':'Revenue')+'</div><div class="bv" style="color:#0A6E60">฿6,970</div></div><div class="box"><div class="bl">'+(TH?'กำไร':'Profit')+'</div><div class="bv" style="color:#0A6E60">฿4,180</div></div><div class="box"><div class="bl">'+(TH?'ต้นทุน':'Cost')+'</div><div class="bv" style="color:#B26A00">฿2,790</div></div><div class="box"><div class="bl">'+(TH?'บิล':'Bills')+'</div><div class="bv">58</div></div></div>'
+      +'<div class="grid"><div class="box"><div class="bl">'+(TH?'รายรับ':'Revenue')+'</div><div class="bv" style="color:#13304E">฿6,970</div></div><div class="box"><div class="bl">'+(TH?'กำไร':'Profit')+'</div><div class="bv" style="color:#13304E">฿4,180</div></div><div class="box"><div class="bl">'+(TH?'ต้นทุน':'Cost')+'</div><div class="bv" style="color:#B26A00">฿2,790</div></div><div class="box"><div class="bl">'+(TH?'บิล':'Bills')+'</div><div class="bv">58</div></div></div>'
       +'<table><thead><tr><th>'+(TH?'ช่องทางขาย':'Channel')+'</th><th class="r">'+(TH?'ยอด':'Total')+'</th></tr></thead><tbody><tr><td>'+(TH?'กลับบ้าน':'Take away')+'</td><td class="r">฿3,240</td></tr><tr><td>LINE MAN</td><td class="r">฿1,150</td></tr><tr><td>Grab</td><td class="r">฿980</td></tr></tbody></table>';
     const s2='<h3 style="font-size:15px">2 · '+(TH?'รายบิล (ทุกช่องทาง)':'Bills')+'</h3>'
       +'<table><thead><tr><th class="c">'+(TH?'บิล':'Bill#')+'</th><th>'+(TH?'ช่องทาง':'Channel')+'</th><th>'+(TH?'ชำระ':'Pay')+'</th><th class="r">'+(TH?'ยอด':'Amt')+'</th><th class="c">'+(TH?'สถานะ':'Status')+'</th></tr></thead><tbody>'
@@ -565,14 +565,14 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
       +'<tr><td class="c">M-007</td><td>LINE MAN</td><td>'+(TH?'แพลตฟอร์ม':'Platform')+'</td><td class="r">฿230</td><td class="c"><span class="pill" style="background:#FBEAD7;color:#B26A00">'+(TH?'ค้างรับ':'Due')+'</span></td></tr></tbody></table>';
     const s3='<h3 style="font-size:15px">3 · '+(TH?'สรุปยอดรับแพลตฟอร์ม':'Platform payouts')+'</h3>'
       +'<table><thead><tr><th>'+(TH?'แพลตฟอร์ม':'Platform')+'</th><th class="r">'+(TH?'ยอดขาย':'Gross')+'</th><th class="r">'+(TH?'รับแล้ว':'Got')+'</th><th class="r">'+(TH?'ค้างรับ':'Due')+'</th><th class="r">'+(TH?'ค่าคอม':'Fee')+'</th></tr></thead><tbody>'
-      +'<tr><td>Grab</td><td class="r">฿980</td><td class="r" style="color:#0A6E60">฿1,153</td><td class="r" style="color:#B26A00">฿800</td><td class="r" style="color:#B26A00">฿227</td></tr>'
-      +'<tr><td>LINE MAN</td><td class="r">฿1,150</td><td class="r" style="color:#0A6E60">฿0</td><td class="r" style="color:#B26A00">฿1,150</td><td class="r">฿0</td></tr></tbody></table>';
+      +'<tr><td>Grab</td><td class="r">฿980</td><td class="r" style="color:#13304E">฿1,153</td><td class="r" style="color:#B26A00">฿800</td><td class="r" style="color:#B26A00">฿227</td></tr>'
+      +'<tr><td>LINE MAN</td><td class="r">฿1,150</td><td class="r" style="color:#13304E">฿0</td><td class="r" style="color:#B26A00">฿1,150</td><td class="r">฿0</td></tr></tbody></table>';
     const s4='<h3 style="font-size:15px">4 · '+(TH?'พร้อมเพย์':'PromptPay')+'</h3>'
       +'<table><thead><tr><th class="c">'+(TH?'บิล':'Bill#')+'</th><th>'+(TH?'ชำระ':'Pay')+'</th><th class="r">'+(TH?'ยอดระบบ':'System')+'</th><th class="r">'+(TH?'ยอดจริง':'Actual')+'</th><th class="c">'+(TH?'สถานะ':'Status')+'</th></tr></thead><tbody>'
       +'<tr><td class="c">W-018</td><td>'+(TH?'พร้อมเพย์':'PromptPay')+'</td><td class="r">฿85</td><td class="r">฿85</td><td class="c"><span class="pill" style="background:#E3F5EF;color:#0A6E60">'+(TH?'ตรง ✓':'OK ✓')+'</span></td></tr>'
       +'<tr><td class="c">W-025</td><td>'+(TH?'พร้อมเพย์':'PromptPay')+'</td><td class="r">฿240</td><td class="r" style="color:#B26A00">฿215</td><td class="c"><span class="pill" style="background:#FBEAD7;color:#B26A00">'+(TH?'ต่าง -25':'diff -25')+'</span></td></tr></tbody></table>';
     const s5='<h3 style="font-size:15px">5 · '+(TH?'รายงานภาษีขาย (VAT) — สำหรับ ภ.พ.30':'VAT sales report — for P.P.30')+'</h3>'
-      +'<div class="grid"><div class="box"><div class="bl">'+(TH?'มูลค่าก่อน VAT':'Before VAT')+'</div><div class="bv">฿6,514</div></div><div class="box"><div class="bl">VAT 7%</div><div class="bv" style="color:#0A6E60">฿456</div></div><div class="box"><div class="bl">'+(TH?'รวม':'Total')+'</div><div class="bv">฿6,970</div></div><div class="box"><div class="bl">'+(TH?'จำนวนใบ':'Invoices')+'</div><div class="bv">58</div></div></div>'
+      +'<div class="grid"><div class="box"><div class="bl">'+(TH?'มูลค่าก่อน VAT':'Before VAT')+'</div><div class="bv">฿6,514</div></div><div class="box"><div class="bl">VAT 7%</div><div class="bv" style="color:#13304E">฿456</div></div><div class="box"><div class="bl">'+(TH?'รวม':'Total')+'</div><div class="bv">฿6,970</div></div><div class="box"><div class="bl">'+(TH?'จำนวนใบ':'Invoices')+'</div><div class="bv">58</div></div></div>'
       +'<table><thead><tr><th>'+(TH?'วันที่':'Date')+'</th><th>'+(TH?'เลขที่':'No.')+'</th><th>'+(TH?'ช่องทาง':'Channel')+'</th><th class="r">'+(TH?'ก่อน VAT':'Before')+'</th><th class="r">VAT</th><th class="r">'+(TH?'รวม':'Total')+'</th></tr></thead><tbody>'
       +'<tr><td>01/07/69</td><td>#1042</td><td>'+(TH?'กลับบ้าน':'Take away')+'</td><td class="r">112.15</td><td class="r">7.85</td><td class="r">120.00</td></tr>'
       +'<tr><td>01/07/69</td><td>#1043</td><td>Grab</td><td class="r">214.02</td><td class="r">14.98</td><td class="r">229.00</td></tr>'
@@ -587,7 +587,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
       +'<tfoot><tr><td colspan="2">'+(TH?'รวมทั้งเดือน':'Month total')+'</td><td class="r">2,800.00</td><td class="r">196.00</td><td class="r">2,996.00</td></tr></tfoot></table>'
       +'<div style="font-size:11px;color:#777;margin-top:8px;line-height:1.5">'+(TH?'ติ๊ก “มีใบกำกับภาษี” ตอนบันทึกซื้อของเข้า แล้วบิลนั้นจะเข้ารายงานภาษีซื้อ':'Tick “has tax invoice” when recording a purchase to include it here')+'</div>';
     const s7='<h3 style="font-size:15px">7 · '+(TH?'สรุป ภ.พ.30 (ขาย − ซื้อ)':'P.P.30 summary')+'</h3>'
-      +'<table><tbody><tr><td>'+(TH?'ภาษีขาย':'Output tax')+'</td><td class="r" style="color:#0A6E60">฿456.00</td></tr><tr><td>'+(TH?'ภาษีซื้อ':'Input tax')+'</td><td class="r" style="color:#B26A00">฿196.00</td></tr></tbody><tfoot><tr><td>'+(TH?'ภาษีที่ต้องชำระ':'VAT payable')+'</td><td class="r">฿260.00</td></tr></tfoot></table>';
+      +'<table><tbody><tr><td>'+(TH?'ภาษีขาย':'Output tax')+'</td><td class="r" style="color:#13304E">฿456.00</td></tr><tr><td>'+(TH?'ภาษีซื้อ':'Input tax')+'</td><td class="r" style="color:#B26A00">฿196.00</td></tr></tbody><tfoot><tr><td>'+(TH?'ภาษีที่ต้องชำระ':'VAT payable')+'</td><td class="r">฿260.00</td></tr></tfoot></table>';
     return { title:(TH?'ตัวอย่างรายงาน':'Sample reports'), inner: note+s1+s2+s3+s4+s5+s6+s7 };
   };
 
@@ -628,10 +628,10 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
         </div>
         <button onClick={()=>setReport(buildSamples())} className="kd-btn" style={{ width:'100%', marginBottom:14, padding:'11px', fontSize:12.5, background:'#fff', color:'var(--ink-3)', border:'1.5px dashed var(--hair-2)', justifyContent:'center', display:'flex', gap:6, alignItems:'center' }}>👁 {lang==='th'?'ดูตัวอย่างรายงาน (ข้อมูลสมมติ)':'Preview sample reports'}</button>
 
-        {_vatOn && <div className="kd-card" style={{ padding:'14px 15px', marginBottom:14, background:'#EAF6F1', boxShadow:'none' }}>
+        {_vatOn && <div className="kd-card" style={{ padding:'14px 15px', marginBottom:14, background:'#E9EFF5', boxShadow:'none' }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
-            <span style={{ color:'#0A6E60' }}>{React.cloneElement(IC.receipt,{size:17})}</span>
-            <div style={{ fontWeight:700, fontSize:14.5, color:'#0A6E60' }}>{lang==='th'?'รายงานภาษีมูลค่าเพิ่ม (VAT)':'VAT reports'}</div>
+            <span style={{ color:'#13304E' }}>{React.cloneElement(IC.receipt,{size:17})}</span>
+            <div style={{ fontWeight:700, fontSize:14.5, color:'#13304E' }}>{lang==='th'?'รายงานภาษีมูลค่าเพิ่ม (VAT)':'VAT reports'}</div>
           </div>
           <div style={{ fontSize:12, color:'var(--ink-3)', marginBottom:10, lineHeight:1.45 }}>{lang==='th'?'รายงานภาษีขาย/ภาษีซื้อ รายเดือน สำหรับกรอก ภ.พ.30 · พิมพ์ A4 + Excel (CSV)':'Monthly output/input VAT for filing P.P.30 · print A4 + Excel (CSV)'}</div>
           <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:9 }}>
@@ -645,7 +645,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
           <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             <button onClick={()=>setReport(buildVatReport(vatView))} className="kd-btn kd-btn-primary" style={{ flex:'1 1 30%', padding:'11px 8px', fontSize:12.5 }}>{lang==='th'?'ภาษีขาย':'Output'}</button>
             <button onClick={()=>setReport(buildVatPurchaseReport(vatView))} className="kd-btn" style={{ flex:'1 1 30%', padding:'11px 8px', fontSize:12.5, background:'#FBEAD7', color:'#B26A00' }}>{lang==='th'?'ภาษีซื้อ':'Input'}</button>
-            <button onClick={()=>setReport(buildPP30())} className="kd-btn" style={{ flex:'1 1 30%', padding:'11px 8px', fontSize:12.5, background:'#0A6E60', color:'#fff' }}>{lang==='th'?'สรุป ภ.พ.30':'P.P.30'}</button>
+            <button onClick={()=>setReport(buildPP30())} className="kd-btn" style={{ flex:'1 1 30%', padding:'11px 8px', fontSize:12.5, background:'#13304E', color:'#fff' }}>{lang==='th'?'สรุป ภ.พ.30':'P.P.30'}</button>
           </div>
         </div>}
 
@@ -664,7 +664,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
           <div style={{ display:'flex', alignItems:'flex-end', gap:8, height:110 }}>
             {hkeys.map(h=>(
               <div key={h} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
-                <div style={{ width:'100%', maxWidth:26, height:`${hours[h]/hmax*84}px`, minHeight:6, borderRadius:'6px 6px 3px 3px', overflow:'hidden', display:'flex', flexDirection:'column-reverse', transition:'height .4s', background: hourMode==='total'?'linear-gradient(var(--brand),#7CD9B0)':'transparent' }}>
+                <div style={{ width:'100%', maxWidth:26, height:`${hours[h]/hmax*84}px`, minHeight:6, borderRadius:'6px 6px 3px 3px', overflow:'hidden', display:'flex', flexDirection:'column-reverse', transition:'height .4s', background: hourMode==='total'?'linear-gradient(var(--brand),#8FC1EA)':'transparent' }}>
                   {hourMode!=='total' && Object.entries(hoursCh[h]||{}).map(([ch,v])=>(<div key={ch} style={{ height:`${v/(hours[h]||1)*100}%`, background:chColor(ch) }}/>))}
                 </div>
                 <span className="num" style={{ fontSize:11, color:'var(--ink-3)' }}>{h}</span>
@@ -1654,7 +1654,7 @@ function SubscriptionSheet({ sub, setSub, onClose }){
       </div>
       <div style={{ overflowY:'auto', padding:'0 20px', flex:1 }}>
         {/* current status */}
-        <div className="kd-card" style={{ padding:'15px 16px', marginBottom:16, background:'linear-gradient(135deg,#12A56E,#2E6FB0)', color:'#fff' }}>
+        <div className="kd-card" style={{ padding:'15px 16px', marginBottom:16, background:'linear-gradient(135deg,#13304E,#26619C)', color:'#fff' }}>
           <div style={{ fontSize:13, opacity:.85, fontWeight:600 }}>{TH?'สถานะปัจจุบัน':'Current plan'}</div>
           <div style={{ fontSize:20, fontWeight:700, marginTop:2 }}>{plans.find(p=>p.id===sub.plan)?.[lang] || sub.plan}</div>
           <div style={{ fontSize:13, marginTop:4 }}>{TH?`เหลือ ${daysLeft} วัน · หมดอายุ `:`${daysLeft} days left · expires `}{new Date(sub.expiry).toLocaleDateString(TH?'th-TH':'en-US',{day:'numeric',month:'short'})}</div>

@@ -149,7 +149,7 @@ function SalesView({ data, range }){
       <div className="card panel">
         <h3>แนวโน้มยอดขายรายวัน · ผูกวันขายจริง (Transaction date)</h3>
         <ChartBox type="line" labels={trimDays.map(d=>thDate(d).slice(0,5))} datasets={[
-          { label:'ยอดขาย', data:trimDays.map(d=>Math.round(revByDay[d]||0)), borderColor:'#0E9C88', backgroundColor:'rgba(14,156,136,.12)', fill:true, tension:.32, pointRadius:2, borderWidth:2.5 },
+          { label:'ยอดขาย', data:trimDays.map(d=>Math.round(revByDay[d]||0)), borderColor:'#26619C', backgroundColor:'rgba(38,97,156,.12)', fill:true, tension:.32, pointRadius:2, borderWidth:2.5 },
           { label:'เงินเข้าจริง', data:trimDays.map(d=>Math.round(setlByDay[d]||0)), borderColor:'#1E73B0', backgroundColor:'transparent', borderDash:[5,4], tension:.32, pointRadius:0, borderWidth:2 } ]}/>
         <div className="sub" style={{marginTop:8}}>เส้นทึบ = ยอดขาย (ผูกวันที่ลูกค้าสั่ง/โอนจริง) · เส้นประ = เงินเข้าบัญชีจริง (Grab/แพลตฟอร์มโอนทีหลัง) — ยอดขายไม่ย้ายวันตามวันเงินเข้า</div>
       </div>
@@ -772,7 +772,7 @@ function PromptPayView({ data, range, onPatch }){
             <button className="btn gh" onClick={()=>{ try{ navigator.clipboard.writeText(hook); }catch(e){} }} style={{whiteSpace:'nowrap'}}>คัดลอก</button>
           </div>
           <div className="sub" style={{fontSize:11.5,marginTop:8}}>POST {`{ text: "<ข้อความแจ้งเตือน>" }`} มาที่ URL นี้ · ระบบตอบกลับจำนวนที่จับคู่ได้ · ต้องมี relay/บอทเชื่อม LINE→URL (งานตั้งค่าฝั่งแอดมิน) — ระหว่างนี้ทดสอบได้ที่ปุ่ม “นำเข้าสเตทเมนท์”</div>
-          <div style={{fontSize:12,lineHeight:1.55,background:'#EAF6F1',borderRadius:8,padding:'9px 11px',marginTop:8,color:'var(--brand-ink)'}}>📱 <b>ใช้ได้ทุกเครื่อง (iPhone/iPad/Android/คอม)</b> เพราะทำงานบน cloud ไม่ต้องเปิดเครื่องค้าง · <b>iOS ใช้ได้ปกติ</b> (ทาง A ไม่พึ่ง OS)<br/>ทางเลือกข้ามเครื่อง: ถ้าธนาคารส่งแค่ SMS/แจ้งเตือนในแอป (ไม่เข้ากลุ่ม LINE) ให้ใช้ <b>เครื่อง Android เก่าอีกเครื่อง</b>วางไว้เป็น “ตัวส่งต่อ” (อ่าน noti ธนาคาร→ยิงเข้า Webhook เดียวกันนี้) ส่วน POS จะเป็น iPhone/iPad ก็ได้ · iPhone ทำตัวส่งต่อไม่ได้ (iOS ห้ามอ่าน noti แอปอื่น) จึงต้องเป็น Android</div>
+          <div style={{fontSize:12,lineHeight:1.55,background:'#E9EFF5',borderRadius:8,padding:'9px 11px',marginTop:8,color:'var(--brand-ink)'}}>📱 <b>ใช้ได้ทุกเครื่อง (iPhone/iPad/Android/คอม)</b> เพราะทำงานบน cloud ไม่ต้องเปิดเครื่องค้าง · <b>iOS ใช้ได้ปกติ</b> (ทาง A ไม่พึ่ง OS)<br/>ทางเลือกข้ามเครื่อง: ถ้าธนาคารส่งแค่ SMS/แจ้งเตือนในแอป (ไม่เข้ากลุ่ม LINE) ให้ใช้ <b>เครื่อง Android เก่าอีกเครื่อง</b>วางไว้เป็น “ตัวส่งต่อ” (อ่าน noti ธนาคาร→ยิงเข้า Webhook เดียวกันนี้) ส่วน POS จะเป็น iPhone/iPad ก็ได้ · iPhone ทำตัวส่งต่อไม่ได้ (iOS ห้ามอ่าน noti แอปอื่น) จึงต้องเป็น Android</div>
           <a href="auto-verify-guide.html" target="_blank" className="btn pri" style={{display:'inline-block',marginTop:12,textDecoration:'none'}}>📖 เปิดคู่มือฉบับเต็ม (สำหรับร้านค้า)</a>
           <button className="btn gh" style={{marginTop:12,marginLeft:8}} onClick={()=>setPair(true)}>🔗 เชื่อมต่อแจ้งเตือน (จับคู่กลุ่ม LINE)</button>
         </div>); })()}
@@ -1188,9 +1188,9 @@ function DocCard({ tpl, shop, emoji }){
   const share=async()=>{ try{ if(navigator.share){ await navigator.share({ title:KD.fill(tpl.title,v), text:(v['ชื่อร้าน']||'')+' — '+KD.fill(tpl.title,v), url }); return; } }catch(e){ if(e&&e.name==='AbortError') return; } copy(); };
   return (<div className="card" style={{padding:'16px 18px',display:'flex',flexDirection:'column',gap:10}}>
     <div style={{display:'flex',alignItems:'flex-start',gap:12}}>
-      <div style={{width:44,height:44,borderRadius:11,background:'var(--brand-soft,#E3F5F1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flex:'0 0 auto'}}>{tpl.icon||'📄'}</div>
+      <div style={{width:44,height:44,borderRadius:11,background:'var(--brand-soft,#E9EFF5)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flex:'0 0 auto'}}>{tpl.icon||'📄'}</div>
       <div style={{flex:1,minWidth:0}}>
-        <span style={{fontSize:11,fontWeight:700,color:'var(--brand-ink,#0A6E60)',background:'var(--brand-soft,#E3F5F1)',borderRadius:999,padding:'2px 9px'}}>{tpl.cat}</span>
+        <span style={{fontSize:11,fontWeight:700,color:'var(--brand-ink,#13304E)',background:'var(--brand-soft,#E9EFF5)',borderRadius:999,padding:'2px 9px'}}>{tpl.cat}</span>
         <div style={{fontSize:15,fontWeight:700,marginTop:6,lineHeight:1.35}}>{KD.fill(tpl.title,v)}</div>
         <div style={{fontSize:12.5,color:'var(--ink-3)',marginTop:4,lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{preview}</div>
       </div>
@@ -1341,7 +1341,7 @@ function QuoteView({ data }){
       return '<tr><td class="c">'+(i+1)+'</td><td>'+esc(l.name)+'</td><td class="c">'+(Number(l.qty)||0)+'</td><td class="r">'+QMONEY(l.price).slice(1)+'</td><td class="r">'+QMONEY(amt).slice(1)+'</td></tr>'; }).join('');
     const dTxt=new Date(date).toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
     const vTxt=new Date(new Date(date).getTime()+(Number(valid)||0)*864e5).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
-    const css="*{margin:0;padding:0;box-sizing:border-box}@page{size:A4;margin:16mm}body{font-family:'IBM Plex Sans Thai',sans-serif;color:#1a1a1a;font-size:13px;line-height:1.5}.head{display:flex;justify-content:space-between;border-bottom:2.5px solid #12A56E;padding-bottom:14px;margin-bottom:18px}.shop{font-size:20px;font-weight:700;color:#0B7A50}.sub{color:#666;font-size:12px;margin-top:3px}.doct{font-size:26px;font-weight:800;color:#12A56E}.meta{font-size:12px;color:#444;margin-top:6px;text-align:right}.to{background:#F1FAF5;border-radius:8px;padding:12px 14px;margin-bottom:16px}.lbl{font-size:11px;color:#12A56E;font-weight:700}table{width:100%;border-collapse:collapse;margin-bottom:14px}th{background:#0B7A50;color:#fff;font-size:12px;padding:9px 10px;text-align:left}td{padding:9px 10px;border-bottom:1px solid #e5eae7}.c{text-align:center}.r{text-align:right}.tot{width:300px;margin-left:auto}.tot .row{display:flex;justify-content:space-between;padding:5px 2px}.tot .g{border-top:2px solid #12A56E;font-size:17px;font-weight:800;color:#0B7A50;padding-top:9px;margin-top:4px}.note{margin-top:20px;font-size:12px;color:#555;white-space:pre-wrap}.sign{display:flex;justify-content:space-between;margin-top:46px;font-size:12px}.sign div{width:44%;text-align:center;border-top:1px solid #999;padding-top:6px}";
+    const css="*{margin:0;padding:0;box-sizing:border-box}@page{size:A4;margin:16mm}body{font-family:'IBM Plex Sans Thai',sans-serif;color:#1a1a1a;font-size:13px;line-height:1.5}.head{display:flex;justify-content:space-between;border-bottom:2.5px solid #26619C;padding-bottom:14px;margin-bottom:18px}.shop{font-size:20px;font-weight:700;color:#13304E}.sub{color:#666;font-size:12px;margin-top:3px}.doct{font-size:26px;font-weight:800;color:#26619C}.meta{font-size:12px;color:#444;margin-top:6px;text-align:right}.to{background:#EAF0F7;border-radius:8px;padding:12px 14px;margin-bottom:16px}.lbl{font-size:11px;color:#26619C;font-weight:700}table{width:100%;border-collapse:collapse;margin-bottom:14px}th{background:#13304E;color:#fff;font-size:12px;padding:9px 10px;text-align:left}td{padding:9px 10px;border-bottom:1px solid #e5eae7}.c{text-align:center}.r{text-align:right}.tot{width:300px;margin-left:auto}.tot .row{display:flex;justify-content:space-between;padding:5px 2px}.tot .g{border-top:2px solid #26619C;font-size:17px;font-weight:800;color:#13304E;padding-top:9px;margin-top:4px}.note{margin-top:20px;font-size:12px;color:#555;white-space:pre-wrap}.sign{display:flex;justify-content:space-between;margin-top:46px;font-size:12px}.sign div{width:44%;text-align:center;border-top:1px solid #999;padding-top:6px}";
     const body='<div class="head"><div><div class="shop">'+esc(sName)+'</div><div class="sub">'+esc(sAddr)+'</div>'+(sTax?'<div class="sub">เลขภาษี '+esc(sTax)+'</div>':'')+'<div class="sub">โทร '+esc(sPhone)+'</div></div>'
       +'<div style="text-align:right"><div class="doct">ใบเสนอราคา</div><div class="meta"><b>เลขที่</b> '+qno+'<br><b>วันที่</b> '+dTxt+'<br><b>ยืนราคาถึง</b> '+vTxt+'</div></div></div>'
       +'<div class="to"><div class="lbl">เสนอราคาให้</div><div style="font-size:15px;font-weight:700;margin-top:2px">'+esc(cust||'-')+'</div>'+(caddr?'<div class="sub">'+esc(caddr)+'</div>':'')+'</div>'
@@ -1353,7 +1353,7 @@ function QuoteView({ data }){
       +'<div class="row g"><span>ยอดชำระสุทธิ</span><span>'+QMONEY(total)+'</span></div>'
       +(vat?'':'<div style="font-size:11px;color:#888;text-align:right;margin-top:4px">* ราคานี้ยังไม่รวมภาษีมูลค่าเพิ่ม</div>')+'</div>'
       +(note?'<div class="note"><b>หมายเหตุ:</b> '+esc(note)+'</div>':'')
-      +(sBank?'<div style="margin-top:16px;background:#F1FAF5;border-radius:8px;padding:10px 14px;font-size:12px"><b style="color:#0B7A50">ชำระเงินโดยโอนเข้า:</b> '+esc(sBank)+'</div>':'')
+      +(sBank?'<div style="margin-top:16px;background:#EAF0F7;border-radius:8px;padding:10px 14px;font-size:12px"><b style="color:#13304E">ชำระเงินโดยโอนเข้า:</b> '+esc(sBank)+'</div>':'')
       +'<div class="sign"><div>'+esc(sName)+'<br><span style="color:#888;font-size:11px">ผู้เสนอราคา</span></div><div><br><br><span style="color:#888;font-size:11px">ผู้อนุมัติ / ลูกค้า</span></div></div>';
     const doc='<!DOCTYPE html><ht'+'ml><he'+'ad><meta charset="utf-8"><ti'+'tle>'+qno+'</ti'+'tle><li'+'nk href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;700;800&display=swap" rel="stylesheet"><sty'+'le>'+css+'</sty'+'le></he'+'ad><bo'+'dy>'+body+'</bo'+'dy></ht'+'ml>';
     try{ const ifr=document.createElement('iframe'); ifr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
@@ -1459,7 +1459,7 @@ function DocsView({ data, auth }){
   const emoji=info.emoji||'🏪';
   const tpls=KD?KD.load().filter(t=>t.enabled!==false):[];
   return (<div>
-    <div className="card" style={{padding:'15px 18px',marginBottom:16,background:'var(--brand-softer,#EFFAF7)',border:'none',display:'flex',gap:12,alignItems:'flex-start'}}>
+    <div className="card" style={{padding:'15px 18px',marginBottom:16,background:'var(--brand-softer,#F1F5F9)',border:'none',display:'flex',gap:12,alignItems:'flex-start'}}>
       <span style={{fontSize:22}}>💡</span>
       <div style={{fontSize:13.5,color:'var(--ink-2)',lineHeight:1.6}}>เอกสารเติม <b>ชื่อร้าน/ที่อยู่/เลขภาษี/เบอร์ ของ “{shop.name}”</b> ให้อัตโนมัติ — กด <b>ส่ง LINE OA</b> ให้ลูกค้า/คู่ค้า หรือ <b>ดาวน์โหลด/แชร์ลิงก์</b> ได้ทันที · ต้นแบบกลางดูแลโดยทีม KaiDee — ร้านควรตรวจทานเนื้อหาก่อนใช้จริง</div>
     </div>

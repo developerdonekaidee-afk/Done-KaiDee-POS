@@ -53,15 +53,15 @@ function QuotationScreen({ menu, shop, pay, raw, costMode, purchases, addPurchas
     }).join('');
     const validTxt = new Date(new Date(date).getTime()+ (Number(validDays)||0)*86400000).toLocaleDateString(TH?'th-TH':'en-US',{day:'numeric',month:'short',year:'numeric'});
     const dTxt = new Date(date).toLocaleDateString(TH?'th-TH':'en-US',{day:'numeric',month:'long',year:'numeric'});
-    const payBlock = bankInfo ? '<div style="margin-top:16px;background:#F1FAF5;border-radius:8px;padding:10px 14px;font-size:12px"><b style="color:#0B7A50">'+(TH?'ชำระเงินโดยโอนเข้า':'Payment / transfer to')+':</b> '+esc(bankInfo)+'</div>' : '';
+    const payBlock = bankInfo ? '<div style="margin-top:16px;background:#EAF0F7;border-radius:8px;padding:10px 14px;font-size:12px"><b style="color:#13304E">'+(TH?'ชำระเงินโดยโอนเข้า':'Payment / transfer to')+':</b> '+esc(bankInfo)+'</div>' : '';
     const css="*{margin:0;padding:0;box-sizing:border-box}@page{size:A4;margin:16mm}body{font-family:'IBM Plex Sans Thai',sans-serif;color:#1a1a1a;font-size:13px;line-height:1.5}"
-      +".head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #12A56E;padding-bottom:14px;margin-bottom:18px}"
-      +".shop{font-size:20px;font-weight:700;color:#0B7A50}.sub{color:#666;font-size:12px;margin-top:3px}"
-      +".doct{font-size:26px;font-weight:800;color:#12A56E;letter-spacing:1px}.meta{font-size:12px;color:#444;margin-top:6px;text-align:right}"
-      +".to{background:#F1FAF5;border-radius:8px;padding:12px 14px;margin-bottom:16px}.lbl{font-size:11px;color:#12A56E;font-weight:700;text-transform:uppercase;letter-spacing:.5px}"
-      +"table{width:100%;border-collapse:collapse;margin-bottom:14px}th{background:#0B7A50;color:#fff;font-size:12px;padding:9px 10px;text-align:left}"
+      +".head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #26619C;padding-bottom:14px;margin-bottom:18px}"
+      +".shop{font-size:20px;font-weight:700;color:#13304E}.sub{color:#666;font-size:12px;margin-top:3px}"
+      +".doct{font-size:26px;font-weight:800;color:#26619C;letter-spacing:1px}.meta{font-size:12px;color:#444;margin-top:6px;text-align:right}"
+      +".to{background:#EAF0F7;border-radius:8px;padding:12px 14px;margin-bottom:16px}.lbl{font-size:11px;color:#26619C;font-weight:700;text-transform:uppercase;letter-spacing:.5px}"
+      +"table{width:100%;border-collapse:collapse;margin-bottom:14px}th{background:#13304E;color:#fff;font-size:12px;padding:9px 10px;text-align:left}"
       +"td{padding:9px 10px;border-bottom:1px solid #e5eae7}.c{text-align:center}.r{text-align:right}"
-      +".tot{width:280px;margin-left:auto}.tot .row{display:flex;justify-content:space-between;padding:6px 2px}.tot .g{border-top:2px solid #12A56E;font-size:17px;font-weight:800;color:#0B7A50;padding-top:9px;margin-top:4px}"
+      +".tot{width:280px;margin-left:auto}.tot .row{display:flex;justify-content:space-between;padding:6px 2px}.tot .g{border-top:2px solid #26619C;font-size:17px;font-weight:800;color:#13304E;padding-top:9px;margin-top:4px}"
       +".note{margin-top:20px;font-size:12px;color:#555;white-space:pre-wrap}.sign{display:flex;justify-content:space-between;margin-top:46px;font-size:12px;color:#444}.sign div{width:44%;text-align:center;border-top:1px solid #999;padding-top:6px}";
     const body='<div class="head"><div><div class="shop">'+esc(shopName||'ร้านของฉัน')+'</div>'
       +'<div class="sub">'+esc(shopAddr||'')+'</div><div class="sub">'+(TH?'โทร ':'Tel ')+esc(phone||(shop&&shop.phone)||'')+'</div></div>'

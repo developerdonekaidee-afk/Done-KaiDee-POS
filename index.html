@@ -5,7 +5,7 @@
 <meta name="build" content="p2-20260731a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>:Done KaiDee</title>
-<meta name="theme-color" content="#0E9C88">
+<meta name="theme-color" content="#26619C">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="logo.jpg">
 <meta name="mobile-web-app-capable" content="yes">
@@ -17,12 +17,12 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --brand:#0E9C88;        /* teal — green-blue */
-    --brand-ink:#0A6E60;
-    --brand-soft:#E3F5F1;
-    --brand-softer:#EFFAF7;
+    --brand:#26619C;        /* teal — green-blue */
+    --brand-ink:#13304E;
+    --brand-soft:#E9EFF5;
+    --brand-softer:#F1F5F9;
     --accent:#2E6FB0;       /* blue (accent) */
-    --hero:linear-gradient(152deg,#14A886 0%,#1E73B0 100%); /* green→blue */
+    --hero:linear-gradient(152deg,#1F4F86 0%,#26619C 100%); /* green→blue */
     --accent-soft:#E6EFF9;
     --accent-ink:#1F5C99;
     --blue:#2E6FB0;
@@ -114,15 +114,15 @@
 </style>
 </head>
 <body>
-  <div id="stage"><div id="root"><div id="kdBoot" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fff;font-family:system-ui,-apple-system,'Noto Sans Thai',sans-serif"><img src="logo.jpg" alt="" style="width:56px;height:56px;border-radius:15px;object-fit:cover"/><div style="width:26px;height:26px;border-radius:999px;border:3px solid #e3efe9;border-top-color:#12A56E;animation:kdbootspin .7s linear infinite"></div><div style="font-size:13px;color:#7a8b84;font-weight:600" id="kdBootMsg">กำลังโหลด…</div><style>@keyframes kdbootspin{to{transform:rotate(360deg)}}</style><script>(function(){try{var fs=false;try{fs=sessionStorage.getItem('kd_fresh_signup')==='1';}catch(e){}var signup=fs||/(go%3[dD]signup|go=signup|role%3[dD]signup|role=signup)/.test(location.href);var s=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}');var nm=(!signup)&&s&&s.shop&&s.shop.name;var en=s&&s.lang==='en';var el=document.getElementById('kdBootMsg');if(el)el.textContent=nm?(en?('Signing in · '+nm+'…'):('กำลังเข้าสู่ระบบ '+nm+'…')):(en?'Loading… Signing in to register a shop':'กำลังโหลด… กำลังเข้าสู่ระบบสมัครร้าน');}catch(e){}})();</script></div></div></div>
+  <div id="stage"><div id="root"><div id="kdBoot" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fff;font-family:system-ui,-apple-system,'Noto Sans Thai',sans-serif"><img src="logo.jpg" alt="" style="width:56px;height:56px;border-radius:15px;object-fit:cover"/><div style="width:26px;height:26px;border-radius:999px;border:3px solid #e3efe9;border-top-color:#26619C;animation:kdbootspin .7s linear infinite"></div><div style="font-size:13px;color:#7a8b84;font-weight:600" id="kdBootMsg">กำลังโหลด…</div><style>@keyframes kdbootspin{to{transform:rotate(360deg)}}</style><script>(function(){try{var fs=false;try{fs=sessionStorage.getItem('kd_fresh_signup')==='1';}catch(e){}var signup=fs||/(go%3[dD]signup|go=signup|role%3[dD]signup|role=signup)/.test(location.href);var s=JSON.parse(localStorage.getItem('kaidee_pos_v1')||'{}');var nm=(!signup)&&s&&s.shop&&s.shop.name;var en=s&&s.lang==='en';var el=document.getElementById('kdBootMsg');if(el)el.textContent=nm?(en?('Signing in · '+nm+'…'):('กำลังเข้าสู่ระบบ '+nm+'…')):(en?'Loading… Signing in to register a shop':'กำลังโหลด… กำลังเข้าสู่ระบบสมัครร้าน');}catch(e){}})();</script></div></div></div>
 
   <template id="__bundler_thumbnail">
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" fill="#12A56E"/>
+      <rect width="100" height="100" fill="#26619C"/>
       <rect x="30" y="24" width="40" height="52" rx="7" fill="#fff"/>
-      <rect x="37" y="33" width="26" height="8" rx="2" fill="#12A56E"/>
+      <rect x="37" y="33" width="26" height="8" rx="2" fill="#26619C"/>
       <circle cx="43" cy="52" r="3.5" fill="#E8992F"/><circle cx="57" cy="52" r="3.5" fill="#E8992F"/>
-      <circle cx="43" cy="64" r="3.5" fill="#12A56E"/><circle cx="57" cy="64" r="3.5" fill="#12A56E"/>
+      <circle cx="43" cy="64" r="3.5" fill="#26619C"/><circle cx="57" cy="64" r="3.5" fill="#26619C"/>
     </svg>
   </template>
 
