@@ -971,7 +971,10 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
             <span style={{ width:38, height:38, borderRadius:11, background:'var(--brand-soft)', color:'var(--brand)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🏬</span>
             <div style={{ flex:1 }}>
               <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ตลาด/ทำเลของร้าน · เปิดขายบนแพลตฟอร์ม':'Market & platform listing'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{shop.market ? (lang==='th'?`เปิดอยู่ · ${shop.market}`:`Listed · ${shop.market}`) : (lang==='th'?'ยังไม่เปิด — แตะเพื่อเลือกตลาด':'Not listed — tap to choose a market')}</div>
+              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{shop.market
+                ? (shop.marketOpen===false ? (lang==='th'?`⏸️ ปิดรับออเดอร์ชั่วคราว · ${shop.market}`:`Paused · ${shop.market}`)
+                                           : (lang==='th'?`🟢 เปิดขายอยู่ · ${shop.market}`:`Listed · ${shop.market}`))
+                : (lang==='th'?'ยังไม่เปิด — แตะเพื่อเลือกตลาด':'Not listed — tap to choose a market')}</div>
             </div>
             <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
           </button>
@@ -1213,10 +1216,16 @@ function MarketJoinSheet({ shop, setShop, onClose }){
     })();
     return ()=>{ alive=false; };
   },[]);
+  // ปิดรับออเดอร์บนแพลตฟอร์มชั่วคราว โดยที่ร้านยังเปิดขายหน้าร้านปกติ (คนละสวิตช์กับเปิด/ปิดร้าน)
+  const setOpen = async (next)=>{
+    setShop(s=>({ ...s, marketOpen: next }));
+    try{ if(window.KD_API && window.KD_API.updateShop) await window.KD_API.updateShop(null, { marketOpen: next }); }
+    catch(e){ setShop(s=>({ ...s, marketOpen: !next })); setMsg(TH?'สลับสถานะไม่สำเร็จ — เช็คเน็ตแล้วลองใหม่':'Could not switch — check your connection'); }
+  };
   const save = async (next)=>{
     setBusy(true); setMsg('');
     try{
-      if(window.KD_API && window.KD_API.updateShop) await window.KD_API.updateShop(null, { market: next });
+      if(window.KD_API && window.KD_API.updateShop) await window.KD_API.updateShop(null, { market: next, ...(next?{ marketOpen: shop.marketOpen!==false }:{}) });
       setShop(s=>({ ...s, market: next }));
       setMsg(next ? (TH?'บันทึกแล้ว · ร้านคุณขึ้นหน้า “ร้านทั้งหมด” แล้ว':'Saved · your shop is now listed')
                   : (TH?'ปิดแล้ว · ร้านจะไม่โชว์บนแพลตฟอร์ม':'Removed from the directory'));
@@ -1233,9 +1242,23 @@ function MarketJoinSheet({ shop, setShop, onClose }){
         <button onClick={onClose} style={{ border:'none', background:'var(--bg)', width:34, height:34, borderRadius:999, cursor:'pointer' }}>{IC.x}</button>
       </div>
       <div style={{ overflowY:'auto', padding:'0 20px 20px', flex:1 }}>
+        {shop.market && (()=>{ const on = shop.marketOpen!==false; return (
+          <div className="kd-card" style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', marginBottom:14 }}>
+            <span style={{ fontSize:22 }}>{on?'🟢':'⏸️'}</span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:14.5, fontWeight:700 }}>{on?(TH?'กำลังรับออเดอร์บนแพลตฟอร์ม':'Accepting platform orders'):(TH?'ปิดรับออเดอร์บนแพลตฟอร์มชั่วคราว':'Platform orders paused')}</div>
+              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{TH?'คนละสวิตช์กับเปิด/ปิดร้าน — ปิดตัวนี้ ร้านยังขายหน้าร้านได้ปกติ แค่ไม่รับออเดอร์จากหน้า “ร้านทั้งหมด”':'Separate from your shop open/close — walk-in sales continue.'}</div>
+            </div>
+            <button onClick={()=>setOpen(!on)} style={{ border:'none', background:'none', cursor:'pointer', padding:'4px 2px', flexShrink:0 }}><Toggle on={on}/></button>
+          </div>
+        ); })()}
         <div style={{ background:'var(--brand-soft)', color:'var(--brand-ink)', borderRadius:12, padding:'11px 13px', fontSize:12.5, lineHeight:1.55, marginBottom:14 }}>
           {TH?'ใส่ชื่อตลาด/ทำเลที่ร้านคุณตั้งอยู่ — ลูกค้าจะเห็นป้ายนี้บนการ์ดร้าน และรู้ว่าต้องมารับที่ไหน · ร้านในตลาดเดียวกันจะอยู่ในลิงก์ตลาดเดียวกันด้วย'
              :'Enter the market/area your shop is in. Customers see it on your card and know where to pick up.'}
+        </div>
+        <div style={{ background:'var(--bg)', borderRadius:12, padding:'11px 13px', fontSize:12.5, color:'var(--ink-2)', lineHeight:1.55, marginBottom:14 }}>
+          {TH?'ราคาบนแพลตฟอร์มล็อกไว้ = ราคาช่องทาง “กลับบ้าน” ของร้านคุณ บวกเพิ่มไม่ได้ (จุดขายของ :Done KaiDee คือลูกค้าจ่ายเท่าหน้าร้าน) — ถ้าจำเป็นต้องตั้งราคาแยกจริงๆ ติดต่อแอดมินเปิดสิทธิ์ให้เป็นรายร้าน'
+             :'Platform prices are locked to your take-away price — no markup. Ask an admin to unlock per-shop pricing if you really need it.'}
         </div>
         <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', marginBottom:6 }}>{TH?'ชื่อตลาด / ทำเล':'Market / area'}</div>
         <input className="kd-input" value={val} onChange={e=>setVal(e.target.value)} placeholder={TH?'เช่น ตลาดลาดสวาย':'e.g. Ladsawai Market'} style={{ width:'100%' }}/>
@@ -2690,10 +2713,12 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
                 <button onClick={toggle} style={{ width:24, height:24, borderRadius:7, flexShrink:0, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', background:on?m.c:'#fff', border:'2px solid '+(on?m.c:'var(--hair-2)') }}>{on && React.cloneElement(IC.check,{size:14, color:'#fff', stroke:3})}</button>
                 <span style={{ width:9, height:9, borderRadius:999, background:m.c, flexShrink:0 }}/>
                 <span style={{ flex:1, minWidth:0, fontSize:14, fontWeight:600, color:on?'var(--ink)':'var(--ink-3)' }}>{m[lang]||m.th}</span>
-                {perCh ? <div style={{ position:'relative', width:94, opacity:on?1:0.4 }}>
+                {(perCh && k!=='market') ? <div style={{ position:'relative', width:94, opacity:on?1:0.4 }}>
                   <span style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'var(--ink-3)', fontWeight:600, fontSize:13 }}>฿</span>
                   <input className="kd-input num" disabled={!on} type="number" value={pv} onChange={e=>{ const pb={...(f.priceByCh||{})}; const val=e.target.value; if(val==='') delete pb[k]; else pb[k]=Number(val)||0; upd('priceByCh', pb); }} placeholder={String(f.price||0)} style={{ padding:'8px 8px 8px 22px', textAlign:'right' }}/>
-                </div> : <span className="num" style={{ fontSize:13, fontWeight:600, color:'var(--ink-3)', opacity:on?1:0.4 }}>{'฿'+(f.price||0)}</span>}
+                </div> : <span className="num" style={{ fontSize:13, fontWeight:600, color:'var(--ink-3)', opacity:on?1:0.4, display:'flex', alignItems:'center', gap:5 }}>
+                  {k==='market' && <span style={{ fontSize:10, fontWeight:700, color:'var(--brand-ink)', background:'var(--brand-soft)', padding:'2px 7px', borderRadius:999, whiteSpace:'nowrap' }}>{TH?'เท่ากลับบ้าน':'= take away'}</span>}
+                  {'฿'+(k==='market' ? priceFor(f,'takeaway') : (f.price||0))}</span>}
               </div>
             );
           })}

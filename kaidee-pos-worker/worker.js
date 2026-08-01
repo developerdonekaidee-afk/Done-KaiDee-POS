@@ -897,7 +897,7 @@ export default {
           const f = (k, d) => (b[k] !== undefined ? b[k] : d);
           // extended fields → เก็บใน extra JSON (lat/lng/map/week/hoursMode/pause/delivery/features)
           let extra = {}; try { extra = cur.extra ? JSON.parse(cur.extra) : {}; } catch (e) {}
-          ['lat','lng','map','week','hoursMode','pause','delivery','features','cover','addons','market'].forEach(k => { if (b[k] !== undefined) extra[k] = b[k]; });
+          ['lat','lng','map','week','hoursMode','pause','delivery','features','cover','addons','market','marketOpen'].forEach(k => { if (b[k] !== undefined) extra[k] = b[k]; });
           // backfill เจ้าของ: ผูก owner_line ได้เฉพาะตอนยังว่าง (กันคนอื่นแย่งสิทธิ์ร้าน)
           let ownerLine = cur.owner_line;
           if (b.ownerLine && !cur.owner_line) ownerLine = b.ownerLine;

@@ -345,8 +345,13 @@ function kdViaMarket(){ try{ const u=new URL(location.href);
 }catch(e){} return false; }
 // เมนูชุดที่ลูกค้าฝั่งแพลตฟอร์มเห็น: เฉพาะที่ติ๊กช่องทาง market + ใช้ราคาของช่องทางนั้น
 function marketMenuView(menu){ return (menu||[]).filter(m=>menuSellsOn(m,'market')).map(m=>({ ...m, price: priceFor(m,'market') })); }
+// ช่องทาง market ล็อกราคาให้เท่าหน้าร้านเสมอ — จุดขายของแพลตฟอร์มคือ "ราคาเท่าหน้าร้าน ไม่บวกเพิ่ม"
+// ปลดล็อกเป็นรายร้านได้จาก Back Office (features.marketPrice = true)
+function kdMarketPriceOpen(){ try{ const s=(typeof window!=='undefined') && window.__kdShop; return !!(s && s.features && s.features.marketPrice); }catch(e){ return false; } }
 // ราคาต่อช่องทาง (ไม่ตั้ง = ใช้ราคาปกติ)
-function priceFor(item, k){ const pc=item&&item.priceByCh; const v=pc?pc[k]:null; return (v!=null && v!=='') ? (Number(v)||0) : Number((item&&item.price)||0); }
+// ล็อก market = ราคาเดียวกับ "กลับบ้าน" (takeaway) เพราะออเดอร์จากแพลตฟอร์มคือรับกลับ/ให้ไปรับที่ร้าน
+function priceFor(item, k){ if(k==='market' && !kdMarketPriceOpen()) return priceFor(item, 'takeaway');
+  const pc=item&&item.priceByCh; const v=pc?pc[k]:null; return (v!=null && v!=='') ? (Number(v)||0) : Number((item&&item.price)||0); }
 // สูตรตัดสต๊อกต่อช่องทาง (แพ็กเกจต่างกัน) — ไม่ตั้ง = ใช้สูตรเริ่มต้น
 function recipeFor(item, ch){ const rb=item&&item.recipeByCh; if(rb && ch && Array.isArray(rb[ch]) && rb[ch].length) return rb[ch]; return (item&&item.recipe)||[]; }
 // ── ค่าส่ง (นโยบายต่อร้าน): mode customer=ลูกค้าจ่าย · shop=ร้านออกให้ · distance=คิดตามระยะ
@@ -497,7 +502,7 @@ Object.assign(window, {
   DICT, tr, LangCtx, useT, DataCtx, useCats, money, money2, Icon, IC, FARE, calcFare, kdShopOpen, kdShiftExpired,
   CATS, MENU, menuById, SEED_SALES, saleTotal, saleCost, kdVat, CHANNELS, qLabel, PAYS, RIDER_JOBS,
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
-  kdViaMarket, marketMenuView,
+  kdViaMarket, marketMenuView, kdMarketPriceOpen,
   deliveryCfg, deliveryFee, customerPaysDelivery,
   RUNITS, runit, TRACK_UNIT, buyUnitsFor, convQty, rawValue, RAW_CATS, RAW, rawById, SEED_PURCHASES, effItemCost, effSaleCost,
   TopBar, TabBar, Sheet, useToast, Stat, FoodTile,

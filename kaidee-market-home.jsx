@@ -148,11 +148,14 @@ function ShopCard({ s, directory, TH, onOpen }){
         background: s.logo ? undefined : 'linear-gradient(135deg,var(--brand-soft,#E9EFF5),var(--card,#fff))' }}>
         {s.logo ? <img src={s.logo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
                 : <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>{s.emoji || '🍽️'}</div>}
-        <div style={{
-          position:'absolute', top:10, right:10, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:999,
-          background: s.isOpen ? 'rgba(255,255,255,.94)' : 'rgba(30,30,30,.7)',
-          color: s.isOpen ? 'var(--brand-ink,#13304E)' : '#fff',
-        }}>{s.isOpen ? (TH ? '🟢 เปิดอยู่' : '🟢 Open') : (TH ? 'ปิดแล้ว' : 'Closed')}</div>
+        {/* ร้านกดปิดรับออเดอร์แพลตฟอร์มไว้ = ปิดสำหรับหน้านี้ แม้หน้าร้านจะยังเปิดขายอยู่ */}
+        {(()=>{ const paused = s.marketOpen===false; const openNow = s.isOpen && !paused;
+          return <div style={{
+            position:'absolute', top:10, right:10, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:999,
+            background: openNow ? 'rgba(255,255,255,.94)' : 'rgba(30,30,30,.7)',
+            color: openNow ? 'var(--brand-ink,#13304E)' : '#fff',
+          }}>{openNow ? (TH ? '🟢 เปิดอยู่' : '🟢 Open') : paused ? (TH ? '⏸️ พักรับออเดอร์' : 'Paused') : (TH ? 'ปิดแล้ว' : 'Closed')}</div>;
+        })()}
         {directory && s.market && <div style={{ position:'absolute', bottom:10, left:10, fontSize:10.5, fontWeight:700, padding:'3px 9px', borderRadius:999,
           background:'rgba(255,255,255,.94)', color:'var(--accent-ink,#1F5C99)' }}>📍{s.market}</div>}
       </div>

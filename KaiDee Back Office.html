@@ -605,6 +605,13 @@ function ShopDrawer({shop,onClose,patch,del,onManage}){
             <input type="checkbox" checked={on} onChange={e=>patch(shop.id,{features:{...(shop.features||{}),[k]:e.target.checked}})}/>
           </label>
         );})}
+        {(()=>{ const on=!!(shop.features&&shop.features.marketPrice); return (
+          <label style={{display:'flex',alignItems:'flex-start',gap:10,padding:'11px 0 3px',cursor:'pointer'}}>
+            <span style={{flex:1,fontSize:13.5,fontWeight:600}}>อนุญาตให้ร้านตั้งราคาบนแพลตฟอร์มเอง
+              <span style={{display:'block',fontSize:11.5,fontWeight:500,color:'var(--ink-3)',marginTop:2,lineHeight:1.45}}>ปกติล็อกไว้ = ราคาบนหน้า “ร้านทั้งหมด” เท่ากับราคาขายหน้าร้านเสมอ (จุดขาย “ราคาเท่าตลาด ไม่บวกเพิ่ม”) · เปิดสวิตช์นี้เฉพาะร้านที่ตกลงกันแล้ว</span></span>
+            <input type="checkbox" checked={on} onChange={e=>patch(shop.id,{features:{...(shop.features||{}),marketPrice:e.target.checked}})}/>
+          </label>
+        ); })()}
         <div style={{fontSize:11.5,color:'var(--ink-3)',marginTop:9,lineHeight:1.5}}>หน้าขาย · เปิด/ปิดร้าน · ร้านค้า เปิดใช้เสมอ · เปลี่ยนแล้วมีผลเมื่อแอปร้าน sync (getMyShop)</div>
       </div>
       {/* menu & stock manager (admin edits on behalf of shop) */}
