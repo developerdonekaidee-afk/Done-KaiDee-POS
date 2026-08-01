@@ -1236,6 +1236,24 @@ export default {
         }
       }
 
+      /* ── LINE webhook: จับคู่รหัส→ผูกกลุ่ม / ข้อความเงินเข้า→auto match — global, ไม่มี ?shop= มาด้วย (LINE เรียก URL เดียวคงที่)
+         ต้องอยู่ก่อนเกต shopId ด้านล่าง ไม่งั้นโดนบล็อก 400 ทุกครั้งที่ LINE ยิงเข้ามาจริง (หา shop เองจาก group→shop mapping) ── */
+      if (seg[0] === 'line-webhook' && req.method === 'POST') {
+        await ensureLinePairs(env);
+        const b = await readBody(); const events = (b && b.events) || [];
+        for (const ev of events) {
+          if (ev.type !== 'message' || !ev.message || ev.message.type !== 'text') continue;
+          const gid = ev.source && (ev.source.groupId || ev.source.roomId); if (!gid) continue;
+          const text = ev.message.text || ''; const m = text.match(/\b(\d{4})\b/);
+          if (m) { const pend = await env.DB.prepare("SELECT * FROM line_pairs WHERE code=? AND status='pending' LIMIT 1").bind(m[1]).first();
+            if (pend) { await env.DB.prepare("UPDATE line_pairs SET group_id=?, status='linked' WHERE shop_id=? AND code=?").bind(gid, pend.shop_id, m[1]).run();
+              if (env.LINE_TOKEN && ev.replyToken) { try{ await fetch('https://api.line.me/v2/bot/message/reply',{ method:'POST', headers:{ 'content-type':'application/json', Authorization:'Bearer '+env.LINE_TOKEN }, body:JSON.stringify({ replyToken:ev.replyToken, messages:[{ type:'text', text:'✅ เชื่อมต่อกับ KaiDee สำเร็จ — เงินเข้าในกลุ่มนี้จะจับคู่บิลให้อัตโนมัติ' }] }) }); }catch(e){} }
+              continue; } }
+          const sh = await shopByGroup(env, gid); if (sh) await autoMatchAlert(env, sh, text);
+        }
+        return json({ ok:true }, req);
+      }
+
       // ต่อจากนี้ทุก endpoint ต้องมี shopId
       const shop = await shopFromReq();
       if (!shop) return err('shop (tenant) required — ระบุ ?shop=<id>', req, 400);
@@ -1495,22 +1513,6 @@ export default {
           const r = await env.DB.prepare('SELECT * FROM line_pairs WHERE shop_id=? ORDER BY created_at DESC LIMIT 1').bind(shop).first();
           return json({ ok:true, status: r?r.status:'none', code: r?r.code:null, groupId: r?r.group_id:null }, req);
         }
-      }
-      /* ── LINE webhook: จับคู่รหัส→ผูกกลุ่ม / ข้อความเงินเข้า→auto match ── */
-      if (seg[0] === 'line-webhook' && req.method === 'POST') {
-        await ensureLinePairs(env);
-        const b = await readBody(); const events = (b && b.events) || [];
-        for (const ev of events) {
-          if (ev.type !== 'message' || !ev.message || ev.message.type !== 'text') continue;
-          const gid = ev.source && (ev.source.groupId || ev.source.roomId); if (!gid) continue;
-          const text = ev.message.text || ''; const m = text.match(/\b(\d{4})\b/);
-          if (m) { const pend = await env.DB.prepare("SELECT * FROM line_pairs WHERE code=? AND status='pending' LIMIT 1").bind(m[1]).first();
-            if (pend) { await env.DB.prepare("UPDATE line_pairs SET group_id=?, status='linked' WHERE shop_id=? AND code=?").bind(gid, pend.shop_id, m[1]).run();
-              if (env.LINE_TOKEN && ev.replyToken) { try{ await fetch('https://api.line.me/v2/bot/message/reply',{ method:'POST', headers:{ 'content-type':'application/json', Authorization:'Bearer '+env.LINE_TOKEN }, body:JSON.stringify({ replyToken:ev.replyToken, messages:[{ type:'text', text:'✅ เชื่อมต่อกับ KaiDee สำเร็จ — เงินเข้าในกลุ่มนี้จะจับคู่บิลให้อัตโนมัติ' }] }) }); }catch(e){} }
-              continue; } }
-          const sh = await shopByGroup(env, gid); if (sh) await autoMatchAlert(env, sh, text);
-        }
-        return json({ ok:true }, req);
       }
       if (seg[0] === 'slip' && req.method === 'GET' && env.SLIPS) {
         const obj = await env.SLIPS.get(path.slice(1));
