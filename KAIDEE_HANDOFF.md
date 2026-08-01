@@ -45,7 +45,9 @@ Deploy: Cloudflare Workers (git-integrated, auto-deploy on push to `main`)
 - `ตลาดสี่มุมเมือง` — 3 ร้าน **ราคาส่ง B2B** (ผัก/ผลไม้/เนื้อสัตว์ ขายเป็นกิโล) — ไอเดีย: แม่ค้าตลาดลาดสวายสั่งวัตถุดิบจากที่นี่ผ่านแอปเดียวกับที่ขายลูกค้าตัวเอง
 - `ตลาดนานาเพลส` — 3 ร้าน (ซูชิ/สลัด/เบเกอรี่)
 
-ลิงก์: `https://kaidee-git.oneday-pos.workers.dev/?role=market&market=<ชื่อตลาด URL-encoded>`
+ลิงก์ (เจาะจงตลาดเดียว): `https://kaidee-git.oneday-pos.workers.dev/?role=market&market=<ชื่อตลาด URL-encoded>`
+
+ลิงก์ **"ร้านทั้งหมด" แบบ Grab (รวมทุกตลาดในฟีดเดียว, ทำเสร็จช่วงบ่าย/เย็น 2026-08-01)**: `https://kaidee-git.oneday-pos.workers.dev/?role=market` (ไม่ใส่ `market=`) — โชว์ร้านจาก 4 ตลาดสาธิตด้านบนรวมกัน แต่ละการ์ดมี badge 📍ชื่อตลาด บอกว่าร้านอยู่ตลาดไหน ใช้ตัวนี้เป็นลิงก์หลักตอนพรีเซนต์ภาพรวมทั้งแพลตฟอร์ม ส่วนลิงก์เจาะจงตลาดด้านบนไว้ใช้ตอนโฟกัสตลาดเดียว
 
 Labor Win demo (platform-worker, ใช้งานได้จริงแล้วหลัง deploy คืนนี้): `https://kaidee-git.oneday-pos.workers.dev/Labor%20Win%20App%20v2.html?role=<market|shop|worker|win>`
 
