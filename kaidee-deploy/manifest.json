@@ -1,6 +1,6 @@
 {
-  "name": ":Done KaiDee POS",
-  "short_name": ":Done POS",
+  "name": ":Done KaiDee",
+  "short_name": ":Done KaiDee",
   "description": "ระบบขายหน้าร้าน POS · LINE · เดลิเวอรี สำหรับร้านอาหาร",
   "lang": "th",
   "start_url": ".",
