@@ -714,6 +714,14 @@ export default {
           const list = results.map(rowShop).filter(s => s.market === market);
           return json(list, req);
         }
+        // GET /shops/directory — ร้านทั้งหมดทุกตลาดรวมฟีดเดียว (หน้า "ร้านทั้งหมด" ฝั่งลูกค้า แบบ Grab) · ต้องอยู่ก่อน /:id
+        // เฉพาะร้านที่ตั้ง market ไว้แล้วเท่านั้น (ร้านที่ยังไม่เข้าตลาดไหนจะไม่โผล่ในฟีดรวม) · เรียงตามตลาด → เปิดก่อน → ชื่อ
+        if (req.method === 'GET' && seg[1] === 'directory') {
+          const { results } = await env.DB.prepare("SELECT * FROM shops WHERE status='active' ORDER BY is_open DESC, name").all();
+          const list = results.map(rowShop).filter(s => s.market)
+            .sort((a, b) => (a.market || '').localeCompare(b.market || '', 'th'));
+          return json(list, req);
+        }
         // ── OWNER LOGIN (Backoffice) : POST /shops/:id/owner-login {line} | {pin} → owner token ──
         if (req.method === 'POST' && seg[1] && seg[2] === 'owner-login') {
           const b = await readBody();

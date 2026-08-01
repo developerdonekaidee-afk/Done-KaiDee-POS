@@ -83,6 +83,7 @@ const KD_API = {
   getMyShop:    (lineId) => _req('GET', '/shops/by-owner?line=' + encodeURIComponent(lineId || ''), null, false),
   // ร้านทั้งหมดในตลาด/พื้นที่เดียวกัน (หน้า "ร้านในตลาดนี้" ฝั่งลูกค้า)
   getShopsByMarket: (market) => _req('GET', '/shops/by-market?market=' + encodeURIComponent(market || ''), null, false),
+  getShopsDirectory: () => _req('GET', '/shops/directory', null, false),
   // จัดการแพ็กเกจ (แอดมิน): {plan, status, addDays} หรือ {expiry}
   setShopPlan:  (id, p)  => _req('PATCH', '/shops/' + id + '/plan', p, false),
   registerDevice: (id, deviceId) => _req('POST', '/shops/' + id + '/device', { deviceId }, false),
