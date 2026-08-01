@@ -1,7 +1,7 @@
 // sw.js — Have a Good Day POS · v50
 // เปลี่ยนแนวคิด: **ไม่แคชโค้ดของแอปเลย** (html/jsx/js/css/json = ปล่อยผ่านไปเครือข่ายตรง ๆ)
 // → กันอาการ "deploy แล้วยังเป็นเวอร์ชันเก่า" ถาวร · แคชแค่รูป/ฟอนต์/CDN
-const CACHE = 'hagd-pos-v63';
+const CACHE = 'hagd-pos-v64';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
