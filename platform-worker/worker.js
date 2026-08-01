@@ -403,14 +403,16 @@ export default {
         }
         // GET /pool/jobs/near?lat=&lng=&radius=&status=open&limit=&win=  → งานใกล้ฉัน (เรียงระยะทาง)
         if (req.method === 'GET' && seg[1] === 'jobs' && seg[2] === 'near') {
-          const lat = +url.searchParams.get('lat'), lng = +url.searchParams.get('lng');
+          const latP = url.searchParams.get('lat'), lngP = url.searchParams.get('lng');
+          const lat = +latP, lng = +lngP;
           const radius = +(url.searchParams.get('radius') || 10);
           const status = url.searchParams.get('status') || 'open';
           const win = url.searchParams.get('win');
           let items = await collList(env, pool, 'jobs', 0, 3000);
           if (status && status !== 'all') items = items.filter(j => (j.status || 'open') === status);
           if (win) items = items.filter(j => !j.win || j.win === win);
-          if (!isNaN(lat) && !isNaN(lng)) {
+          // ต้องเช็คว่า lat/lng ถูกส่งมาจริง (ไม่ใช่ค่าว่าง) ก่อนกรองระยะทาง — +null=0 ทำให้ isNaN ผ่าน ทั้งที่ไม่ได้ตั้งใจกรองแถว (0,0)
+          if (latP != null && lngP != null && !isNaN(lat) && !isNaN(lng)) {
             items = items.map(j => ({ ...j, distKm: (j.lat != null && j.lng != null) ? +distKm(lat, lng, j.lat, j.lng).toFixed(2) : null }))
               .filter(j => j.distKm == null || j.distKm <= radius)
               .sort((a, b) => (a.distKm == null ? 1e9 : a.distKm) - (b.distKm == null ? 1e9 : b.distKm));
@@ -419,14 +421,15 @@ export default {
         }
         // GET /pool/workers/near?lat=&lng=&radius=&available=1&skill=  → แรงงานใกล้+ว่าง (ร้านกระจายงาน)
         if (req.method === 'GET' && seg[1] === 'workers') {
-          const lat = +url.searchParams.get('lat'), lng = +url.searchParams.get('lng');
+          const latP = url.searchParams.get('lat'), lngP = url.searchParams.get('lng');
+          const lat = +latP, lng = +lngP;
           const radius = +(url.searchParams.get('radius') || 10);
           const onlyAvail = url.searchParams.get('available') === '1';
           const skill = url.searchParams.get('skill');
           let items = await collList(env, pool, 'workers', 0, 3000);
           if (onlyAvail) items = items.filter(w => w.available !== false);
           if (skill) items = items.filter(w => Array.isArray(w.skills) && w.skills.includes(skill));
-          if (!isNaN(lat) && !isNaN(lng)) {
+          if (latP != null && lngP != null && !isNaN(lat) && !isNaN(lng)) {
             items = items.map(w => ({ ...w, distKm: (w.lat != null && w.lng != null) ? +distKm(lat, lng, w.lat, w.lng).toFixed(2) : null }))
               .filter(w => w.distKm == null || w.distKm <= radius)
               .sort((a, b) => (a.distKm == null ? 1e9 : a.distKm) - (b.distKm == null ? 1e9 : b.distKm));
