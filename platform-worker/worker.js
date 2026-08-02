@@ -159,6 +159,14 @@ async function ensureSchema(env) {
 const rowBiz = (r) => { if (!r) return null; let ex = {}; try { ex = r.extra ? JSON.parse(r.extra) : {}; } catch (e) {}
   return { id: r.id, type: r.type, name: r.name, ownerLine: r.owner_line, ...ex, createdAt: r.created_at, updatedAt: r.updated_at }; };
 async function getBiz(env, id) { return rowBiz(await env.DB.prepare('SELECT * FROM bizes WHERE id=?').bind(id).first()); }
+// ใครแก้ทะเบียนธุรกิจ/ตลาดตัวนี้ได้บ้าง — เปิดให้สร้างเองได้ (bottom-up) แต่ห้ามคนนอกมาทับของที่มีเจ้าของแล้ว
+//   ยังไม่มีในระบบ = ใครสร้างก็ได้ · ยังไม่มีเจ้าของ = ใครเคลมก่อนได้ก่อน · มีเจ้าของแล้ว = ต้องเป็นเจ้าของเดิม หรือแอดมิน
+async function canWriteBiz(env, req, url, ex, b) {
+  if (!ex) return true;
+  if (!ex.ownerLine) return true;
+  if (b && b.ownerLine && String(b.ownerLine) === String(ex.ownerLine)) return true;
+  return await verifyToken(env, adminTokenFrom(req, url));
+}
 // สร้าง tenant ถ้ายังไม่มี (lazy — เขียน doc ครั้งแรกก็พอ ไม่ต้อง register ก่อน)
 async function ensureBiz(env, id, type, name, ownerLine) {
   const ex = await getBiz(env, id);
@@ -276,6 +284,8 @@ export default {
           if (!id) return err('id required', req);
           const t = now();
           const ex = await getBiz(env, id);
+          if (!(await canWriteBiz(env, req, url, ex, b)))
+            return json({ ok: false, error: 'ทะเบียนนี้มีเจ้าของแล้ว — เข้าด้วยบัญชีเจ้าของเดิม หรือใช้รหัสอื่น' }, req, 403);
           const extra = JSON.stringify(b.extra || {});
           if (ex) {
             await env.DB.prepare('UPDATE bizes SET type=COALESCE(?,type), name=COALESCE(?,name), owner_line=COALESCE(?,owner_line), updated_at=? WHERE id=?')
@@ -295,6 +305,8 @@ export default {
         if (req.method === 'PATCH' && seg[1]) {
           const id = safeId(seg[1]); const b = await readBody();
           const ex = await getBiz(env, id); if (!ex) return err('not found', req, 404);
+          if (!(await canWriteBiz(env, req, url, ex, b)))
+            return json({ ok: false, error: 'ทะเบียนนี้มีเจ้าของแล้ว — แก้ได้เฉพาะเจ้าของหรือแอดมิน' }, req, 403);
           const merged = { ...ex, ...(b.extra || {}) };
           delete merged.id; delete merged.type; delete merged.name; delete merged.ownerLine; delete merged.createdAt; delete merged.updatedAt;
           await env.DB.prepare('UPDATE bizes SET name=COALESCE(?,name), owner_line=COALESCE(?,owner_line), extra=?, updated_at=? WHERE id=?')
