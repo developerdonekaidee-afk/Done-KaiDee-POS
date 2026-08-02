@@ -384,7 +384,11 @@ export default {
           const id = safeId(b.id || rid('job'));
           const rec = { id, title: b.title || 'งาน', type: b.type || null, marketId: b.marketId || null, shopName: b.shopName || '',
             lat: b.lat != null ? +b.lat : null, lng: b.lng != null ? +b.lng : null, pay: b.pay != null ? +b.pay : null,
-            note: b.note || '', line: b.line || '', win: b.win || null, worker: null, status: b.status || 'open', postedAt: now() };
+            note: b.note || '', line: b.line || '', win: b.win || null, worker: null, status: b.status || 'open', postedAt: now(),
+            // งานส่งของแพลตฟอร์ม: ไรเดอร์ต้องรู้ที่อยู่ร้าน เบอร์ลูกค้า และยอดเก็บปลายทาง ไม่งั้นรับงานแล้วทำต่อไม่ได้
+            shopAddr: b.shopAddr || '', addr: b.addr || '', custPhone: b.custPhone || '',
+            cod: !!b.cod, codAmount: b.codAmount != null ? +b.codAmount : 0,
+            total: b.total != null ? +b.total : 0, orderNo: b.orderNo != null ? b.orderNo : null };
           const r = await collUpsert(env, pool, 'jobs', rec);
           ctx.waitUntil(hubBroadcast(env, pool, { type: 'coll', coll: 'jobs', id, op: 'add', updatedAt: r.updatedAt }));
           return json({ ok: true, id, job: rec }, req, 201);

@@ -147,7 +147,11 @@
       "Bash(curl -s -m 20 \"https://kaidee-pos.oneday-pos.workers.dev/shops/directory\")",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{JSON.parse\\(d\\).forEach\\(s=>console.log\\(s.id,'|',s.name,'|',s.cat,'|',s.market\\)\\)}\\)\")",
       "Bash(node backfill-menu.js)",
-      "Bash(sed -i '' 's|\\\\.jsx?v=p2-20260802b|.jsx?v=p2-20260802c|g' index.html kaidee-deploy/index.html)"
+      "Bash(sed -i '' 's|\\\\.jsx?v=p2-20260802b|.jsx?v=p2-20260802c|g' index.html kaidee-deploy/index.html)",
+      "Bash(curl -s -m 20 -w ' [%{http_code}]\\\\n' -X POST https://platform.oneday-pos.workers.dev/pool/job?region=delivery -H 'content-type: application/json' -d '{\"id\":\"qa-job-1\",\"title\":\"ส่งอาหาร · ส้มตำป้าแดง\",\"type\":\"delivery\",\"shopName\":\"ส้มตำป้าแดง \\(สาธิต\\)\",\"marketId\":\"ตลาดสาธิต \\(Demo\\)\",\"lat\":13.9846,\"lng\":100.654,\"pay\":35,\"note\":\"ซ.ลาดสวาย 12 บ้านเลขที่ 45\",\"custPhone\":\"0812345678\",\"cod\":true,\"codAmount\":180,\"status\":\"open\"}')",
+      "Bash(curl -s -m 20 'https://platform.oneday-pos.workers.dev/pool/jobs/near?region=delivery&lat=13.985&lng=100.655&radius=10&status=open')",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('งานใน pool วิน:',j.jobs.length,'| มี qa-job-1 ไหม:',j.jobs.some\\(x=>x.id==='qa-job-1'\\)\\)}\\)\")",
+      "Bash(node --check platform-worker/worker.js)"
     ]
   }
 }
