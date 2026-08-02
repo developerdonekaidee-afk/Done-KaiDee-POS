@@ -97,7 +97,9 @@ function h(tag, attrs, kids){
   for (var k in (attrs||{})){
     if (k === 'class') el.className = attrs[k];
     else if (k.slice(0,2) === 'on') el.addEventListener(k.slice(2), attrs[k]);
-    else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+    else if (attrs[k] === false || attrs[k] == null) { /* false/null = ไม่ใส่ attribute (ไม่งั้น disabled:false ก็ยังกดไม่ได้) */ }
+    else if (attrs[k] === true) el.setAttribute(k, '');
+    else el.setAttribute(k, attrs[k]);
   }
   (kids||[]).forEach(function(c){ if (c == null) return; el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
   return el;
