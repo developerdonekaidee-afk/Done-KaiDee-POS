@@ -120,14 +120,14 @@ async function autoMatchAlert(env, shop, text){
       .filter(x=> (x.d.pay==='promptpay'||x.d.pay==='transfer') && !x.d.verified && !x.d.void);
     const used=new Set();
     for(const e of entries){
-      const cand=parsed.filter(x=>!used.has(x.r.id)&&Math.abs(Math.round(x.total)-e.amount)<0.5).sort((a,bb)=>Math.abs(tMinS(a.d.t)-tMinS(e.time))-Math.abs(tMinS(bb.d.t)-tMinS(e.time)));
+      const cand=parsed.filter(x=>!used.has(x.r.id)&&Math.abs(Number(x.total)-e.amount)<0.5).sort((a,bb)=>Math.abs(tMinS(a.d.t)-tMinS(e.time))-Math.abs(tMinS(bb.d.t)-tMinS(e.time)));
       const aid='ba'+ts+Math.random().toString(36).slice(2,5);
-      if(cand.length){ const x=cand[0]; used.add(x.r.id); const sys=Math.round(x.total); const diff=+(e.amount-sys).toFixed(2);
+      if(cand.length){ const x=cand[0]; used.add(x.r.id); const sys=Number(x.total); const diff=+(e.amount-sys).toFixed(2);
         const nd={ ...x.d, verified:true, verifiedAmount:e.amount, verifyDiff:diff, payStatus:(Math.abs(diff)<0.01?'paid':'discrepancy'), verifiedDate:new Date().toISOString().slice(0,10), autoMatched:true, matchRef:(e.raw||'').slice(0,80) };
         await env.DB.prepare('UPDATE sales SET data=? WHERE shop_id=? AND id=?').bind(JSON.stringify(nd), shop, x.r.id).run();
-        await env.DB.prepare('INSERT INTO bank_alerts (id,shop_id,raw,amount,matched_sale,matched_no,created_at) VALUES (?,?,?,?,?,?,?)').bind(aid, shop,(e.raw||'').slice(0,200),Math.round(e.amount),x.r.id,x.r.no||null,ts).run();
+        await env.DB.prepare('INSERT INTO bank_alerts (id,shop_id,raw,amount,matched_sale,matched_no,created_at) VALUES (?,?,?,?,?,?,?)').bind(aid, shop,(e.raw||'').slice(0,200),e.amount,x.r.id,x.r.no||null,ts).run();
         matched.push({ amount:e.amount, saleId:x.r.id, no:x.r.no });
-      } else { await env.DB.prepare('INSERT INTO bank_alerts (id,shop_id,raw,amount,matched_sale,matched_no,created_at) VALUES (?,?,?,?,?,?,?)').bind(aid, shop,(e.raw||'').slice(0,200),Math.round(e.amount),null,null,ts).run(); }
+      } else { await env.DB.prepare('INSERT INTO bank_alerts (id,shop_id,raw,amount,matched_sale,matched_no,created_at) VALUES (?,?,?,?,?,?,?)').bind(aid, shop,(e.raw||'').slice(0,200),e.amount,null,null,ts).run(); }
     }
   }
   return { parsed: entries.length, matched: matched.length, matches: matched };
@@ -353,7 +353,11 @@ let _wbaReady = false;
 async function ensureWalletBankAlerts(env){ if(_wbaReady) return; _wbaReady = true;
   try{ await env.DB.prepare('CREATE TABLE IF NOT EXISTS wallet_bank_alerts (id TEXT PRIMARY KEY, raw TEXT, amount INTEGER, matched_txn TEXT, matched_biz TEXT, created_at INTEGER)').run(); }catch(e){} }
 // จับคู่ข้อความแจ้งเงินเข้า (บัญชีกลางของระบบ ที่ร้านโอนมาเติมกระเป๋า) → topup ที่ pending อยู่ ไม่ผูก shop เดียว (เทียบทุกร้าน)
-// จับคู่ด้วยยอดตรงกัน (คลาดเคลื่อนได้ 0.5) เอาอันที่ pending ค้างนานสุดก่อน (FIFO) — เหมือนหลักการ autoMatchAlert ของบิลขาย
+// จับคู่ด้วยยอด "ตรงถึงสตางค์" เอาอันที่ pending ค้างนานสุดก่อน (FIFO)
+// ห้ามปัดเศษก่อนเทียบ: ของเดิมเทียบ Math.round(ยอดที่ขอเติม) กับยอดที่โอนเข้าจริง แล้วยอมคลาดเคลื่อน 0.5
+//   → ยอดลงท้าย .50 (เช่น 500.50) จะไม่มีวันจับคู่ได้เลย เพราะปัดเป็น 501 แล้วต่างพอดี 0.5
+//   → และยอดที่ต่างกันจริงไม่เกิน 0.49 กลับถูกจับคู่ให้ (เติมเงินเข้าผิดร้านได้)
+// เติมเงินเข้ากระเป๋าต้องตรงเป๊ะ ไม่ต้องเผื่อ — ที่เหลือให้แอดมินตรวจเอง ปลอดภัยกว่าเข้าผิดบัญชี
 async function autoMatchWalletTopup(env, text){
   await ensureWallet(env); await ensureWalletBankAlerts(env);
   const entries = parseCredits(text || ''); const ts = now(); const matched = [];
@@ -361,19 +365,19 @@ async function autoMatchWalletTopup(env, text){
     const { results: rows } = await env.DB.prepare("SELECT * FROM wallet_txns WHERE type='topup' AND status='pending' ORDER BY created_at ASC LIMIT 500").all();
     const used = new Set();
     for (const e of entries) {
-      const cand = rows.filter(r => !used.has(r.id) && Math.abs(Math.round(r.amount) - e.amount) < 0.5);
+      const cand = rows.filter(r => !used.has(r.id) && Math.abs(Number(r.amount) - e.amount) < 0.005);
       const aid = 'wba' + ts + Math.random().toString(36).slice(2, 5);
       if (cand.length) {
         const r = cand[0]; used.add(r.id);
         const res = await confirmWalletTopup(env, r.id, 'auto-bank-match');
         if (res.ok) {
           await env.DB.prepare('INSERT INTO wallet_bank_alerts (id,raw,amount,matched_txn,matched_biz,created_at) VALUES (?,?,?,?,?,?)')
-            .bind(aid, (e.raw || '').slice(0, 200), Math.round(e.amount), r.id, r.biz_id, ts).run();
+            .bind(aid, (e.raw || '').slice(0, 200), e.amount, r.id, r.biz_id, ts).run();
           matched.push({ amount: e.amount, txnId: r.id, bizId: r.biz_id });
         }
       } else {
         await env.DB.prepare('INSERT INTO wallet_bank_alerts (id,raw,amount,matched_txn,matched_biz,created_at) VALUES (?,?,?,?,?,?)')
-          .bind(aid, (e.raw || '').slice(0, 200), Math.round(e.amount), null, null, ts).run();
+          .bind(aid, (e.raw || '').slice(0, 200), e.amount, null, null, ts).run();
       }
     }
   }
