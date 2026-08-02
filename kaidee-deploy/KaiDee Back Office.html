@@ -290,7 +290,7 @@ function App(){
 
   if(!authed) return <Login onOk={()=>{ sessionStorage.setItem('kd_admin','1'); setAuthed(true); }}/>;
 
-  const nav = [['overview','📊','ภาพรวม'],['shops','🏪','ร้านค้า'],['payreq','🧾','คำขอชำระ'],['codereq','🔑','คำขอรหัส Office'],['deletions','🗑️','การลบร้าน'],['billing','💳','การเงิน'],['wallets','👛','กระเป๋าเงิน'],['license','🔐','สิทธิ์ร้าน'],['docs','📄','เอกสาร'],['support','💬','ช่วยเหลือ'],['settings','⚙️','ตั้งค่า']];
+  const nav = [['overview','📊','ภาพรวม'],['shops','🏪','ร้านค้า'],['payreq','🧾','คำขอชำระ'],['codereq','🔑','คำขอรหัส Office'],['riders','🛵','ใบสมัครไรเดอร์'],['deletions','🗑️','การลบร้าน'],['billing','💳','การเงิน'],['wallets','👛','กระเป๋าเงิน'],['license','🔐','สิทธิ์ร้าน'],['docs','📄','เอกสาร'],['support','💬','ช่วยเหลือ'],['settings','⚙️','ตั้งค่า']];
   const selShop = sel ? db.shops.find(s=>s.id===sel) : null;
   return (
     <div className="app">
@@ -320,6 +320,7 @@ function App(){
           {tab==='shops'    && <Shops db={db} onOpen={setSel}/>}
           {tab==='payreq'   && <PayRequests db={db} update={update} onPending={setPendingPay}/>}
           {tab==='codereq'  && <CodeRequests/>}
+          {tab==='riders'   && <Riders/>}
           {tab==='deletions'&& <DeletionLog/>}
           {tab==='billing'  && <Billing db={db}/>}
           {tab==='wallets'  && <Wallets/>}
@@ -1255,6 +1256,110 @@ function PayRequests({db,update,onPending}){
 }
 
 /* ══ CODE REQUESTS (คำขอรหัส Office · เปิดวันย้อนหลัง) ══ */
+/* ── ใบสมัครไรเดอร์แพลตฟอร์ม (platform-worker · คนละ worker กับ POS จึงต้องล็อกอินแยกครั้งเดียว) ── */
+const PLAT_BASE = (()=>{ try{ return (localStorage.getItem('kd_plat_base')||'').trim().replace(/\/$/,'') || 'https://platform.oneday-pos.workers.dev'; }catch(e){ return 'https://platform.oneday-pos.workers.dev'; } })();
+function platToken(){ try{ return localStorage.getItem('kd_plat_token')||''; }catch(e){ return ''; } }
+function Riders(){
+  const [tok,setTok]   = useState(platToken());
+  const [pass,setPass] = useState('');
+  const [err,setErr]   = useState('');
+  const [rows,setRows] = useState([]);
+  const [filter,setFilter] = useState('pending');
+  const [zoom,setZoom] = useState(null);
+  const [busy,setBusy] = useState('');
+
+  const load = (t)=>{ const k=t||tok; if(!k) return;
+    fetch(PLAT_BASE+'/riders?status=all',{headers:{'X-Admin-Token':k}})
+      .then(r=> r.ok ? r.json() : Promise.reject(r.status))
+      .then(j=> setRows(Array.isArray(j.riders)?j.riders:[]))
+      .catch(e=>{ if(e===403){ setTok(''); try{localStorage.removeItem('kd_plat_token');}catch(_){} setErr('เซสชันหมดอายุ ล็อกอินใหม่'); } }); };
+  useEffect(()=>{ if(tok){ load(tok); const t=setInterval(()=>load(tok),15000); return ()=>clearInterval(t); } },[tok]);
+
+  const login = async ()=>{ setErr('');
+    try{ const r=await fetch(PLAT_BASE+'/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass})});
+      const j=await r.json();
+      if(j&&j.ok&&j.token){ try{localStorage.setItem('kd_plat_token',j.token);}catch(e){} setTok(j.token); setPass(''); load(j.token); }
+      else setErr((j&&j.error)||'รหัสไม่ถูกต้อง');
+    }catch(e){ setErr('เชื่อมต่อ platform-worker ไม่ได้'); } };
+
+  const review = async (r, status)=>{
+    const note = status==='rejected' ? (window.prompt('เหตุผลที่ไม่ผ่าน (ผู้สมัครจะเห็นตอนเช็คสถานะ)','เอกสารไม่ชัด ถ่ายใหม่แล้วสมัครอีกครั้งได้')||'') : '';
+    setBusy(r.id);
+    try{ await fetch(PLAT_BASE+'/riders/'+r.id,{method:'PATCH',headers:{'content-type':'application/json','X-Admin-Token':tok},body:JSON.stringify({status,note})}); load(); }
+    catch(e){}
+    setBusy('');
+  };
+
+  const dt = (ms)=> ms? new Date(+ms).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+  const VEH = { moto:'🛵 มอเตอร์ไซค์', car:'🚗 รถยนต์', walk:'🚲 จักรยาน/เดิน' };
+  const DOCL = { natId:'บัตรประชาชน', licence:'ใบขับขี่', reg:'ทะเบียนรถ', insure:'พ.ร.บ./ประกัน', selfie:'เซลฟี่คู่บัตร', book:'หน้าสมุดบัญชี' };
+  const STAT = { pending:['⏳ รอตรวจ','b-trial'], approved:['✅ อนุมัติแล้ว','b-active'], rejected:['❌ ไม่ผ่าน','b-expired'] };
+
+  if(!tok) return (<div className="card" style={{padding:'26px 24px',maxWidth:430}}>
+    <div style={{fontWeight:700,fontSize:16,marginBottom:6}}>เข้าระบบไรเดอร์</div>
+    <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.55,marginBottom:14}}>ใบสมัครไรเดอร์เก็บอยู่คนละ worker กับข้อมูลร้าน (platform-worker) — ใส่รหัสแอดมินของ platform ครั้งเดียว เครื่องนี้จะจำไว้</div>
+    <input className="in" type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter') login(); }} placeholder="รหัสแอดมิน platform" style={{width:'100%',marginBottom:10}}/>
+    {err && <div style={{color:'var(--red,#C0392B)',fontSize:13,fontWeight:600,marginBottom:10}}>{err}</div>}
+    <button className="btn pri" onClick={login} style={{width:'100%'}}>เข้าสู่ระบบ</button>
+  </div>);
+
+  const shown = rows.filter(r=> filter==='all' || (r.status||'pending')===filter);
+  const n = (s)=> rows.filter(r=>(r.status||'pending')===s).length;
+
+  return (<div>
+    <div className="kpis" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
+      <Kpi lbl="รอตรวจเอกสาร" val={n('pending')} delta="ผู้สมัครใหม่" down={n('pending')>0} ic="⏳"/>
+      <Kpi lbl="อนุมัติแล้ว" val={n('approved')} delta="วิ่งงานได้" up ic="🛵"/>
+      <Kpi lbl="ไม่ผ่าน" val={n('rejected')} delta="" ic="❌"/>
+    </div>
+    <div style={{display:'flex',gap:8,margin:'16px 0 12px',flexWrap:'wrap'}}>
+      {[['pending','รอตรวจ'],['approved','อนุมัติแล้ว'],['rejected','ไม่ผ่าน'],['all','ทั้งหมด']].map(([k,l])=>(
+        <button key={k} className={'btn sm '+(filter===k?'pri':'ghost')} onClick={()=>setFilter(k)}>{l}</button>))}
+    </div>
+    <div className="card" style={{overflow:'hidden'}}>
+      <div style={{padding:'16px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>ใบสมัคร ({shown.length})</div>
+      {shown.length===0 && <div style={{padding:'30px',textAlign:'center',color:'var(--ink-3)',fontSize:13.5}}>ยังไม่มีใบสมัครในกลุ่มนี้ — ลิงก์สมัคร: Rider Signup.html</div>}
+      {shown.map(r=>{ const st=STAT[r.status||'pending']||STAT.pending; return (
+        <div key={r.id} style={{padding:'15px 18px',borderBottom:'1px solid var(--hair)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:13,flexWrap:'wrap'}}>
+            <div className="shopmk">🛵</div>
+            <div style={{flex:1,minWidth:180}}>
+              <div style={{fontWeight:700,fontSize:15}}>{r.name} <span className={'badge '+st[1]} style={{marginLeft:6}}>{st[0]}</span></div>
+              <div style={{fontSize:12.5,color:'var(--ink-3)'}} className="mono">{r.phone} · {VEH[r.vehicle]||r.vehicle} · {r.plate||'ไม่ระบุทะเบียน'}</div>
+              <div style={{fontSize:12.5,color:'var(--ink-3)',marginTop:2}}>พื้นที่: {r.area||'—'} · ยื่น {dt(r.appliedAt)} · เลขที่ <span className="mono">{String(r.id).toUpperCase()}</span></div>
+              {r.note && <div style={{fontSize:12.5,color:'#8A6100',marginTop:4}}>หมายเหตุ: {r.note}</div>}
+            </div>
+            {(r.status||'pending')==='pending' && <div style={{display:'flex',gap:8}}>
+              <button className="btn sm ghost" disabled={busy===r.id} onClick={()=>review(r,'rejected')}>ไม่ผ่าน</button>
+              <button className="btn sm pri" disabled={busy===r.id} onClick={()=>review(r,'approved')}>อนุมัติ</button>
+            </div>}
+            {(r.status||'pending')!=='pending' && <button className="btn sm ghost" disabled={busy===r.id} onClick={()=>review(r, r.status==='approved'?'rejected':'approved')}>
+              {r.status==='approved'?'ถอนสิทธิ์':'อนุมัติย้อนหลัง'}</button>}
+          </div>
+          <div style={{display:'flex',gap:9,flexWrap:'wrap',marginTop:11,paddingLeft:2}}>
+            {Object.keys(DOCL).map(k=>{ const src=(r.docs||{})[k]; return (
+              <div key={k} onClick={()=>src&&setZoom({src,label:DOCL[k],name:r.name})} title={DOCL[k]}
+                style={{width:92,cursor:src?'zoom-in':'default'}}>
+                <div style={{height:64,borderRadius:9,overflow:'hidden',background:src?'#000':'var(--bg,#F1F4F3)',border:'1px solid var(--hair)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  {src ? <img src={src} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                       : <span style={{fontSize:11,color:'var(--ink-3)'}}>ไม่ได้แนบ</span>}
+                </div>
+                <div style={{fontSize:10.5,color:'var(--ink-3)',marginTop:3,textAlign:'center'}}>{DOCL[k]}</div>
+              </div>
+            );})}
+          </div>
+          {(r.payout&&(r.payout.bank||r.payout.acct)) && <div style={{fontSize:12.5,color:'var(--ink-3)',marginTop:8}}>บัญชีรับเงิน: {r.payout.bank} <span className="mono">{r.payout.acct}</span></div>}
+          {(r.emergency&&r.emergency.name) && <div style={{fontSize:12.5,color:'var(--ink-3)',marginTop:2}}>ติดต่อฉุกเฉิน: {r.emergency.name} <span className="mono">{r.emergency.phone}</span></div>}
+        </div>
+      );})}
+    </div>
+    {zoom && <div onClick={()=>setZoom(null)} style={{position:'fixed',inset:0,zIndex:200,background:'rgba(8,16,12,.86)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:12,cursor:'zoom-out',padding:24}}>
+      <div style={{color:'#fff',fontWeight:700}}>{zoom.label} · {zoom.name}</div>
+      <img src={zoom.src} alt="" style={{maxWidth:'92%',maxHeight:'82vh',borderRadius:12}}/>
+    </div>}
+  </div>);
+}
+
 function CodeRequests(){
   const [reqs,setReqs] = useState([]);
   const [issued,setIssued] = useState({});   // id -> code (โชว์ให้แอดมินแจ้งร้าน)
