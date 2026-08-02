@@ -223,10 +223,25 @@ const STATUS_TH = {
 };
 
 /* ── row mappers ── */
+/* ทุกหน้าจอฝั่งแอปอ่านรายการสินค้าเป็น tuple [id, จำนวน, ตัวเลือก, ราคาเพิ่ม] แล้ว destructure ตรง ๆ
+   ถ้ามีออเดอร์รูปแบบอื่นหลุดเข้ามาแม้บิลเดียว หน้าร้านจะ crash ทั้งแอป (จอขาว) และล้างแคชก็ไม่หาย
+   เพราะข้อมูลอยู่บนเซิร์ฟเวอร์ → บังคับรูปแบบทั้งตอนเขียนและตอนอ่าน */
+const normItems = (raw) => {
+  let a = raw;
+  if (typeof a === 'string') { try { a = JSON.parse(a); } catch (e) { a = []; } }
+  if (!Array.isArray(a)) return [];
+  return a.map(it => {
+    if (Array.isArray(it)) return [it[0], (it[1] | 0) || 0, it[2] || '', it[3] | 0];
+    if (it && typeof it === 'object') return [it.id, (it.qty | 0) || 0, it.opt || it.opts || '', it.add | 0];
+    return null;
+  }).filter(it => it && it[0]);
+};
 const rowOrder = (r) => ({
-  id: r.id, no: r.no, items: JSON.parse(r.items || '[]'), channel: r.channel, pay: r.pay,
+  id: r.id, no: r.no, items: normItems(r.items), channel: r.channel, pay: r.pay,
   status: r.status, paid: !!r.paid, slipUrl: r.slip_url, total: r.total, cost: r.cost,
   fee: r.fee, qnum: r.qnum, table: r.table_no || null, customer: r.customer, addr: r.addr, when: r.when_txt,
+  subtotal: r.subtotal | 0, memberDisc: r.member_disc | 0,
+  promoId: r.promo_id || null, promoName: r.promo_name || '', promoDisc: r.promo_disc | 0, promoFeeDisc: r.promo_fee_disc | 0,
   callCash: !!r.call_cash, callCashAt: r.call_cash_at, payAfterConfirm: !!r.pay_after_confirm,
   acceptedBy: r.accepted_by || null, acceptedByName: r.accepted_by_name || null,
   verifiedBy: r.verified_by || null, verifiedByName: r.verified_by_name || null,
@@ -247,7 +262,14 @@ async function ensureOrderCols(env){ if(_orderColsReady) return; _orderColsReady
   // คำขออนุมัติยกเลิกบิล (พนักงานขอ → เจ้าของ/ผู้จัดการอนุมัติ) — JSON {by,byName,at,reason,voidType,refund,cancelMode}
   try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN void_req TEXT').run(); }catch(e){}
   // คืนเงินออเดอร์ที่ร้านปฏิเสธ (payFirst) — JSON {status:pending|acct_given|refunded, amount, reason, method, bank, acctNo, acctName, phone, slip, submittedAt, refundedAt}
-  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN refund TEXT').run(); }catch(e){} }
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN refund TEXT').run(); }catch(e){}
+  // แยกยอดในบิลให้เห็นครบ (ค่าอาหาร/ส่วนลดสมาชิก/ส่วนลดโปร/ส่วนลดค่าส่ง) — ใช้ทั้งสรุปบิลฝั่งลูกค้าและต้นทุนโปรในรายงานร้าน
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN subtotal INTEGER DEFAULT 0').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN member_disc INTEGER DEFAULT 0').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_id TEXT').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_name TEXT').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_disc INTEGER DEFAULT 0').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_fee_disc INTEGER DEFAULT 0').run(); }catch(e){} }
 // idempotent: ตาราง refunds (คืนเงินออเดอร์ที่ร้านปฏิเสธ · confirm-first) — สร้างครั้งเดียวต่อ isolate
 let _refundReady = false;
 async function ensureRefundTable(env){ if(_refundReady) return; _refundReady = true;
@@ -286,6 +308,117 @@ async function ensureShopTables(env){ if(_shopTablesReady) return; _shopTablesRe
        created_at INTEGER, PRIMARY KEY (shop_id,id) )`,
   ];
   for (const q of ddl) { try{ await env.DB.prepare(q).run(); }catch(e){} } }
+// idempotent: ตารางโปรโมชั่น/คูปองที่ร้านสร้างเอง — ร้านออกส่วนลดเอง แพลตฟอร์มไม่ร่วมจ่าย (zero-GP)
+let _promoReady = false;
+async function ensurePromoTables(env){ if(_promoReady) return; _promoReady = true;
+  const ddl = [
+    `CREATE TABLE IF NOT EXISTS promos ( shop_id TEXT NOT NULL, id TEXT NOT NULL, code TEXT, data TEXT,
+       used INTEGER DEFAULT 0, active INTEGER DEFAULT 1, created_at INTEGER, updated_at INTEGER,
+       PRIMARY KEY (shop_id,id) )`,
+    // ใช้นับสิทธิ์ต่อคน (quotaPerUser) และคิดต้นทุนโปรในรายงานกำไร
+    `CREATE TABLE IF NOT EXISTS promo_uses ( shop_id TEXT NOT NULL, promo_id TEXT NOT NULL, order_id TEXT,
+       line_user TEXT, amount INTEGER, at INTEGER )`,
+    `CREATE INDEX IF NOT EXISTS idx_promo_uses_user ON promo_uses (shop_id, promo_id, line_user)`,
+  ];
+  for (const q of ddl) { try{ await env.DB.prepare(q).run(); }catch(e){} } }
+
+/* ── โปรโมชั่นของร้าน: กติกา + การคิดส่วนลด ──────────────────────────────
+   ทุกยอดต้องคิดที่นี่เสมอ · ฝั่งแอปคิดไว้แค่โชว์ให้ลูกค้าเห็นระหว่างเลือก
+   ถ้าเชื่อยอดจากแอป = แก้ค่าในเบราว์เซอร์แล้วได้ของฟรี                        */
+const BKK_MS = 7 * 3600 * 1000;   // เวลาไทย — worker รันเป็น UTC
+const rowPromo = (r) => { let d = {}; try { d = JSON.parse(r.data || '{}'); } catch (e) {}
+  return { ...d, id: r.id, code: r.code || '', used: r.used | 0, active: !!r.active,
+           createdAt: r.created_at, updatedAt: r.updated_at }; };
+
+// เหตุผลที่ใช้โปรใบนี้ไม่ได้ (คืน key ให้ฝั่งแอปแปลเป็นข้อความเอง) · null = ใช้ได้
+function promoBlocker(p, cx) {
+  if (!p.active) return 'inactive';
+  const d = new Date((cx.at || Date.now()) + BKK_MS);
+  const ymd = d.toISOString().slice(0, 10);
+  if (p.startAt && ymd < p.startAt) return 'notStarted';
+  if (p.endAt && ymd > p.endAt) return 'expired';
+  if (Array.isArray(p.days) && p.days.length && !p.days.includes(d.getUTCDay())) return 'dayOff';
+  if (p.timeFrom && p.timeTo) {
+    const hm = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+    // ข้ามเที่ยงคืนได้ (เช่น 22:00–02:00)
+    const inWin = p.timeFrom <= p.timeTo ? (hm >= p.timeFrom && hm <= p.timeTo) : (hm >= p.timeFrom || hm <= p.timeTo);
+    if (!inWin) return 'timeOff';
+  }
+  if (Array.isArray(p.channels) && p.channels.length && !p.channels.includes(cx.channel)) return 'channelOff';
+  if ((p.quota | 0) > 0 && (p.used | 0) >= p.quota) return 'soldOut';
+  if ((p.quotaPerUser | 0) > 0 && (cx.userUsed | 0) >= p.quotaPerUser) return 'userLimit';
+  if ((p.minSpend | 0) > 0 && cx.subtotal < p.minSpend) return 'minSpend';
+  return null;
+}
+
+const promoScoped = (p, lines) =>
+  p.scope === 'cat'  ? lines.filter(l => (p.scopeIds || []).includes(l.cat))
+: p.scope === 'item' ? lines.filter(l => (p.scopeIds || []).includes(l.id))
+: lines;
+
+// คืน {disc, feeDisc} — disc หักจากค่าอาหาร · feeDisc หักจากค่าส่ง (แยกกันเพื่อโชว์ในบิลคนละบรรทัด)
+function promoAmount(p, cx) {
+  const scoped = promoScoped(p, cx.lines);
+  const base = scoped.reduce((a, l) => a + l.price * l.qty, 0);
+  const cap = v => ((p.maxDisc | 0) > 0 ? Math.min(v, p.maxDisc) : v);
+  if (p.kind === 'percent')      return { disc: Math.min(base, cap(Math.round(base * (+p.value || 0) / 100))), feeDisc: 0 };
+  if (p.kind === 'fixed')        return { disc: Math.min(base, Math.round(+p.value || 0)), feeDisc: 0 };
+  if (p.kind === 'freeDelivery') return { disc: 0, feeDisc: cap(cx.fee | 0) };
+  if (p.kind === 'itemPrice') {  // เมนูในโปรเหลือชิ้นละ value บาท
+    const sp = Math.max(0, Math.round(+p.value || 0));
+    return { disc: cap(scoped.reduce((a, l) => a + Math.max(0, l.price - sp) * l.qty, 0)), feeDisc: 0 };
+  }
+  if (p.kind === 'buyXgetY') {
+    const buy = Math.max(1, p.buyQty | 0), get = Math.max(1, p.getQty | 0);
+    const units = [];                                   // กระจายเป็นรายชิ้น แล้วแถมชิ้นที่ถูกที่สุด
+    scoped.forEach(l => { for (let i = 0; i < l.qty; i++) units.push(l.price); });
+    units.sort((a, b) => a - b);
+    const free = Math.floor(units.length / (buy + get)) * get;
+    return { disc: cap(units.slice(0, free).reduce((a, v) => a + v, 0)), feeDisc: 0 };
+  }
+  return { disc: 0, feeDisc: 0 };
+}
+
+// สร้างรายการสินค้าจากราคาในฐานข้อมูล — ไม่ใช้ราคาที่แอปส่งมา
+async function promoLinesFromDB(env, shop, items) {
+  const ids = [...new Set((items || []).map(it => (Array.isArray(it) ? it[0] : it && it.id)).filter(Boolean))];
+  if (!ids.length) return [];
+  const ph = ids.map(() => '?').join(',');
+  const { results } = await env.DB.prepare(`SELECT id,cat,price FROM menu WHERE shop_id=? AND id IN (${ph})`)
+    .bind(shop, ...ids).all();
+  const by = Object.fromEntries((results || []).map(r => [r.id, r]));
+  return (items || []).map(it => {
+    const id = Array.isArray(it) ? it[0] : it.id;
+    const qty = Math.max(0, (Array.isArray(it) ? it[1] : it.qty) | 0);
+    const m = by[id];
+    if (!m || !qty) return null;
+    // ราคาตัวเลือกเสริม (add) ยังมาจากแอป — ไม่ได้เก็บ option ไว้ฝั่งเซิร์ฟเวอร์ จึงไม่นับเข้าฐานคิดโปร
+    return { id, cat: m.cat || '', price: m.price | 0, qty };
+  }).filter(Boolean);
+}
+
+// ประเมินโปรทุกใบของร้านเทียบกับตะกร้าปัจจุบัน — ใช้ทั้งหน้าเลือกคูปองและตอนสร้างออเดอร์
+async function promoEvaluate(env, shop, cx) {
+  await ensurePromoTables(env);
+  const { results } = await env.DB.prepare('SELECT * FROM promos WHERE shop_id=?').bind(shop).all();
+  const all = (results || []).map(rowPromo);
+  let uses = {};
+  if (cx.lineUser) {
+    const u = await env.DB.prepare('SELECT promo_id, COUNT(*) n FROM promo_uses WHERE shop_id=? AND line_user=? GROUP BY promo_id')
+      .bind(shop, cx.lineUser).all();
+    uses = Object.fromEntries((u.results || []).map(r => [r.promo_id, r.n | 0]));
+  }
+  return all.map(p => {
+    const c = { ...cx, userUsed: uses[p.id] || 0 };
+    let blocked = promoBlocker(p, c);
+    const amt = blocked ? { disc: 0, feeDisc: 0 } : promoAmount(p, c);
+    // เงื่อนไขผ่านหมดแต่ลดได้ ฿0 (เช่นโปรผูกกับเมนูที่ยังไม่ได้ใส่ตะกร้า) — อย่าโชว์ว่า "ใช้ได้"
+    if (!blocked && amt.disc + amt.feeDisc <= 0) blocked = 'noEffect';
+    // ขาดอีกเท่าไหร่ถึงใช้ได้ — ให้ฝั่งแอปโชว์ "ซื้ออีก ฿45 ใช้ได้"
+    const short = blocked === 'minSpend' ? Math.max(0, (p.minSpend | 0) - (cx.subtotal | 0)) : 0;
+    return { ...p, blocked, short, disc: amt.disc, feeDisc: amt.feeDisc };
+  });
+}
 // idempotent: log การเข้าดู Backoffice ร้านโดยแอดมินแอป (PDPA — เก็บร่องรอยการเข้าถึงข้อมูลร้าน)
 let _adminLogReady = false;
 async function ensureAdminLog(env){ if(_adminLogReady) return; _adminLogReady = true;
@@ -1400,6 +1533,64 @@ export default {
         }
       }
 
+      /* ── PROMOS (โปร/คูปองที่ร้านสร้างเอง) ── */
+      if (seg[0] === 'promos') {
+        await ensurePromoTables(env);
+        // GET /promos — ร้านดูทั้งหมด (รวมที่ปิด/หมดอายุ เพื่อแก้/เปิดใหม่ได้)
+        if (req.method === 'GET' && !seg[1]) {
+          const { results } = await env.DB.prepare('SELECT * FROM promos WHERE shop_id=? ORDER BY created_at DESC').bind(shop).all();
+          return json((results || []).map(rowPromo), req);
+        }
+        // POST /promos — ร้านสร้าง/แก้โปร
+        if (req.method === 'POST' && !seg[1]) {
+          const b = await readBody();
+          if (!b.name) return err('name required', req, 400);
+          const id = (b.id && /^[a-z0-9_-]{1,40}$/i.test(b.id)) ? b.id : ('pm' + now());
+          const code = String(b.code || '').trim().toUpperCase();
+          if (code) {   // โค้ดห้ามซ้ำในร้านเดียวกัน ไม่งั้นลูกค้ากรอกแล้วไม่รู้ว่าได้ใบไหน
+            const dup = await env.DB.prepare('SELECT id FROM promos WHERE shop_id=? AND code=? AND id<>?').bind(shop, code, id).first();
+            if (dup) return err('โค้ดนี้ถูกใช้กับโปรอื่นแล้ว', req, 409);
+          }
+          const data = {
+            name: b.name, kind: b.kind || 'percent', value: +b.value || 0,
+            auto: b.auto !== false && !code,              // ไม่มีโค้ด = ลดให้อัตโนมัติ
+            minSpend: b.minSpend | 0, maxDisc: b.maxDisc | 0,
+            scope: ['all', 'cat', 'item'].includes(b.scope) ? b.scope : 'all',
+            scopeIds: Array.isArray(b.scopeIds) ? b.scopeIds.slice(0, 200) : [],
+            channels: Array.isArray(b.channels) ? b.channels : [],
+            startAt: b.startAt || '', endAt: b.endAt || '',
+            days: Array.isArray(b.days) ? b.days.map(n => n | 0) : [],
+            timeFrom: b.timeFrom || '', timeTo: b.timeTo || '',
+            quota: b.quota | 0, quotaPerUser: b.quotaPerUser | 0,
+            buyQty: b.buyQty | 0, getQty: b.getQty | 0,
+            stackable: !!b.stackable, note: b.note || '',
+          };
+          const t = now();
+          await env.DB.prepare(
+            `INSERT INTO promos (shop_id,id,code,data,used,active,created_at,updated_at) VALUES (?,?,?,?,0,?,?,?)
+             ON CONFLICT(shop_id,id) DO UPDATE SET code=excluded.code, data=excluded.data,
+               active=excluded.active, updated_at=excluded.updated_at`
+          ).bind(shop, id, code, JSON.stringify(data), b.active === false ? 0 : 1, t, t).run();
+          return json({ ok: true, id }, req, 201);
+        }
+        if (req.method === 'DELETE' && seg[1]) {
+          await env.DB.prepare('DELETE FROM promos WHERE shop_id=? AND id=?').bind(shop, seg[1]).run();
+          return json({ ok: true }, req);
+        }
+        // POST /promos/quote — ฝั่งลูกค้าถามว่าตะกร้านี้ใช้โปรอะไรได้บ้าง ลดเท่าไหร่
+        if (req.method === 'POST' && seg[1] === 'quote') {
+          const b = await readBody();
+          const lines = await promoLinesFromDB(env, shop, b.items || []);
+          const subtotal = lines.reduce((a, l) => a + l.price * l.qty, 0);
+          const cx = { lines, subtotal, fee: b.fee | 0, channel: b.channel || 'line', lineUser: b.lineUserId || null, at: now() };
+          let list = await promoEvaluate(env, shop, cx);
+          // โปรที่ต้องกรอกโค้ด: ซ่อนไว้จนกว่าลูกค้าจะพิมพ์โค้ดถูก
+          const typed = String(b.code || '').trim().toUpperCase();
+          list = list.filter(p => !p.code || p.code === typed);
+          return json({ subtotal, promos: list.sort((a, b2) => (b2.disc + b2.feeDisc) - (a.disc + a.feeDisc)) }, req);
+        }
+      }
+
       /* ── ORDERS ── */
       if (seg[0] === 'orders') {
         if (req.method === 'GET' && !seg[1]) {
@@ -1421,14 +1612,49 @@ export default {
           await ensureOrderCols(env);
           await ensureOrderCols(env);
           const id = (b.id && /^[a-z0-9_-]{1,40}$/i.test(b.id)) ? b.id : ('o' + now()), no = await nextOrderNo(env, shop), ts = now();
+
+          /* ── ส่วนลด: คิดใหม่ทั้งหมดที่นี่ ไม่เชื่อยอดจากแอป ──
+             แอปแก้ค่าในเบราว์เซอร์ได้ ถ้ารับ total ตรง ๆ = สั่งของฟรีได้ */
+          const _lines = await promoLinesFromDB(env, shop, b.items || []);
+          const _subtotal = _lines.reduce((a, l) => a + l.price * l.qty, 0);
+          // ส่วนลดสมาชิกตามระดับ — เพดานคือค่าที่คิดจากราคาในฐานข้อมูล
+          let _memberCap = 0;
+          if (b.lineUserId) {
+            const L = await loyaltyCfg(env, shop);
+            const mem = await env.DB.prepare('SELECT tier FROM members WHERE shop_id=? AND id=?').bind(shop, b.lineUserId).first();
+            const pct = Number(((L.tierDisc || {})[(mem && mem.tier) || 'member'])) || 0;
+            _memberCap = pct > 0 ? Math.round(_subtotal * pct / 100) : 0;
+          }
+          // โปร/คูปองที่ลูกค้าเลือก — ตรวจเงื่อนไขและคิดยอดใหม่จากราคาจริง
+          let _promo = null, _promoDisc = 0, _promoFeeDisc = 0;
+          if (b.promoId) {
+            const evald = await promoEvaluate(env, shop, {
+              lines: _lines, subtotal: _subtotal, fee: b.fee | 0,
+              channel: b.channel || 'line', lineUser: b.lineUserId || null, at: ts });
+            const hit = evald.find(p => p.id === b.promoId);
+            if (hit && !hit.blocked) { _promo = hit; _promoDisc = hit.disc | 0; _promoFeeDisc = hit.feeDisc | 0; }
+          }
+          // โปรที่ไม่ได้ตั้งให้ใช้ร่วมกับส่วนลดสมาชิก → ตัดส่วนลดสมาชิกออกจากบิลนี้
+          const _memberDisc = (_promo && !_promo.stackable) ? 0 : Math.max(0, Math.min(b.memberDisc | 0, _memberCap));
+          // ยอดต่ำสุดที่เป็นไปได้ = ค่าอาหารจริง − ส่วนลดที่อนุมัติแล้ว (ตัวเลือกเสริม/ค่าส่งมีแต่บวก)
+          const _floor = Math.max(0, _subtotal - _memberDisc - _promoDisc - _promoFeeDisc);
+          const _total = Math.max(b.total | 0, _floor);
+
           await env.DB.prepare(
             `INSERT INTO orders (shop_id,id,no,items,channel,pay,status,paid,total,cost,fee,qnum,
-               table_no,customer,addr,when_txt,line_user,line_name,pay_after_confirm,created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-          ).bind(shop, id, no, JSON.stringify(b.items || []), b.channel || 'line', b.pay || 'promptpay',
-                 'new', 0, b.total | 0, b.cost | 0, b.fee | 0, b.qnum ?? null,
+               table_no,customer,addr,when_txt,line_user,line_name,pay_after_confirm,created_at,updated_at,
+               subtotal,member_disc,promo_id,promo_name,promo_disc,promo_fee_disc)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+          ).bind(shop, id, no, JSON.stringify(normItems(b.items)), b.channel || 'line', b.pay || 'promptpay',
+                 'new', 0, _total, b.cost | 0, b.fee | 0, b.qnum ?? null,
                  (b.table != null && b.table !== '') ? String(b.table) : null,
-                 b.customer || '', b.addr || '', b.when || '', b.lineUserId || null, b.lineName || '', b.payAfterConfirm ? 1 : 0, ts, ts).run();
+                 b.customer || '', b.addr || '', b.when || '', b.lineUserId || null, b.lineName || '', b.payAfterConfirm ? 1 : 0, ts, ts,
+                 _subtotal, _memberDisc, _promo ? _promo.id : null, _promo ? _promo.name : '', _promoDisc, _promoFeeDisc).run();
+          if (_promo) {   // ตัดสิทธิ์หลังบันทึกออเดอร์สำเร็จ — ไม่งั้นออเดอร์พังแต่โควตาหาย
+            await env.DB.prepare('UPDATE promos SET used=used+1, updated_at=? WHERE shop_id=? AND id=?').bind(ts, shop, _promo.id).run();
+            await env.DB.prepare('INSERT INTO promo_uses (shop_id,promo_id,order_id,line_user,amount,at) VALUES (?,?,?,?,?,?)')
+              .bind(shop, _promo.id, id, b.lineUserId || null, _promoDisc + _promoFeeDisc, ts).run();
+          }
           if (b.lineUserId) {
             await env.DB.prepare(
               `INSERT INTO members (shop_id,id,name,avatar,tier,points,visits,created_at,updated_at)

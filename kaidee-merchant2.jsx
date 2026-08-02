@@ -1,5 +1,5 @@
 // kaidee-merchant2.jsx — Orders queue, Dashboard, Store builder, Merchant shell
-const { useState:m2State } = React;
+const { useState:m2State, useEffect:m2Effect } = React;
 
 /* ── แจ้งเตือนเงินเข้า (per-device · ไม่ sync ข้ามเครื่อง) — toast auto-hide + เสียง/เสียงพูด ── */
 function kdPayMode(){ try{ return localStorage.getItem('kd_pp_mode')||'toast'; }catch(e){ return 'toast'; } }
@@ -916,6 +916,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
   const [menuMgrOpen,setMenuMgrOpen] = m2State(false);
   const [marketSheet,setMarketSheet] = m2State(false);
   const [pinSheet,setPinSheet] = m2State(false);
+  const [promoSheet,setPromoSheet] = m2State(false);
   // มาจาก "ตั้งเวลาเปิด-ปิดร้านก่อน" (กดจากหน้าเงินสด) → เปิดชีตตั้งค่าร้านให้เลย
   React.useEffect(()=>{ try{ if(window.__kdOpenHours){ window.__kdOpenHours=false; setShopSheet(true); } }catch(e){} }, []);
   const grouped = cats.map(c=>({ cat:c, items:menu.filter(m=>m.cat===c.id) }));
@@ -1048,6 +1049,16 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
               <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?'คิดต่อเมนู: ต้นทุน/จาน หรือ สูตร+ตัดสต๊อก':'Per item: flat or recipe + stock'}</div>
             </div>
             <span style={{ fontSize:11, fontWeight:700, color:'var(--brand-ink)', background:'var(--brand-soft)', padding:'4px 10px', borderRadius:999 }}>{lang==='th'?'ผสม':'Hybrid'}</span>
+          </button>
+          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'การตลาด':'Marketing'}</div>
+          <button onClick={()=>setPromoSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
+            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
+            <span style={{ width:38, height:38, borderRadius:11, background:'#FFF0E6', color:'#B4531A', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🎟️</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'โปรโมชั่น & คูปอง':'Promos & coupons'}</div>
+              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{lang==='th'?'ลด % · ลดบาท · ส่งฟรี · ซื้อ 1 แถม 1 — ตั้งขั้นต่ำ วัน-เวลา และจำนวนสิทธิ์ได้':'% off · ฿ off · free delivery · buy 1 get 1'}</div>
+            </div>
+            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
           </button>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ความปลอดภัย':'Security'}</div>
           <button onClick={()=>setPinSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
@@ -1221,6 +1232,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
           try{ if(window.KD_LIVE && window.KD_API && window.KD_API.deleteMenuItem) window.KD_API.deleteMenuItem(delId).catch(()=>{}); }catch(e){} }} />}
       {marketSheet && <MarketJoinSheet shop={shop} setShop={setShop} onClose={()=>setMarketSheet(false)} />}
       {pinSheet && <OwnerPinSheet shop={shop} onClose={()=>setPinSheet(false)} />}
+      {promoSheet && <PromoSheet menu={menu} onClose={()=>setPromoSheet(false)} />}
       {paySheet && <PaySettingsSheet pay={pay} setPay={setPay} onClose={()=>setPaySheet(false)} />}
       {memSheet && <MembersSheet members={members} pay={pay} setPay={setPay} onClose={()=>setMemSheet(false)} />}
       {shopSheet && <ShopProfileSheet shop={shop} setShop={setShop} regOpen={register&&register.open} onClose={()=>setShopSheet(false)} />}
@@ -1242,6 +1254,278 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
 
 /* ══════════════ PIN เจ้าของร้าน — ใช้กู้ร้านคืน + เข้าหลังบ้านบนคอม ══════════════
    เซิร์ฟเวอร์ยืนยันตัวตนด้วย LINE ของเจ้าของ (owner_line) ก่อนยอมให้ตั้ง — เครื่องพนักงานตั้งแทนไม่ได้ */
+/* ── โปร/คูปองของร้าน ─────────────────────────────────────────────
+   ร้านออกส่วนลดเอง แพลตฟอร์มไม่ร่วมจ่าย — ยอดจริงคิดที่เซิร์ฟเวอร์เสมอ
+   ใช้กับออเดอร์ฝั่งลูกค้า (ลิงก์ร้าน/แพลตฟอร์ม) ไม่ใช่หน้าขายหน้าร้าน   */
+const PROMO_KINDS = [
+  { k:'percent',      th:'ลดเป็น %',      en:'% off',        hint:{ th:'เช่น ลด 20%',            en:'e.g. 20% off' } },
+  { k:'fixed',        th:'ลดเป็นบาท',     en:'฿ off',        hint:{ th:'เช่น ลด ฿50',             en:'e.g. ฿50 off' } },
+  { k:'freeDelivery', th:'ส่งฟรี',        en:'Free delivery',hint:{ th:'ยกค่าส่งให้ลูกค้า',        en:'Waive delivery fee' } },
+  { k:'itemPrice',    th:'ราคาพิเศษ',     en:'Special price',hint:{ th:'เมนูที่เลือกเหลือชิ้นละ…',  en:'Selected items at…' } },
+  { k:'buyXgetY',     th:'ซื้อ X แถม Y',  en:'Buy X get Y',  hint:{ th:'แถมชิ้นที่ถูกที่สุด',       en:'Cheapest item free' } },
+];
+const PROMO_CHANNELS = [
+  { k:'line',     th:'สั่งผ่านลิงก์ / รับกลับบ้าน', en:'Link order / takeaway' },
+  { k:'dinein',   th:'ทานที่ร้าน',                 en:'Dine-in' },
+  { k:'delivery', th:'เดลิเวอรี',                  en:'Delivery' },
+];
+const PROMO_DAYS_TH = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+const PROMO_DAYS_EN = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const emptyPromo = ()=>({ name:'', kind:'percent', value:0, code:'', minSpend:0, maxDisc:0,
+  scope:'all', scopeIds:[], channels:[], startAt:'', endAt:'', days:[], timeFrom:'', timeTo:'',
+  quota:0, quotaPerUser:0, buyQty:1, getQty:1, stackable:false, active:true });
+
+// สรุปเงื่อนไขเป็นประโยคเดียว — ใช้ทั้งในลิสต์ของร้านและป้ายฝั่งลูกค้า
+function promoHeadline(p, TH){
+  const v = Math.round(+p.value||0);
+  if(p.kind==='percent')      return TH?`ลด ${v}%`:`${v}% off`;
+  if(p.kind==='fixed')        return TH?`ลด ฿${v}`:`฿${v} off`;
+  if(p.kind==='freeDelivery') return TH?'ส่งฟรี':'Free delivery';
+  if(p.kind==='itemPrice')    return TH?`เหลือชิ้นละ ฿${v}`:`฿${v} each`;
+  if(p.kind==='buyXgetY')     return TH?`ซื้อ ${p.buyQty||1} แถม ${p.getQty||1}`:`Buy ${p.buyQty||1} get ${p.getQty||1}`;
+  return p.name||'';
+}
+function PromoSheet({ menu, onClose }){
+  const { lang } = useT(); const TH = lang!=='en';
+  const cats = useCats();
+  const [list,setList] = m2State(null);      // null = กำลังโหลด
+  const [edit,setEdit] = m2State(null);      // โปรที่กำลังแก้ (หรือใบใหม่)
+  const [busy,setBusy] = m2State(false);
+  const [err,setErr]   = m2State('');
+  const load = async ()=>{
+    try{ setList(await window.KD_API.listPromos()||[]); }
+    catch(e){ setList([]); setErr(TH?'โหลดรายการโปรไม่สำเร็จ — ตรวจการเชื่อมต่อ':'Could not load promos'); }
+  };
+  m2Effect(()=>{ load(); }, []);
+  const save = async ()=>{
+    setErr('');
+    if(!edit.name.trim()) return setErr(TH?'ตั้งชื่อโปรก่อน':'Name required');
+    if(['percent','fixed','itemPrice'].includes(edit.kind) && !(+edit.value>0))
+      return setErr(TH?'ใส่ตัวเลขส่วนลดก่อน':'Enter a discount value');
+    if(edit.scope!=='all' && !edit.scopeIds.length)
+      return setErr(TH?'เลือกหมวด/เมนูที่โปรนี้ใช้ได้ก่อน':'Pick the items this promo applies to');
+    setBusy(true);
+    try{
+      const r = await window.KD_API.savePromo(edit);
+      if(r && r.ok){ setEdit(null); await load(); }
+      else setErr((r&&r.error)||(TH?'บันทึกไม่สำเร็จ':'Save failed'));
+    }catch(e){
+      // 409 = โค้ดซ้ำ · ที่เหลือคือเชื่อมต่อไม่ได้ (fetch โยน error พร้อมเลขสถานะ)
+      setErr(/409/.test(String(e&&e.message)) ? (TH?'โค้ดนี้ถูกใช้กับโปรใบอื่นแล้ว':'That code is already in use')
+                                              : (TH?'บันทึกไม่สำเร็จ — เชื่อมต่อเซิร์ฟเวอร์ไม่ได้':'Save failed — connection error'));
+    }
+    setBusy(false);
+  };
+  const del = async (p)=>{
+    if(!window.confirm(TH?`ลบโปร "${p.name}" ?`:`Delete "${p.name}"?`)) return;
+    try{ await window.KD_API.deletePromo(p.id); await load(); }catch(e){ setErr(TH?'ลบไม่สำเร็จ':'Delete failed'); }
+  };
+  const set = (patch)=> setEdit(e=>({ ...e, ...patch }));
+
+  // ── ตัวอย่างการคิดเงิน (คิดคร่าว ๆ ฝั่งแอปเพื่อให้ร้านเห็นภาพ — ยอดจริงเซิร์ฟเวอร์คิดใหม่) ──
+  const preview = (()=>{
+    if(!edit) return null;
+    const bill = Math.max(edit.minSpend||0, 300);
+    const v = +edit.value||0;
+    let d = 0;
+    if(edit.kind==='percent'){ d = Math.round(bill*v/100); if(edit.maxDisc>0) d = Math.min(d, edit.maxDisc); }
+    else if(edit.kind==='fixed') d = Math.min(v, bill);
+    else if(edit.kind==='freeDelivery') d = 0;
+    return { bill, d };
+  })();
+
+  const label = { fontSize:12.5, fontWeight:700, color:'var(--ink-3)', margin:'14px 0 6px' };
+  const chip = (on)=>({ padding:'7px 13px', borderRadius:999, fontSize:12.5, fontWeight:700, cursor:'pointer',
+    border:'1.5px solid '+(on?'var(--brand)':'var(--hair)'), background:on?'var(--brand-soft)':'#fff',
+    color:on?'var(--brand-ink)':'var(--ink-2)', fontFamily:'var(--font)' });
+
+  return (
+    <Sheet open={true} onClose={onClose} height="92%">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'4px 20px 12px' }}>
+        <div>
+          <div style={{ fontSize:19, fontWeight:700 }}>{edit ? (edit.id?(TH?'แก้โปรโมชั่น':'Edit promo'):(TH?'สร้างโปรใหม่':'New promo')) : (TH?'โปรโมชั่น & คูปอง':'Promos & coupons')}</div>
+          <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:1 }}>{TH?'ส่วนลดของร้านคุณเอง ไม่มีใครหักเปอร์เซ็นต์':'Your own discounts — no commission taken'}</div>
+        </div>
+        <button onClick={()=>edit?setEdit(null):onClose()} style={{ border:'none', background:'var(--bg)', width:34, height:34, borderRadius:999, cursor:'pointer' }}>{IC.x}</button>
+      </div>
+
+      <div style={{ overflowY:'auto', padding:'0 20px 20px', flex:1 }}>
+        {err && <div style={{ color:'var(--danger)', fontSize:12.5, fontWeight:700, marginBottom:10 }}>{err}</div>}
+
+        {!edit && <>
+          <div style={{ background:'var(--brand-soft)', color:'var(--brand-ink)', borderRadius:12, padding:'11px 13px', fontSize:12.5, lineHeight:1.55, marginBottom:14 }}>
+            {TH?'โปรจะขึ้นให้ลูกค้าเห็นตอนสั่งผ่านลิงก์ร้านและหน้าแพลตฟอร์ม · ส่วนลดที่ให้จะถูกบันทึกแยกไว้ในรายงาน จะได้รู้ว่าโปรกินกำไรไปเท่าไหร่'
+                :'Promos appear to customers ordering via your link or the platform. Every discount is logged so you can see what it costs you.'}
+          </div>
+          {list===null && <div style={{ textAlign:'center', color:'var(--ink-3)', fontSize:13, padding:'26px 0' }}>{TH?'กำลังโหลด…':'Loading…'}</div>}
+          {list && !list.length && <div style={{ textAlign:'center', color:'var(--ink-3)', fontSize:13, padding:'26px 10px', lineHeight:1.6 }}>
+            {TH?'ยังไม่มีโปร — กดปุ่มด้านล่างเพื่อสร้างใบแรก':'No promos yet — create your first one below'}</div>}
+          {(list||[]).map(p=>{
+            const today = new Date().toISOString().slice(0,10);
+            const dead = !p.active ? (TH?'ปิดอยู่':'Off')
+                       : (p.endAt && today > p.endAt) ? (TH?'หมดอายุ':'Expired')
+                       : (p.quota>0 && (p.used|0) >= p.quota) ? (TH?'สิทธิ์หมด':'Sold out') : '';
+            return (
+              <div key={p.id} className="kd-card" style={{ padding:'13px 15px', marginBottom:9, opacity:dead?.6:1 }}>
+                <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:14.5, fontWeight:700 }}>{p.name}</div>
+                    <div style={{ fontSize:12.5, color:'var(--brand-ink)', fontWeight:700, marginTop:2 }}>
+                      {promoHeadline(p, TH)}
+                      {p.minSpend>0 && <span style={{ color:'var(--ink-3)', fontWeight:400 }}>{TH?` · ขั้นต่ำ ฿${p.minSpend}`:` · min ฿${p.minSpend}`}</span>}
+                    </div>
+                    <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:3 }}>
+                      {p.code ? (TH?`โค้ด ${p.code}`:`Code ${p.code}`) : (TH?'ลดอัตโนมัติ':'Automatic')}
+                      {TH?` · ใช้ไปแล้ว ${p.used|0} ครั้ง`:` · used ${p.used|0}×`}
+                      {p.quota>0 && (TH?` / ${p.quota}`:` / ${p.quota}`)}
+                    </div>
+                  </div>
+                  {dead && <span style={{ fontSize:10.5, fontWeight:800, color:'#8A6100', background:'#FBEEDA', borderRadius:6, padding:'3px 8px' }}>{dead}</span>}
+                </div>
+                <div style={{ display:'flex', gap:8, marginTop:10 }}>
+                  <button onClick={()=>setEdit({ ...emptyPromo(), ...p })} className="kd-btn" style={{ flex:1, padding:'8px 0', fontSize:12.5 }}>{TH?'แก้ไข':'Edit'}</button>
+                  <button onClick={()=>del(p)} className="kd-btn" style={{ padding:'8px 14px', fontSize:12.5, color:'var(--danger)' }}>{TH?'ลบ':'Delete'}</button>
+                </div>
+              </div>
+            );
+          })}
+        </>}
+
+        {edit && <>
+          <div style={label}>{TH?'ชื่อโปร (ลูกค้าเห็นชื่อนี้)':'Promo name (shown to customers)'}</div>
+          <input className="kd-input" value={edit.name} onChange={e=>set({name:e.target.value})} style={{ width:'100%' }}
+            placeholder={TH?'เช่น ลด 20% มื้อเที่ยง':'e.g. 20% off lunch'}/>
+
+          <div style={label}>{TH?'แบบไหน':'Type'}</div>
+          <div style={{ display:'flex', gap:7, flexWrap:'wrap' }}>
+            {PROMO_KINDS.map(k=>(
+              <button key={k.k} onClick={()=>set({kind:k.k})} style={chip(edit.kind===k.k)}>{TH?k.th:k.en}</button>
+            ))}
+          </div>
+          <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:6 }}>
+            {(PROMO_KINDS.find(k=>k.k===edit.kind)||{hint:{}}).hint[TH?'th':'en']}
+          </div>
+
+          {['percent','fixed','itemPrice'].includes(edit.kind) && <>
+            <div style={label}>{edit.kind==='percent'?(TH?'ลดกี่ %':'Percent off'):edit.kind==='fixed'?(TH?'ลดกี่บาท':'Baht off'):(TH?'เหลือชิ้นละกี่บาท':'Price each')}</div>
+            <input className="kd-input num" inputMode="numeric" value={edit.value||''} onChange={e=>set({value:e.target.value.replace(/\D/g,'')})} style={{ width:'100%' }}/>
+          </>}
+          {edit.kind==='buyXgetY' && <div style={{ display:'flex', gap:10 }}>
+            <div style={{ flex:1 }}>
+              <div style={label}>{TH?'ซื้อกี่ชิ้น':'Buy'}</div>
+              <input className="kd-input num" inputMode="numeric" value={edit.buyQty||''} onChange={e=>set({buyQty:+e.target.value.replace(/\D/g,'')||1})} style={{ width:'100%' }}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={label}>{TH?'แถมกี่ชิ้น':'Get free'}</div>
+              <input className="kd-input num" inputMode="numeric" value={edit.getQty||''} onChange={e=>set({getQty:+e.target.value.replace(/\D/g,'')||1})} style={{ width:'100%' }}/>
+            </div>
+          </div>}
+
+          <div style={label}>{TH?'ยอดขั้นต่ำ (0 = ไม่กำหนด)':'Minimum spend (0 = none)'}</div>
+          <input className="kd-input num" inputMode="numeric" value={edit.minSpend||''} onChange={e=>set({minSpend:+e.target.value.replace(/\D/g,'')||0})} style={{ width:'100%' }}/>
+          {['percent','freeDelivery','itemPrice','buyXgetY'].includes(edit.kind) && <>
+            <div style={label}>{TH?'ลดได้ไม่เกินกี่บาท (0 = ไม่จำกัด)':'Cap the discount (0 = no cap)'}</div>
+            <input className="kd-input num" inputMode="numeric" value={edit.maxDisc||''} onChange={e=>set({maxDisc:+e.target.value.replace(/\D/g,'')||0})} style={{ width:'100%' }}/>
+            <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:5, lineHeight:1.5 }}>
+              {TH?'ใส่เพดานไว้กันบิลใหญ่ลดจนขาดทุน — ลด 20% ของบิล ฿2,000 คือ ฿400':'A cap protects big bills — 20% of ฿2,000 is ฿400'}</div>
+          </>}
+
+          <div style={label}>{TH?'ลูกค้าได้ส่วนลดยังไง':'How customers get it'}</div>
+          <div style={{ display:'flex', gap:7 }}>
+            <button onClick={()=>set({code:'', auto:true})} style={chip(!edit.code)}>{TH?'ลดอัตโนมัติ':'Automatic'}</button>
+            <button onClick={()=>set({code: edit.code || 'SAVE'+Math.floor(10+Math.random()*89)})} style={chip(!!edit.code)}>{TH?'ต้องกรอกโค้ด':'Needs a code'}</button>
+          </div>
+          {!!edit.code && <input className="kd-input" value={edit.code} onChange={e=>set({code:e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'')})}
+            style={{ width:'100%', marginTop:8, letterSpacing:'1px', fontWeight:800 }} placeholder="SAVE30"/>}
+
+          <div style={label}>{TH?'ใช้กับเมนูไหน':'Applies to'}</div>
+          <div style={{ display:'flex', gap:7, flexWrap:'wrap' }}>
+            {[['all',TH?'ทั้งร้าน':'Everything'],['cat',TH?'เฉพาะหมวด':'By category'],['item',TH?'เฉพาะเมนู':'By item']].map(([k,l])=>(
+              <button key={k} onClick={()=>set({scope:k, scopeIds:[]})} style={chip(edit.scope===k)}>{l}</button>
+            ))}
+          </div>
+          {edit.scope==='cat' && <div style={{ display:'flex', gap:7, flexWrap:'wrap', marginTop:9 }}>
+            {(cats||[]).map(c=>{ const on = edit.scopeIds.includes(c);
+              return <button key={c} onClick={()=>set({scopeIds: on?edit.scopeIds.filter(x=>x!==c):[...edit.scopeIds,c]})} style={chip(on)}>{c}</button>; })}
+          </div>}
+          {edit.scope==='item' && <div style={{ marginTop:9, maxHeight:210, overflowY:'auto', border:'1px solid var(--hair)', borderRadius:12 }}>
+            {(menu||[]).filter(m=>m.active!==false).map(m=>{ const on = edit.scopeIds.includes(m.id);
+              return (
+                <label key={m.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 13px', borderBottom:'1px solid var(--hair)', cursor:'pointer' }}>
+                  <input type="checkbox" checked={on} onChange={()=>set({scopeIds: on?edit.scopeIds.filter(x=>x!==m.id):[...edit.scopeIds,m.id]})}
+                    style={{ width:17, height:17, accentColor:'var(--brand)' }}/>
+                  <span style={{ flex:1, fontSize:13.5 }}>{m.th}</span>
+                  <span className="num" style={{ fontSize:12.5, color:'var(--ink-3)' }}>{money(m.price)}</span>
+                </label>
+              ); })}
+          </div>}
+
+          <div style={label}>{TH?'ใช้ได้กับช่องทางไหน (ไม่เลือก = ทุกช่องทาง)':'Channels (none = all)'}</div>
+          <div style={{ display:'flex', gap:7, flexWrap:'wrap' }}>
+            {PROMO_CHANNELS.map(c=>{ const on = edit.channels.includes(c.k);
+              return <button key={c.k} onClick={()=>set({channels: on?edit.channels.filter(x=>x!==c.k):[...edit.channels,c.k]})} style={chip(on)}>{TH?c.th:c.en}</button>; })}
+          </div>
+
+          <div style={label}>{TH?'ช่วงวันที่ (เว้นว่าง = ไม่จำกัด)':'Date range (blank = always)'}</div>
+          <div style={{ display:'flex', gap:9 }}>
+            <input className="kd-input" type="date" value={edit.startAt} onChange={e=>set({startAt:e.target.value})} style={{ flex:1 }}/>
+            <input className="kd-input" type="date" value={edit.endAt} onChange={e=>set({endAt:e.target.value})} style={{ flex:1 }}/>
+          </div>
+          <div style={label}>{TH?'เฉพาะวัน (ไม่เลือก = ทุกวัน)':'Days (none = every day)'}</div>
+          <div style={{ display:'flex', gap:6 }}>
+            {(TH?PROMO_DAYS_TH:PROMO_DAYS_EN).map((d,i)=>{ const on = edit.days.includes(i);
+              return <button key={i} onClick={()=>set({days: on?edit.days.filter(x=>x!==i):[...edit.days,i]})}
+                style={{ ...chip(on), flex:1, padding:'8px 0' }}>{d}</button>; })}
+          </div>
+          <div style={label}>{TH?'เฉพาะช่วงเวลา (เว้นว่าง = ทั้งวัน)':'Time window (blank = all day)'}</div>
+          <div style={{ display:'flex', gap:9, alignItems:'center' }}>
+            <input className="kd-input" type="time" value={edit.timeFrom} onChange={e=>set({timeFrom:e.target.value})} style={{ flex:1 }}/>
+            <span style={{ color:'var(--ink-3)' }}>–</span>
+            <input className="kd-input" type="time" value={edit.timeTo} onChange={e=>set({timeTo:e.target.value})} style={{ flex:1 }}/>
+          </div>
+
+          <div style={{ display:'flex', gap:10 }}>
+            <div style={{ flex:1 }}>
+              <div style={label}>{TH?'จำนวนสิทธิ์ทั้งหมด':'Total uses'}</div>
+              <input className="kd-input num" inputMode="numeric" value={edit.quota||''} onChange={e=>set({quota:+e.target.value.replace(/\D/g,'')||0})}
+                placeholder={TH?'0 = ไม่จำกัด':'0 = unlimited'} style={{ width:'100%' }}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={label}>{TH?'ต่อลูกค้า 1 คน':'Per customer'}</div>
+              <input className="kd-input num" inputMode="numeric" value={edit.quotaPerUser||''} onChange={e=>set({quotaPerUser:+e.target.value.replace(/\D/g,'')||0})}
+                placeholder={TH?'0 = ไม่จำกัด':'0 = unlimited'} style={{ width:'100%' }}/>
+            </div>
+          </div>
+          <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:5, lineHeight:1.5 }}>
+            {TH?'นับต่อคนได้เฉพาะลูกค้าที่สั่งผ่าน LINE — คนที่สั่งแบบไม่ล็อกอินนับรวมไม่ได้':'Per-customer limits only work for LINE-signed-in customers'}</div>
+
+          <label style={{ display:'flex', alignItems:'center', gap:9, marginTop:14, cursor:'pointer' }}>
+            <input type="checkbox" checked={!!edit.stackable} onChange={e=>set({stackable:e.target.checked})} style={{ width:17, height:17, accentColor:'var(--brand)' }}/>
+            <span style={{ fontSize:13 }}>{TH?'ใช้ร่วมกับส่วนลดสมาชิกได้':'Can stack with member discount'}</span>
+          </label>
+          <label style={{ display:'flex', alignItems:'center', gap:9, marginTop:9, cursor:'pointer' }}>
+            <input type="checkbox" checked={edit.active!==false} onChange={e=>set({active:e.target.checked})} style={{ width:17, height:17, accentColor:'var(--brand)' }}/>
+            <span style={{ fontSize:13 }}>{TH?'เปิดใช้งานโปรนี้':'Promo is active'}</span>
+          </label>
+
+          {preview && ['percent','fixed'].includes(edit.kind) && <div style={{ background:'var(--bg)', borderRadius:12, padding:'12px 14px', marginTop:16, fontSize:13, lineHeight:1.7 }}>
+            <div style={{ fontWeight:700, marginBottom:3 }}>{TH?'ตัวอย่าง':'Example'}</div>
+            {TH?`ลูกค้าสั่ง ${money(preview.bill)} → ลด ${money(preview.d)} → จ่าย `:`Order ${money(preview.bill)} → save ${money(preview.d)} → pays `}
+            <b className="num">{money(preview.bill-preview.d)}</b>
+          </div>}
+        </>}
+      </div>
+
+      <div style={{ flex:'0 0 auto', padding:'11px 20px calc(11px + env(safe-area-inset-bottom))', borderTop:'1px solid var(--hair)' }}>
+        {edit
+          ? <button onClick={save} disabled={busy} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:14, opacity:busy?.5:1 }}>
+              {busy?(TH?'กำลังบันทึก…':'Saving…'):(TH?'บันทึกโปร':'Save promo')}</button>
+          : <button onClick={()=>{ setErr(''); setEdit(emptyPromo()); }} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:14 }}>
+              {TH?'+ สร้างโปรใหม่':'+ New promo'}</button>}
+      </div>
+    </Sheet>
+  );
+}
 function OwnerPinSheet({ shop, onClose }){
   const { lang } = useT(); const TH = lang!=='en';
   const [pin,setPin]   = m2State('');

@@ -106,6 +106,12 @@ const KD_API = {
   getMenu:        ()        => _req('GET', '/menu'),
   saveMenuItem:   (item)    => _req('POST', '/menu', item),
   deleteMenuItem: (id)      => _req('DELETE', '/menu/' + id),
+  // ── โปร/คูปองที่ร้านสร้างเอง ──
+  listPromos:     ()        => _req('GET', '/promos'),
+  savePromo:      (p)       => _req('POST', '/promos', p),
+  deletePromo:    (id)      => _req('DELETE', '/promos/' + id),
+  // ถามเซิร์ฟเวอร์ว่าตะกร้านี้ใช้โปรอะไรได้บ้าง ลดเท่าไหร่ (ยอดจริงคิดซ้ำอีกครั้งตอนสร้างออเดอร์)
+  quotePromos:    (cart)    => _req('POST', '/promos/quote', cart),
   listOrders:     (q = {})  => _req('GET', '/orders' + qs(q)),
   getOrder:       (id)      => _req('GET', '/orders/' + id),
   createOrder:    (payload) => _req('POST', '/orders', payload),

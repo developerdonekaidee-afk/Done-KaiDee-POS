@@ -163,7 +163,39 @@
       "Bash(curl -s -m 15 \"https://kaidee-git.oneday-pos.workers.dev/index.html\")",
       "Bash(curl -sL -m 20 \"https://kaidee-git.oneday-pos.workers.dev/\")",
       "Bash(node perf.js)",
-      "Bash(curl -sL -m 15 \"https://kaidee-git.oneday-pos.workers.dev/\")"
+      "Bash(curl -sL -m 15 \"https://kaidee-git.oneday-pos.workers.dev/\")",
+      "Bash(cd /Users/oneday/Desktop/Done-KaiDee-POS; grep -n \"CREATE TABLE IF NOT EXISTS menu\\\\|rowMenu\\\\|function rowOrder\" kaidee-pos-worker/worker.js | head; echo \"---\"; sed -n '/CREATE TABLE IF NOT EXISTS menu/,+4p' kaidee-pos-worker/worker.js | head -8; echo \"=== rowOrder ===\"; sed -n \"$\\(grep -n 'function rowOrder' kaidee-pos-worker/worker.js | cut -d: -f1\\),+12p\" kaidee-pos-worker/worker.js)",
+      "Bash(grep -n \"const id = \\(b.id && /\\\\^\\\\[a-z0-9_-\\\\]{1,40}\\\\$/i.test\\(b.id\\)\\) ? b.id : \\('o' + now\\(\\)\\)\" kaidee-pos-worker/worker.js)",
+      "Bash(curl -sf http://localhost:8787/health -o /dev/null)",
+      "Bash(curl -s -m 10 -w ' [%{http_code}]\\\\n' \"http://localhost:8787/shops/pos\")",
+      "Bash(curl -s -m 10 -w ' [%{http_code}]\\\\n' \"http://localhost:8787/menu?shop=pos\")",
+      "Bash(curl -s -o /dev/null -X POST __TRACKED_VAR__/menu?shop=pos -H 'content-type: application/json' -d '{\"id\":\"m2\",\"cat\":\"เส้น\",\"th\":\"ก๋วยเตี๋ยวหมู\",\"price\":60,\"cost\":25,\"sort\":2}')",
+      "Bash(curl -s -o /dev/null -X POST __TRACKED_VAR__/menu?shop=pos -H 'content-type: application/json' -d '{\"id\":\"m3\",\"cat\":\"เครื่องดื่ม\",\"th\":\"น้ำส้ม\",\"price\":25,\"cost\":8,\"sort\":3}')",
+      "Bash(curl -s -w ' [%{http_code}]\\\\n' -X POST __TRACKED_VAR__/promos?shop=pos -H 'content-type: application/json' -d '{\"id\":\"p1\",\"name\":\"ลด 20% เมื่อครบ 200\",\"kind\":\"percent\",\"value\":20,\"minSpend\":200,\"maxDisc\":50}')",
+      "Bash(curl -s -w ' [%{http_code}]\\\\n' -X POST __TRACKED_VAR__/promos?shop=pos -H 'content-type: application/json' -d '{\"id\":\"p2\",\"name\":\"โค้ดลด 30 บาท\",\"kind\":\"fixed\",\"value\":30,\"code\":\"save30\",\"quotaPerUser\":1}')",
+      "Bash(curl -s -w ' [%{http_code}]\\\\n' -X POST __TRACKED_VAR__/promos?shop=pos -H 'content-type: application/json' -d '{\"id\":\"p3\",\"name\":\"ส่งฟรี เมื่อครบ 100\",\"kind\":\"freeDelivery\",\"minSpend\":100,\"channels\":[\"delivery\"]}')",
+      "Bash(npx --yes @babel/cli@7 --presets @babel/preset-react kaidee-merchant2.jsx -o /dev/null)",
+      "Bash(npx --yes @babel/cli@7 --presets @babel/preset-react kaidee-api.jsx -o /dev/null)",
+      "Bash(npx --yes --package @babel/core@7 --package @babel/cli@7 --package @babel/preset-react@7 babel --presets @babel/preset-react kaidee-merchant2.jsx -o /dev/null)",
+      "Bash(npx --yes --package @babel/core@7 --package @babel/cli@7 --package @babel/preset-react@7 babel --presets @babel/preset-react kaidee-api.jsx -o /dev/null)",
+      "Bash(curl -s -o /dev/null -X POST __TRACKED_VAR__/promos?shop=pos -H 'content-type: application/json' -d '{\"id\":\"p1\",\"name\":\"ลด 20% เมื่อครบ 200\",\"kind\":\"percent\",\"value\":20,\"minSpend\":200,\"maxDisc\":50,\"stackable\":false}')",
+      "Bash(curl -s -X POST __TRACKED_VAR__/orders?shop=pos -H 'content-type: application/json' -d '{\"items\":[[\"m1\",4]],\"channel\":\"line\",\"pay\":\"cash\",\"total\":60,\"memberDisc\":100,\"promoId\":\"p1\",\"lineUserId\":\"Utest9\"}')",
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uitest.js)",
+      "Bash(perl -0pi -e 's/    \\\\/\\\\/ ทำให้เครื่องนี้.*?\\\\n    localStorage\\\\.setItem\\\\\\('\\\\''kaidee_pos_v1'\\\\''.*?\\\\n//s' /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uitest.js)",
+      "Bash(awk 'NR>=3496 && NR<=3620 && /forEach/ {print NR\": \"$0}' kaidee-merchant2.jsx)",
+      "Bash(curl -s \"http://localhost:8787/orders?shop=pos\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const a=JSON.parse\\(d\\);const shapes={};a.forEach\\(o=>\\(o.items||[]\\).forEach\\(it=>{shapes[Array.isArray\\(it\\)?'array':typeof it]=\\(shapes[Array.isArray\\(it\\)?'array':typeof it]||0\\)+1;}\\)\\);console.log\\('ออเดอร์',a.length,'| รูปแบบ items:',shapes\\);const bad=a.find\\(o=>\\(o.items||[]\\).some\\(it=>!Array.isArray\\(it\\)\\)\\);if\\(bad\\)console.log\\('ตัวอย่างที่พัง:',bad.no,JSON.stringify\\(bad.items\\).slice\\(0,200\\)\\);}\\);\")",
+      "Bash(curl -s -X POST \"http://localhost:8787/orders?shop=pos\" -H 'content-type: application/json' -d '{\"items\":[{\"id\":\"m1\",\"name\":\"ผัดกะเพราหมู\",\"price\":50,\"qty\":2}],\"channel\":\"line\",\"pay\":\"cash\",\"total\":100}')",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{console.log\\('items ที่เก็บ:',JSON.stringify\\(JSON.parse\\(d\\).items\\)\\);}\\);\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const a=JSON.parse\\(d\\);const bad=a.filter\\(o=>\\(o.items||[]\\).some\\(it=>!Array.isArray\\(it\\)\\)\\);console.log\\('ออเดอร์ทั้งหมด',a.length,'| ที่ยังไม่ใช่ tuple:',bad.length\\);}\\);\")",
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uicust.js)",
+      "Bash(perl -0pi -e 's/const tap = async \\\\\\(sel\\\\\\) => \\\\{ const el = page\\\\.locator\\\\\\(sel\\\\\\)\\\\.first\\\\\\(\\\\\\); if \\\\\\(await el\\\\.count\\\\\\(\\\\\\)\\\\\\) \\\\{ await el\\\\.click\\\\\\(\\\\\\);/const tap = async \\(sel\\) => { const el = page.locator\\(sel\\).first\\(\\); if \\(await el.count\\(\\)\\) { try { await el.click\\({ timeout: 8000 }\\); } catch \\(e\\) { return false; }/' /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uicust.js)",
+      "Bash(curl -s -X PATCH \"http://localhost:8787/shops/pos\" -H 'content-type: application/json' -d '{\"open\":\"00:00\",\"close\":\"23:59\",\"isOpen\":true}')",
+      "Bash(perl -0pi -e 's/  const item = page\\\\.locator\\\\\\('\\\\''text=ผัดกะเพราหมู'\\\\''\\\\\\)\\\\.first\\\\\\(\\\\\\);\\\\n  if \\\\\\(await item\\\\.count\\\\\\(\\\\\\)\\\\\\) \\\\{ try \\\\{ await item\\\\.click\\\\\\(\\\\{ timeout: 5000 \\\\}\\\\\\); await page\\\\.waitForTimeout\\\\\\(1200\\\\\\); \\\\} catch \\\\\\(e\\\\\\) \\\\{\\\\} \\\\}/  const item = page.locator\\('\\\\''text=ผัดกะเพราหมู'\\\\''\\).first\\(\\);\\\\n  for \\(let k = 0; k < 4; k++\\) {\\\\n    if \\(await item.count\\(\\)\\) { try { await item.click\\({ timeout: 5000 }\\); await page.waitForTimeout\\(900\\); } catch \\(e\\) {} }\\\\n    const add = page.locator\\('\\\\''button:has-text\\(\"ใส่ตะกร้า\"\\)'\\\\''\\).first\\(\\);\\\\n    if \\(await add.count\\(\\)\\) { try { await add.click\\({ timeout: 4000 }\\); await page.waitForTimeout\\(900\\); } catch \\(e\\) {} }\\\\n  }/s' /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uicust.js)",
+      "Bash(node --check /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uicust.js)"
+    ],
+    "additionalDirectories": [
+      "/Users/oneday/Desktop/Done-KaiDee-POS/kaidee-pos-worker"
     ]
   }
 }
