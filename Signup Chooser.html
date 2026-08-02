@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--brand:#0E7C4E;--brand-2:#12945C;--brand-soft:#E7F1EA;--brand-softer:#F3F8F5;--gold:#F4900C;--gold-soft:#FEF1E2;--blue:#1a56db;--blue-soft:#E8EEFB;--purple:#7C5CE0;--purple-soft:#EFEBFC;--dark:#1f2a24;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#e3e9e5;--hair-2:#cfd8d3;--bg:#F6F8F7;--red:#C0392B;--red-soft:#FBECEA}
+:root{--brand:#26619C;--brand-2:#1F4F86;--brand-soft:#E8EFF7;--brand-softer:#F3F7FB;--gold:#F4900C;--gold-soft:#FEF1E2;--blue:#1a56db;--blue-soft:#E8EEFB;--purple:#7C5CE0;--purple-soft:#EFEBFC;--dark:#1f2a24;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;--line:#e3e9e5;--hair-2:#cfd8d3;--bg:#F6F8F7;--red:#C0392B;--red-soft:#FBECEA}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 #app{max-width:560px;margin:0 auto;min-height:100%;background:var(--bg);display:flex;flex-direction:column}
 .hd{color:#fff;padding:calc(20px + env(safe-area-inset-top)) 20px 22px;border-radius:0 0 22px 22px;position:relative}
-.hd.g{background:linear-gradient(135deg,#0E7C4E,#12945C)}.hd.gold{background:linear-gradient(135deg,#F4900C,#e08108)}
-.hd.dark{background:linear-gradient(135deg,#25332c,#1f2a24)}.hd.brand{background:linear-gradient(135deg,#0E7C4E,#0a6440)}
+.hd.g{background:linear-gradient(135deg,#1F4F86,#26619C)}.hd.gold{background:linear-gradient(135deg,#F4900C,#e08108)}
+.hd.dark{background:linear-gradient(135deg,#25332c,#1f2a24)}.hd.brand{background:linear-gradient(135deg,#1F4F86,#173C66)}
 .hd.blue{background:linear-gradient(135deg,#1a56db,#1741a8)}
 .hd h1{margin:0;font-size:23px;font-weight:700}
 .hd p{margin:5px 0 0;font-size:13px;opacity:.9;line-height:1.55}
@@ -61,18 +61,34 @@ a,a:link{color:var(--brand)}a:hover{color:var(--brand-2)}
 
   <!-- เลือกระบบ -->
   <section class="view on" id="v-main">
-    <div class="hd g"><h1>สมัครใช้งาน</h1><p>เลือกระบบที่ตรงกับธุรกิจของคุณ — กดแล้วเข้าใช้งานได้ทันที</p></div>
+    <div class="hd g"><h1>สมัครใช้งาน :Done KaiDee</h1><p>เลือกว่า “คุณเป็นใคร” — ระบบจะเปิดเฉพาะส่วนที่คุณต้องใช้ ไม่ต้องตั้งค่าอะไรเพิ่ม</p></div>
     <div class="bd">
-      <div class="lbl">เลือก 1 ระบบ</div>
-      <button class="opt" onclick="openPos()"><div class="ic i-shop">🏪</div><div class="tx"><div class="t">ระบบร้านค้า</div><div class="s">ขายหน้าร้าน · รับออเดอร์ · ดูยอด (POS)</div></div><span class="chev">›</span></button>
-      <button class="opt" onclick="goApp('Fitness POS.html?signup=1')"><div class="ic i-fit">🏋️</div><div class="tx"><div class="t">ระบบฟิตเนส</div><div class="s">สมาชิก · คลาส · เทรนเนอร์ · เช็คอิน</div></div><span class="chev">›</span></button>
-      <button class="opt" onclick="go('v-market')"><div class="ic i-mkt">🏬</div><div class="tx"><div class="t">ระบบตลาด</div><div class="s">เช่าแผง · บิลค่าเช่า–น้ำไฟ · จับยอดอัตโนมัติ</div></div><span class="chev">›</span></button>
-      <button class="opt" onclick="go('v-win')"><div class="ic i-win">🎽</div><div class="tx"><div class="t">ระบบวิน (แรงงาน)</div><div class="s">เรียก–รับงานในตลาด · งานนอก · หัวคิว</div></div><span class="chev">›</span></button>
-      <div class="lbl">อยากรับงาน / หารายได้</div>
+      <div class="lbl">ฉันเป็น…</div>
+      <button class="opt" onclick="go('v-shoptype')"><div class="ic i-shop">🏪</div><div class="tx"><div class="t">ร้านค้า / แม่ค้า</div><div class="s">ขายของ คิดเงิน รับออเดอร์ ดูยอด–กำไร · ร้านอาหาร คาเฟ่ ของหวาน ของชำ ฟิตเนส และอื่น ๆ</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-market')"><div class="ic i-mkt">🏬</div><div class="tx"><div class="t">ตลาด / เจ้าของแผง</div><div class="s">ผังแผง เก็บค่าเช่า–น้ำไฟ ออกบิล · หรือเป็นผู้เช่าแผงที่อยากดูบิลและจ่ายเงิน</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-win')"><div class="ic i-win">🎽</div><div class="tx"><div class="t">จ้างแรงงาน / รับงานในตลาด</div><div class="s">แม่ค้าเรียกคนมาช่วยยกของ–ขายของ · แรงงานรับงาน · หัวหน้าวินคุมคิว</div></div><span class="chev">›</span></button>
+
+      <div class="lbl">รับงานส่ง / ลงโฆษณา</div>
       <button class="opt" onclick="goApp('Rider Signup.html')"><div class="ic i-worker">🛵</div><div class="tx"><div class="t">สมัครไรเดอร์แพลตฟอร์ม</div><div class="s">รับงานส่งจากร้านบน :Done KaiDee · ไม่สังกัดวิน ไม่หักค่าคอม</div></div><span class="chev">›</span></button>
-      <div class="lbl">อยากขายของ/โฆษณาในแพลตฟอร์ม</div>
-      <button class="opt" onclick="go('v-sponsor')"><div class="ic i-fit">📣</div><div class="tx"><div class="t">เป็นร้านสปอนเซอร์</div><div class="s">ลงร้านให้ทุกโมดูลเห็น · แพ็กรายเดือน ไม่มีหัก GP</div></div><span class="chev">›</span></button>
-      <div class="foot">เพิ่ม/เปลี่ยนระบบภายหลังได้ในแอป · ทุกปุ่มเปิดแอปจริงในหน้าต่างเดิม</div>
+      <button class="opt" onclick="go('v-sponsor')"><div class="ic i-fit">📣</div><div class="tx"><div class="t">ร้านสปอนเซอร์</div><div class="s">ลงร้าน/โฆษณาให้ผู้ใช้ทุกระบบเห็น · จ่ายรายเดือน ไม่หัก GP</div></div><span class="chev">›</span></button>
+
+      <div class="note" style="margin-top:12px">ทดลองฟรี 15 วัน · ไม่ต้องผูกบัตร · เปลี่ยน/เพิ่มระบบทีหลังได้ในแอป</div>
+      <div class="foot">มีร้านอยู่แล้ว? <a href="index.html">เข้าใช้งานร้านของคุณ</a></div>
+    </div>
+  </section>
+
+  <!-- ร้านค้า: เลือกประเภทร้าน (เมนูตั้งต้นจะถูกใส่ให้ตามประเภทที่เลือก) -->
+  <section class="view" id="v-shoptype">
+    <div class="hd g has-back"><button class="back" onclick="go('v-main')">←</button><h1>ร้านคุณขายอะไร</h1><p>เลือกประเภทให้ใกล้เคียงที่สุด ระบบจะใส่ <b>เมนู/สินค้าตั้งต้น</b> ของประเภทนั้นให้เลย แก้ทีหลังได้ทั้งหมด</p></div>
+    <div class="bd">
+      <button class="opt" onclick="goApp('index.html?go=signup&sys=pos&type=food')"><div class="ic i-shop">🍜</div><div class="tx"><div class="t">ร้านอาหาร / ตามสั่ง</div><div class="s">ได้เมนูตั้งต้น: ข้าวกะเพรา · ข้าวผัด · ข้าวไข่เจียว</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('index.html?go=signup&sys=pos&type=cafe')"><div class="ic i-shop">☕</div><div class="tx"><div class="t">คาเฟ่ / เครื่องดื่ม</div><div class="s">ได้เมนูตั้งต้น: อเมริกาโน่ · ลาเต้ · ชาไทย · ชานมไข่มุก</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('index.html?go=signup&sys=pos&type=noodle')"><div class="ic i-shop">🍲</div><div class="tx"><div class="t">ก๋วยเตี๋ยว / เส้น</div><div class="s">ได้เมนูตั้งต้น: ต้มยำ · น้ำใส · เย็นตาโฟ · บะหมี่แห้ง</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('index.html?go=signup&sys=pos&type=sweet')"><div class="ic i-shop">🍰</div><div class="tx"><div class="t">ของหวาน / เบเกอรี</div><div class="s">ได้เมนูตั้งต้น: ข้าวเหนียวมะม่วง · บัวลอย · น้ำแข็งไส</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="goApp('index.html?go=signup&sys=pos&type=other')"><div class="ic i-shop">🛒</div><div class="tx"><div class="t">ร้านขายของทั่วไป / อื่น ๆ</div><div class="s">ของชำ เสื้อผ้า บริการ — พิมพ์ประเภทเองได้ในขั้นถัดไป</div></div><span class="chev">›</span></button>
+      <div class="lbl">ธุรกิจที่ใช้ระบบเฉพาะทาง</div>
+      <button class="opt" onclick="goApp('Fitness POS.html?signup=1')"><div class="ic i-fit">🏋️</div><div class="tx"><div class="t">ฟิตเนส / สตูดิโอ</div><div class="s">สมาชิก–ต่ออายุ · เช็คอิน · คลาส · เทรนเนอร์ (คนละชุดกับร้านอาหาร)</div></div><span class="chev">›</span></button>
+      <div class="foot">ยังไม่แน่ใจ? เลือก “ร้านขายของทั่วไป” ไปก่อนได้ เปลี่ยนประเภทและแก้เมนูทีหลังได้ตลอด</div>
     </div>
   </section>
 
@@ -103,12 +119,12 @@ a,a:link{color:var(--brand)}a:hover{color:var(--brand-2)}
 
   <!-- วิน: เลือกบทบาท -->
   <section class="view" id="v-win">
-    <div class="hd blue has-back"><button class="back" onclick="go('v-main')">←</button><h1>ระบบวิน (แรงงาน)</h1><p>คุณเข้าใช้ในฐานะใคร?</p></div>
+    <div class="hd blue has-back"><button class="back" onclick="go('v-main')">←</button><h1>จ้างแรงงาน / รับงานในตลาด</h1><p>เลือกฝั่งของคุณ — แม่ค้าคือคน “เรียกงาน” · แรงงานคือคน “รับงาน”</p></div>
     <div class="bd">
       <div class="lbl">เลือกบทบาท</div>
-      <button class="opt" onclick="go('v-stall')"><div class="ic i-stall">🏪</div><div class="tx"><div class="t">ร้าน / แผงตลาด (ผู้จ้าง)</div><div class="s">เรียกแรงงานในตลาด/งานนอก · ทีมประจำ</div></div><span class="chev">›</span></button>
-      <button class="opt" onclick="go('v-worker')"><div class="ic i-worker">👷</div><div class="tx"><div class="t">แรงงาน</div><div class="s">2 สวิตช์ งานตลาด/งานนอก · รับเงินสด</div></div><span class="chev">›</span></button>
-      <button class="opt" onclick="go('v-lead')"><div class="ic i-lead">🎽</div><div class="tx"><div class="t">หัวหน้าวิน</div><div class="s">คุมคิว · จัดคน · GP วิน · เบิกล่วงหน้า</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-stall')"><div class="ic i-stall">🏪</div><div class="tx"><div class="t">ฉันเป็นแม่ค้า / ร้านในตลาด</div><div class="s">พาร้านเข้าระบบเพื่อเรียกคนมาช่วยยกของ–ขายของ–ล้างจาน · จ่ายเป็นรายครั้ง ไม่ต้องจ้างประจำ</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-worker')"><div class="ic i-worker">👷</div><div class="tx"><div class="t">ฉันเป็นแรงงาน — อยากรับงาน</div><div class="s">เปิด/ปิดรับงานเอง · รับเงินสดจบเป็นครั้ง · ไทย/พม่า/เขมร</div></div><span class="chev">›</span></button>
+      <button class="opt" onclick="go('v-lead')"><div class="ic i-lead">🎽</div><div class="tx"><div class="t">ฉันเป็นหัวหน้าวิน/หัวคิว</div><div class="s">คุมคิวคน จัดตารางงาน ดูรายได้วิน อนุมัติเบิกล่วงหน้า</div></div><span class="chev">›</span></button>
       <button class="opt" onclick="goApp('Labor Win App v2.html?role=market')"><div class="ic i-mkt">🏬</div><div class="tx"><div class="t">เจ้าของตลาด (เคลมทะเบียน)</div><div class="s">ตลาดไม่ต้องสมัครก่อน · เข้ามาเคลมพื้นที่ทีหลัง</div></div><span class="chev">›</span></button>
       <div class="foot">แม่ค้า/แรงงาน/หัวคิว เริ่มใช้ได้เลยแม้ตลาดยังไม่สมัคร</div>
     </div>

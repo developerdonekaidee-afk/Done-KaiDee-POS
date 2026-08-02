@@ -52,9 +52,18 @@ function crmFileToLogo(file){
 /* ══ แพ็กเกจ: จุดขายต่อ tier (เติมให้ข้อมูลจาก backend ที่อาจไม่มี tagline/feats) ══ */
 const PKG_TIER_FEATS = {
   starter: { tagline:'ขายหน้าร้าน + ลูกค้าสั่งเอง', feats:['คิดเงิน + เปิดบิลหน้าร้าน','ลูกค้าสั่งเองผ่านมือถือ','สต๊อก + สรุปยอด–กำไร'] },
-  shop:    { tagline:'หลายเครื่อง + เดลิเวอรี', feats:['ทุกอย่างในแพ็กเริ่มต้น','เดลิเวอรี Grab / LINE MAN / Shopee','กระทบยอดเดลิเวอรีอัตโนมัติ'] },
+  shop:    { tagline:'ขายหน้าร้าน + เดลิเวอรี', feats:['ทุกอย่างในแพ็กเริ่มต้น','บันทึกการขายเดลิเวอรี เช่น Grab / LINE MAN / Shopee','กระทบยอดเดลิเวอรีอัตโนมัติ'] },
   pro:     { tagline:'Backoffice + หลายสาขา', feats:['ทุกอย่างในแพ็กร้านค้า','Backoffice บนจอคอม','รองรับหลายสาขา'] },
 };
+// จำนวนเครื่องมาจากแพ็กจริงบนเซิร์ฟเวอร์ — คำโปรยต้องไม่พูดว่า "หลายเครื่อง" ถ้าแพ็กนั้นให้เครื่องเดียว
+function crmTierTagline(pk){
+  const meta = PKG_TIER_FEATS[pk.id] || {};
+  const seats = Number(pk.seats || 1);
+  const base = meta.tagline || '';
+  if (seats > 1 && !/หลายเครื่อง|หลายสาขา/.test(base)) return 'ใช้ได้ ' + seats + ' เครื่อง' + (base ? ' · ' + base : '');
+  if (seats <= 1) return base.replace(/^หลายเครื่อง \+ /, '').replace(/หลายเครื่อง/, 'ขายหน้าร้าน');
+  return base;
+}
 const PKG_FALLBACK = { trialDays:30, earlyBird:true,
   addon:{ consign:{ name:'ขายฝาก', monthly:129 } },
   packages:[
@@ -224,7 +233,7 @@ function CrmLanding({ onSignup, onCancel, onEnter }){
               <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',gap:8}}>
                 <div>
                   <div style={{fontWeight:700,fontSize:15,color:best?'var(--brand-ink)':'var(--ink)'}}>{pk.name}</div>
-                  <div style={{fontSize:12,color:'var(--ink-3)',marginTop:1}}>{meta.tagline||''}</div>
+                  <div style={{fontSize:12,color:'var(--ink-3)',marginTop:1}}>{crmTierTagline(pk)}</div>
                 </div>
                 <div style={{textAlign:'right',flex:'0 0 auto'}}>
                   <div style={{fontSize:22,fontWeight:700,lineHeight:1}}>฿{Number(pk.monthly||0).toLocaleString('th-TH')}<span style={{fontSize:12,color:'var(--ink-3)',fontWeight:500}}>/ด.</span></div>
@@ -536,9 +545,12 @@ function CrmLaborRole({ onPick, onBack }){
 
 /* ══ CRM FLOW (mount ในแอป) ══ */
 function CrmApp({ store, onEnter, onCancel }){
-  const [step,setStep] = cState('landing');   // landing | vertical | signup | chooser | success
+  const _typeParam = (()=>{ try{ return new URLSearchParams(location.search).get('type')||''; }catch(e){ return ''; } })();
+  const _typeVert = _typeParam ? CRM_VERTICALS.find(v=>v.id===_typeParam) : null;
+  // มาจากหน้า "ร้านคุณขายอะไร" แล้ว → ไม่ต้องถามประเภทซ้ำ เข้ากรอกข้อมูลร้านได้เลย (เมนูตั้งต้นตามประเภทที่เลือก)
+  const [step,setStep] = cState(_typeVert ? 'signup' : 'landing');   // landing | vertical | signup | chooser | success
   const [shop,setShop] = cState(null);
-  const [vert,setVert] = cState(null);         // ประเภทธุรกิจที่เลือก (Step 0)
+  const [vert,setVert] = cState(_typeVert || null);   // ประเภทธุรกิจที่เลือก (Step 0 · หรือมาจาก ?type=)
   const [laborRole,setLaborRole] = cState(null); // บทบาทที่เลือกในระบบวิน (lead/shop/worker)
   const [pending,setPending] = cState(null);   // ข้อมูลสมัครรอเลือกโมดูล (เฟรม 4) ก่อน finish
   // ร้านที่สมัครแล้ว ไม่ต้องเห็นหน้าสมัคร/ปุ่มสมัครใหม่ → เด้งเข้าร้านเลย
