@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260802a"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260802a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ไรเดอร์ · :Done KaiDee</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#26619C;--brand-2:#1F4F86;--brand-soft:#E8EFF7;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;
+  --line:#dde5e0;--ok:#12945C;--ok-soft:#E6F6EC;--warn:#F4900C;--warn-soft:#FEF1E2;--red:#C0392B;--font:"IBM Plex Sans Thai",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#F3F6F4;color:var(--ink);font-family:var(--font);min-height:100dvh}
+.wrap{max-width:520px;margin:0 auto;min-height:100dvh;background:#F3F6F4;display:flex;flex-direction:column}
+.hd{background:linear-gradient(152deg,var(--brand-2),var(--brand));color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 16px}
+.hd .top{display:flex;align-items:center;gap:12px}
+.hd h1{font-size:18px;font-weight:800;flex:1}
+.hd .sub{font-size:12.5px;opacity:.9;margin-top:3px}
+.sw{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.16);border-radius:14px;padding:12px 14px;margin-top:14px}
+.sw b{flex:1;font-size:14.5px}
+.knob{width:52px;height:30px;border-radius:100px;background:rgba(255,255,255,.32);position:relative;flex:0 0 auto;cursor:pointer;transition:.15s;border:none}
+.knob.on{background:#5FE0A0}
+.knob:after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.knob.on:after{left:25px}
+.bd{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border-radius:16px;padding:14px 15px;box-shadow:0 2px 10px rgba(20,40,32,.07)}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.f{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-family:inherit;font-size:16px;background:#fff}
+.btn{width:100%;border:none;border-radius:13px;padding:15px;font-family:inherit;font-size:15.5px;font-weight:800;color:#fff;background:var(--brand);cursor:pointer}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ok{background:var(--ok)}.btn.warn{background:var(--warn)}
+.btn.ghost{background:#fff;color:var(--ink-2);border:1.5px solid var(--line)}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.job{background:#fff;border-radius:16px;padding:14px 15px;box-shadow:0 2px 10px rgba(20,40,32,.07);display:flex;flex-direction:column;gap:9px;border-left:4px solid var(--brand)}
+.job .t{display:flex;align-items:flex-start;gap:10px}
+.job .t b{font-size:15.5px;font-weight:800;flex:1}
+.pay{font-size:19px;font-weight:800;color:var(--ok);white-space:nowrap}
+.leg{display:flex;gap:11px}
+.leg .dots{display:flex;flex-direction:column;align-items:center;padding-top:5px}
+.leg .dot{width:10px;height:10px;border-radius:999px;background:var(--brand);flex:0 0 auto}
+.leg .dot.end{background:var(--red)}
+.leg .bar{width:2px;flex:1;min-height:20px;background:var(--line);margin:3px 0}
+.leg .tx{flex:1;min-width:0;font-size:13px}
+.leg .tx .k{font-size:11px;color:var(--ink-3)}
+.leg .tx .v{font-weight:600;line-height:1.35}
+.tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.warn{background:var(--warn-soft);color:#8A6100}
+.empty{text-align:center;color:var(--ink-3);font-size:13.5px;padding:34px 18px;line-height:1.6}
+.stat{display:flex;gap:10px}
+.stat .c{flex:1;background:#fff;border-radius:14px;padding:12px;text-align:center;box-shadow:0 2px 10px rgba(20,40,32,.07)}
+.stat .c small{display:block;font-size:11px;color:var(--ink-3)}
+.stat .c b{font-size:19px}
+.tabs{display:flex;background:#fff;border-top:1px solid var(--line);padding:7px 6px calc(7px + env(safe-area-inset-bottom))}
+.tabs button{flex:1;border:none;background:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;color:var(--ink-3);font-size:11px;font-weight:700}
+.tabs button .e{font-size:20px;line-height:1}
+.tabs button.on{color:var(--brand)}
+.note{background:var(--brand-soft);color:var(--brand-2);border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.55}
+.err{color:var(--red);font-size:13px;font-weight:600}
+a.plain{color:inherit;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd" id="hd"></div>
+  <div class="bd" id="bd"></div>
+  <div class="tabs" id="tabs"></div>
+</div>
+<script>
+/* แอปไรเดอร์แพลตฟอร์ม :Done KaiDee — คนละระบบกับวิน (Labor Win)
+   งานส่งเก็บใน platform-worker region 'delivery' แยกจาก pool ของวินคนละชุด
+   เข้าใช้งานได้เฉพาะไรเดอร์ที่ใบสมัครผ่านการตรวจแล้ว (สถานะ approved) */
+var API = (function(){ try{ return (localStorage.getItem('kd_plat_base')||'').trim().replace(/\/$/,'') || 'https://platform.oneday-pos.workers.dev'; }catch(e){ return 'https://platform.oneday-pos.workers.dev'; } })();
+var REGION = 'delivery';
+var LS = 'kd_rider_me_v1';
+
+var S = { me:null, tab:'jobs', online:false, loc:null, jobs:[], mine:null, hist:[], busy:'', err:'', phone:'', pending:null, loading:false };
+try{ S.me = JSON.parse(localStorage.getItem(LS)||'null'); }catch(e){}
+try{ S.online = localStorage.getItem('kd_rider_online')==='1'; }catch(e){}
+
+function h(tag, attrs, kids){
+  var el = document.createElement(tag);
+  for (var k in (attrs||{})){
+    if (k === 'class') el.className = attrs[k];
+    else if (k.slice(0,2) === 'on') el.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+  }
+  (kids||[]).forEach(function(c){ if (c==null||c===false) return; el.appendChild(typeof c === 'object' ? c : document.createTextNode(String(c))); });
+  return el;
+}
+function baht(n){ return '฿' + Number(n||0).toLocaleString('en-US'); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S.me)); }catch(e){} }
+
+/* ── เข้าใช้งานด้วยเบอร์ที่สมัครไว้ ── */
+function signIn(){
+  var p = String(S.phone||'').replace(/\D/g,'');
+  if (p.length < 9){ S.err='ใส่เบอร์ให้ครบ'; return render(); }
+  S.loading = true; S.err=''; render();
+  fetch(API+'/riders/status?phone='+encodeURIComponent(p)).then(function(r){ return r.json(); }).then(function(j){
+    S.loading = false;
+    if (!j.found){ S.err='ไม่พบใบสมัครของเบอร์นี้ — สมัครก่อนได้ที่ปุ่มด้านล่าง'; return render(); }
+    if (j.status !== 'approved'){ S.pending = j; return render(); }
+    S.me = { id:j.id, name:j.name, phone:p }; save(); S.pending=null; render(); refresh();
+  }).catch(function(){ S.loading=false; S.err='เชื่อมต่อไม่ได้ — เช็คอินเทอร์เน็ต'; render(); });
+}
+function signOut(){ S.me=null; S.online=false; try{ localStorage.removeItem(LS); localStorage.setItem('kd_rider_online','0'); }catch(e){} render(); }
+
+/* ── ออนไลน์ = ปักหมุดตำแหน่งให้ระบบเห็นว่าว่างรับงาน ── */
+function locate(cb){
+  if (!navigator.geolocation){ cb(null); return; }
+  navigator.geolocation.getCurrentPosition(
+    function(p){ cb({ lat:+p.coords.latitude.toFixed(6), lng:+p.coords.longitude.toFixed(6) }); },
+    function(){ cb(null); }, { enableHighAccuracy:true, timeout:8000, maximumAge:30000 });
+}
+function setOnline(on){
+  S.online = on; try{ localStorage.setItem('kd_rider_online', on?'1':'0'); }catch(e){}
+  render();
+  if (!on) return ping(false);
+  locate(function(l){ S.loc = l || S.loc; render(); ping(true); refresh(); });
+}
+function ping(avail){
+  if (!S.me) return;
+  fetch(API+'/pool/worker?region='+REGION, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({
+    id:S.me.id, name:S.me.name, phone:S.me.phone, available:!!avail,
+    lat:S.loc&&S.loc.lat, lng:S.loc&&S.loc.lng, skills:['delivery'] })}).catch(function(){});
+}
+
+/* ── งาน ── */
+function refresh(){
+  if (!S.me) return;
+  var q = '?region='+REGION+'&status=all&limit=200';
+  if (S.loc) q += '&lat='+S.loc.lat+'&lng='+S.loc.lng+'&radius=25';
+  fetch(API+'/pool/jobs/near'+q).then(function(r){ return r.json(); }).then(function(j){
+    var all = (j && j.jobs) || [];
+    S.mine = all.filter(function(x){ return x.worker===S.me.id && x.status!=='done' && x.status!=='cancelled'; })[0] || null;
+    S.jobs = all.filter(function(x){ return (x.status||'open')==='open'; });
+    S.hist = all.filter(function(x){ return x.worker===S.me.id && x.status==='done'; });
+    render();
+  }).catch(function(){});
+}
+function patchJob(id, patch, then){
+  S.busy = id; render();
+  fetch(API+'/pool/job/'+id+'?region='+REGION, { method:'PATCH', headers:{'content-type':'application/json'}, body: JSON.stringify(patch) })
+    .then(function(){ S.busy=''; refresh(); if (then) then(); })
+    .catch(function(){ S.busy=''; S.err='ทำรายการไม่สำเร็จ ลองใหม่'; render(); });
+}
+var take     = function(j){ patchJob(j.id, { status:'accepted', worker:S.me.id, workerName:S.me.name, workerPhone:S.me.phone, acceptedAt:Date.now() }); };
+var picked   = function(j){ patchJob(j.id, { status:'picked', pickedAt:Date.now() }); };
+var done     = function(j){ patchJob(j.id, { status:'done', doneAt:Date.now() }); };
+var release  = function(j){ if (confirm('ปล่อยงานนี้ให้คนอื่นรับแทน?')) patchJob(j.id, { status:'open', worker:null, workerName:null }); };
+
+function navUrl(lat,lng,label){
+  if (lat==null||lng==null) return null;
+  return 'https://www.google.com/maps/dir/?api=1&destination='+lat+','+lng+(label?('&destination_place_id='):'');
+}
+
+/* ── หน้าจอ ── */
+function jobCard(j, active){
+  var dist = (j.distKm!=null) ? (j.distKm+' กม.') : null;
+  return h('div',{class:'job'},[
+    h('div',{class:'t'},[
+      h('b',{},[j.title || 'งานส่งอาหาร']),
+      h('span',{class:'pay'},[baht(j.pay)]),
+    ]),
+    h('div',{class:'leg'},[
+      h('div',{class:'dots'},[ h('span',{class:'dot'}), h('span',{class:'bar'}), h('span',{class:'dot end'}) ]),
+      h('div',{class:'tx'},[
+        h('div',{style:'margin-bottom:9px'},[ h('div',{class:'k'},['รับที่ร้าน']), h('div',{class:'v'},[j.shopName||'—']), j.shopAddr?h('div',{class:'k'},[j.shopAddr]):null ]),
+        h('div',{},[ h('div',{class:'k'},['ส่งที่']), h('div',{class:'v'},[j.note||j.addr||'—']) ]),
+      ]),
+    ]),
+    h('div',{style:'display:flex;gap:7px;flex-wrap:wrap;align-items:center'},[
+      dist ? h('span',{class:'tag ok'},['📍 '+dist]) : null,
+      j.marketId ? h('span',{class:'tag'},[j.marketId]) : null,
+      j.cod ? h('span',{class:'tag warn'},['เก็บเงินปลายทาง '+baht(j.codAmount||j.total||0)]) : h('span',{class:'tag ok'},['ลูกค้าจ่ายร้านแล้ว']),
+    ]),
+    active ? null : h('button',{class:'btn',disabled:S.busy===j.id,onclick:function(){ take(j); }},[S.busy===j.id?'กำลังรับ…':'รับงานนี้']),
+  ]);
+}
+
+function viewJobs(){
+  if (S.mine){
+    var j = S.mine, ph = j.custPhone || j.phone;
+    return [
+      h('div',{class:'note'},['งานที่กำลังทำ — ทำให้จบก่อนถึงจะรับงานใหม่ได้']),
+      jobCard(j, true),
+      h('div',{class:'row'},[
+        ph ? h('a',{class:'plain',href:'tel:'+ph,style:'flex:1'},[h('button',{class:'btn ghost'},['📞 โทรลูกค้า'])]) : null,
+        (j.lat!=null) ? h('a',{class:'plain',href:navUrl(j.lat,j.lng),target:'_blank',rel:'noopener',style:'flex:1'},[h('button',{class:'btn ghost'},['🗺️ นำทาง'])]) : null,
+      ]),
+      j.status==='accepted'
+        ? h('button',{class:'btn warn',disabled:S.busy===j.id,onclick:function(){ picked(j); }},['ถึงร้านแล้ว · รับของ'])
+        : h('button',{class:'btn ok',disabled:S.busy===j.id,onclick:function(){ done(j); }},['ส่งสำเร็จ · จบงาน']),
+      h('button',{class:'btn ghost',onclick:function(){ release(j); }},['ปล่อยงานนี้']),
+    ];
+  }
+  if (!S.online) return [ h('div',{class:'empty'},['ปิดรับงานอยู่','',h('br'),'เปิดสวิตช์ด้านบนเพื่อดูงานรอบตัวคุณ']) ];
+  if (!S.jobs.length) return [
+    h('div',{class:'empty'},['ยังไม่มีงานรอบตัวตอนนี้', h('br'), 'ระบบจะแสดงงานใหม่ให้อัตโนมัติ ไม่ต้องรีเฟรช']),
+    h('button',{class:'btn ghost',onclick:refresh},['เช็คอีกครั้ง']),
+  ];
+  return [ h('div',{class:'lbl'},[S.jobs.length+' งานรอบตัวคุณ']) ].concat(S.jobs.map(function(j){ return jobCard(j,false); }));
+}
+
+function viewEarn(){
+  var today = new Date(); today.setHours(0,0,0,0);
+  var td = S.hist.filter(function(j){ return (j.doneAt||0) >= today.getTime(); });
+  var sum = function(a){ return a.reduce(function(x,j){ return x + (+j.pay||0); },0); };
+  return [
+    h('div',{class:'stat'},[
+      h('div',{class:'c'},[h('small',{},['วันนี้']), h('b',{style:'color:var(--ok)'},[baht(sum(td))])]),
+      h('div',{class:'c'},[h('small',{},['เที่ยววันนี้']), h('b',{},[String(td.length)])]),
+      h('div',{class:'c'},[h('small',{},['สะสมทั้งหมด']), h('b',{},[baht(sum(S.hist))])]),
+    ]),
+    h('div',{class:'note'},['ค่าส่งลูกค้าหรือร้านจ่ายให้คุณโดยตรงตอนจบงาน — แพลตฟอร์มไม่ถือเงินและไม่หักค่าคอมจากคุณ']),
+    h('div',{class:'lbl'},['ประวัติงานล่าสุด']),
+  ].concat(S.hist.length ? S.hist.slice(0,20).map(function(j){
+    return h('div',{class:'card',style:'display:flex;gap:10px;align-items:center'},[
+      h('span',{style:'font-size:20px'},['✅']),
+      h('div',{style:'flex:1;min-width:0'},[
+        h('div',{style:'font-weight:700;font-size:14px'},[j.shopName||'งานส่ง']),
+        h('div',{style:'font-size:11.5px;color:var(--ink-3)'},[j.doneAt? new Date(+j.doneAt).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '']),
+      ]),
+      h('b',{style:'color:var(--ok)'},[baht(j.pay)]),
+    ]);
+  }) : [ h('div',{class:'empty'},['ยังไม่มีงานที่ทำเสร็จ']) ]);
+}
+
+function viewMe(){
+  return [
+    h('div',{class:'card'},[
+      h('div',{style:'font-size:16px;font-weight:800'},[S.me.name]),
+      h('div',{style:'font-size:13px;color:var(--ink-3);margin-top:3px'},[S.me.phone + ' · อนุมัติแล้ว']),
+      h('div',{style:'font-size:12px;color:var(--ink-3);margin-top:6px'},['เลขที่ไรเดอร์: ' + String(S.me.id).toUpperCase()]),
+    ]),
+    h('div',{class:'note'},['ไรเดอร์ :Done KaiDee ไม่สังกัดวิน ไม่มีหัวคิว ไม่มีค่าสมัคร — ถ้ามีใครเรียกเก็บเงินค่าเข้าระบบ ไม่ใช่เรา']),
+    h('div',{class:'card'},[
+      h('div',{class:'lbl'},['ตำแหน่งล่าสุด']),
+      h('div',{style:'font-size:13px;margin-top:4px'},[S.loc ? (S.loc.lat+', '+S.loc.lng) : 'ยังไม่ได้แชร์พิกัด']),
+      h('button',{class:'btn ghost',style:'margin-top:10px',onclick:function(){ locate(function(l){ S.loc=l||S.loc; ping(S.online); render(); }); }},['📍 อัปเดตตำแหน่ง']),
+    ]),
+    h('button',{class:'btn ghost',onclick:signOut},['ออกจากระบบ']),
+  ];
+}
+
+function render(){
+  var hd = document.getElementById('hd'), bd = document.getElementById('bd'), tabs = document.getElementById('tabs');
+  hd.innerHTML=''; bd.innerHTML=''; tabs.innerHTML='';
+
+  /* ยังไม่ได้เข้าระบบ */
+  if (!S.me){
+    hd.appendChild(h('div',{class:'top'},[h('h1',{},['ไรเดอร์ :Done KaiDee'])]));
+    hd.appendChild(h('div',{class:'sub'},['เข้าใช้งานด้วยเบอร์ที่ใช้สมัคร']));
+    if (S.pending){
+      bd.appendChild(h('div',{class:'card'},[
+        h('div',{style:'font-size:34px;text-align:center'},[S.pending.status==='rejected'?'❌':'⏳']),
+        h('div',{style:'font-size:17px;font-weight:800;text-align:center;margin-top:8px'},[S.pending.status==='rejected'?'ใบสมัครไม่ผ่าน':'กำลังตรวจเอกสาร']),
+        h('p',{style:'font-size:13.5px;color:var(--ink-2);line-height:1.6;text-align:center;margin-top:8px'},[
+          S.pending.status==='rejected' ? (S.pending.note||'ติดต่อทีมงานเพื่อสอบถามเพิ่มเติม') : 'ทีมงานตรวจภายใน 1–3 วันทำการ แล้วจะโทรแจ้งผล' ]),
+        h('button',{class:'btn ghost',style:'margin-top:12px',onclick:function(){ S.pending=null; render(); }},['ย้อนกลับ']),
+      ]));
+      return;
+    }
+    var inp = h('input',{class:'f',type:'tel',inputmode:'tel',placeholder:'08x-xxx-xxxx',value:S.phone});
+    inp.addEventListener('input', function(){ S.phone = inp.value; });
+    inp.addEventListener('keydown', function(e){ if (e.key==='Enter') signIn(); });
+    bd.appendChild(h('div',{class:'card'},[
+      h('div',{class:'lbl'},['เบอร์โทรที่ใช้สมัคร']), inp,
+      S.err ? h('div',{class:'err',style:'margin-top:9px'},[S.err]) : null,
+      h('button',{class:'btn',style:'margin-top:12px',disabled:S.loading,onclick:signIn},[S.loading?'กำลังตรวจสอบ…':'เข้าใช้งาน']),
+    ]));
+    bd.appendChild(h('div',{class:'note'},['ยังไม่ได้สมัคร? สมัครฟรี ไม่มีค่าใช้จ่าย ใช้เวลาราว 5 นาที']));
+    bd.appendChild(h('a',{class:'plain',href:'Rider Signup.html'},[h('button',{class:'btn ghost'},['สมัครเป็นไรเดอร์'])]));
+    return;
+  }
+
+  /* หัวจอ + สวิตช์รับงาน */
+  hd.appendChild(h('div',{class:'top'},[ h('h1',{},['สวัสดี '+ (S.me.name||'ไรเดอร์')]) ]));
+  hd.appendChild(h('div',{class:'sub'},[S.online ? (S.loc?'กำลังรับงาน · อัปเดตตำแหน่งแล้ว':'กำลังรับงาน · ยังไม่ได้พิกัด') : 'ปิดรับงานอยู่']));
+  var knob = h('button',{class:'knob'+(S.online?' on':''),onclick:function(){ setOnline(!S.online); }});
+  hd.appendChild(h('div',{class:'sw'},[ h('b',{},[S.online?'🟢 เปิดรับงาน':'⚪ ปิดรับงาน']), knob ]));
+
+  (S.tab==='jobs' ? viewJobs() : S.tab==='earn' ? viewEarn() : viewMe()).forEach(function(n){ if(n) bd.appendChild(n); });
+
+  [['jobs','🧾','งาน'],['earn','💵','รายได้'],['me','👤','ฉัน']].forEach(function(t){
+    var b = h('button',{class:(S.tab===t[0]?'on':''),onclick:function(){ S.tab=t[0]; render(); }},[
+      h('span',{class:'e'},[t[1]]), t[2] ]);
+    tabs.appendChild(b);
+  });
+}
+
+render();
+if (S.me){ refresh(); if (S.online) locate(function(l){ S.loc=l||S.loc; ping(true); render(); }); }
+setInterval(function(){ if (S.me && S.online) refresh(); }, 12000);
+</script>
+</body>
+</html>

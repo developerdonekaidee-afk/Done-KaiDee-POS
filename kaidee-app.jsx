@@ -592,6 +592,7 @@ function KaiDeeApp(){
   if(typeof window!=='undefined'){
     window.__kdMenu = (typeof kdViaMarket==='function' && kdViaMarket() && typeof marketMenuView==='function') ? marketMenuView(menu) : menu;
     window.__kdPay = pay;
+    window.__kdShop = shop;   // ใช้เช็คสิทธิ์ราคาช่องทาง market + ข้อมูลร้านตอนเรียกไรเดอร์
   }
   const store = { menu, setMenu, cats, setCats, addCat, updateCat, deleteCat, chanCfg, setChanCfg, addSaleMode, toggleSaleMode, removeSaleMode, sales, addSale, settleSale, verifySale, unverifySale, patchSale, settlePlatform, addKitchenTicket, orders, setOrders, addOrder, patchOrder, nextQueue, pay, setPay, members, setMembers, staffList, addStaff, removeStaff, updateStaff, registerStaff, shop, setShop, sub, setSub,
     costMode, setCostMode, raw, setRaw, addRaw, updateRaw, deleteRaw, purchases, addPurchase, wastes, addWaste, deleteWaste,

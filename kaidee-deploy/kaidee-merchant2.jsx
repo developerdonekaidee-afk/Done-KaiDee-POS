@@ -129,9 +129,38 @@ function OrdersScreen({ orders, setOrders, patchOrder, patchSale, voidOrder:void
     </div>
   );
 }
-function OrderCard({ o, onAdvance, onPrint, onSave, onPin, onUp, onDown, onVoid, voidPin, payTiming, pay, voidApproval, canApproveVoid }){
+/* ประกาศงานส่งให้ไรเดอร์แพลตฟอร์ม (platform-worker · region delivery — แยกจาก pool ของระบบวิน) */
+const PLAT_BASE = (()=>{ try{ return (localStorage.getItem('kd_plat_base')||'').trim().replace(/\/$/,'') || 'https://platform.oneday-pos.workers.dev'; }catch(e){ return 'https://platform.oneday-pos.workers.dev'; } })();
+async function postRiderJob(o, shop){
+  const fee = Number(o.fee!=null ? o.fee : (o.deliveryFee||0)) || 0;
+  const body = {
+    id: 'ord-' + (o.id||Date.now()),
+    title: 'ส่งอาหาร · ' + ((shop&&shop.name)||'ร้าน'),
+    type: 'delivery',
+    shopName: (shop&&shop.name)||'', shopAddr: (shop&&shop.address)||'',
+    marketId: (shop&&shop.market)||null,
+    lat: o.lat!=null ? +o.lat : (shop&&shop.lat!=null ? +shop.lat : null),
+    lng: o.lng!=null ? +o.lng : (shop&&shop.lng!=null ? +shop.lng : null),
+    pay: fee, note: o.addr || '', custPhone: o.phone || '',
+    cod: !o.paid, codAmount: !o.paid ? Number(o.total||0) : 0, total: Number(o.total||0),
+    orderNo: o.no || null, status: 'open',
+  };
+  const r = await fetch(PLAT_BASE + '/pool/job?region=delivery', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('dispatch failed');
+  return (await r.json()).id;
+}
+
+function OrderCard({ o, onAdvance, onPrint, onSave, onPin, onUp, onDown, onVoid, voidPin, payTiming, pay, voidApproval, canApproveVoid, shop }){
   const { t, lang } = useT();
   const TH = lang==='th';
+  const [riderBusy,setRiderBusy] = m2State(false);
+  const callRider = async (ord, save)=>{
+    setRiderBusy(true);
+    const info = shop || (typeof window!=='undefined' && window.__kdShop) || {};
+    try{ const jid = await postRiderJob(ord, info); save && save({ riderJob: jid, riderJobAt: Date.now() }); }
+    catch(e){ alert(TH?'เรียกไรเดอร์ไม่สำเร็จ — เช็คอินเทอร์เน็ตแล้วลองใหม่':'Could not reach the rider pool'); }
+    setRiderBusy(false);
+  };
   const st = STATUS_LABEL[o.status];
   const ch = CHANNELS[o.channel]||{};
   const isPre = o.when && o.when!=='now' && !/เลย|ASAP/.test(o.when||'');
@@ -278,6 +307,11 @@ function OrderCard({ o, onAdvance, onPrint, onSave, onPin, onUp, onDown, onVoid,
             <button onClick={onPrint} title="print" className="kd-btn" style={{ padding:'9px 12px', background:'var(--brand-soft)', color:'var(--brand-ink)', fontSize:13 }}>{React.cloneElement(IC.receipt,{size:16})}</button>
             {canCancel && !pendingVoidReq && <button onClick={()=>setVoiding(v=>!v)} title={cancelMode==='void'?(TH?'ยกเลิกบิล · คืนเงิน':'Void · refund'):cancelMode==='reject'?(TH?'ไม่รับออเดอร์':'Decline'):(TH?'ยกเลิกออเดอร์':'Cancel order')} className="kd-btn" style={{ padding:'9px 13px', background: cancelMode==='void'?'#FCECE8':'#FFF3EC', color: cancelMode==='void'?'var(--danger)':'#B45309', fontSize:13, fontWeight:700, whiteSpace:'nowrap' }}>{React.cloneElement(IC.x,{size:14})} {cancelMode==='void'?(TH?'ยกเลิกบิล':'Void'):cancelMode==='reject'?(TH?'ไม่รับออเดอร์':'Decline'):(TH?'ยกเลิก':'Cancel')}</button>}
             {o.payLater && !o.paid && !isVoid && (payTiming!=='afterDone' || o.status==='done') && <button onClick={()=>setCollecting(v=>!v)} className="kd-btn" style={{ padding:'10px 14px', fontSize:14, whiteSpace:'nowrap', background:'#8A6100', color:'#fff', fontWeight:700 }}>{React.cloneElement(IC.wallet,{size:15})} {TH?'เก็บเงิน':'Collect'}</button>}
+            {/* เรียกไรเดอร์แพลตฟอร์ม — ประกาศงานส่งเข้าคิวไรเดอร์ (คนละระบบกับวิน) */}
+            {o.channel==='delivery' && !isVoid && o.status!=='done' && (o.riderJob
+              ? <span className="kd-btn" style={{ padding:'9px 13px', background:'var(--brand-soft)', color:'var(--brand-ink)', fontSize:12.5, fontWeight:700, whiteSpace:'nowrap' }}>🛵 {TH?'ประกาศหาไรเดอร์แล้ว':'Rider requested'}</span>
+              : <button onClick={()=>callRider(o, onSave)} disabled={riderBusy} className="kd-btn" style={{ padding:'10px 14px', fontSize:13.5, whiteSpace:'nowrap', background:'#2A3E52', color:'#fff', fontWeight:700 }}>
+                  🛵 {riderBusy?(TH?'กำลังเรียก…':'…'):(TH?'เรียกไรเดอร์':'Call rider')}</button>)}
             {o.status!=='done' && !isVoid && !lockAccept && !(payTiming!=='afterDone' && o.payLater && !o.paid && o.status==='ready') && <button onClick={onAdvance} className="kd-btn kd-btn-primary" style={{ padding:'10px 16px', fontSize:14, whiteSpace:'nowrap' }}>
               {o.status==='new'?(lang==='th'?'รับออเดอร์':'Accept')
                 : o.status==='cooking'?(lang==='th'?'ทำเสร็จ':'Ready')

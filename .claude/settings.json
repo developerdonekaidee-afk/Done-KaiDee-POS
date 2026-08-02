@@ -140,7 +140,14 @@
       "Bash(grep -n \"shop=\\\\${\\\\|role=customer\\\\|role=board\\\\|role=kds\\\\|role=rider\\\\|role=staff\" kaidee-home.jsx)",
       "Bash(sed -i '' \"s/await click\\('ร้านค้า'\\)/await click\\('ตั้งค่าร้าน'\\)/; s|/merchant-menu.png|/merchant-menu2.png|\" live-merchant.js)",
       "Bash(sed -i '' \"s/for\\(let i=0;i<10;i++\\)/for\\(let i=0;i<3;i++\\)/\" live-merchant.js)",
-      "Bash(node live-merchant.js)"
+      "Bash(node live-merchant.js)",
+      "Bash(curl -s -m 20 -w '\\\\n[%{http_code}]\\\\n' -X POST https://platform.oneday-pos.workers.dev/riders -H 'content-type: application/json' -d '{\"name\":\"ทดสอบ ระบบ\",\"phone\":\"0999999999\",\"vehicle\":\"moto\",\"plate\":\"ทส 9999\",\"area\":\"ตลาดสาธิต\",\"docs\":{\"natId\":\"data:image/gif;base64,R0lGODlhAQABAAAAACw=\"}}')",
+      "Bash(curl -s -m 20 https://platform.oneday-pos.workers.dev/riders/status?phone=0999999999)",
+      "Bash(curl -s -m 20 -o /dev/null -w '%{http_code}\\\\n' https://platform.oneday-pos.workers.dev/riders)",
+      "Bash(curl -s -m 20 \"https://kaidee-pos.oneday-pos.workers.dev/shops/directory\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{JSON.parse\\(d\\).forEach\\(s=>console.log\\(s.id,'|',s.name,'|',s.cat,'|',s.market\\)\\)}\\)\")",
+      "Bash(node backfill-menu.js)",
+      "Bash(sed -i '' 's|\\\\.jsx?v=p2-20260802b|.jsx?v=p2-20260802c|g' index.html kaidee-deploy/index.html)"
     ]
   }
 }

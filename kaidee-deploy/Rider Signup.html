@@ -239,6 +239,7 @@ function render(){
       h('h2',{},['ส่งใบสมัครแล้ว']),
       h('div',{class:'ref'},[String(S.ref).toUpperCase()]),
       h('p',{},['ทีมงานตรวจเอกสารภายใน 1–3 วันทำการ แล้วโทรแจ้งผลตามเบอร์ที่ให้ไว้ · เก็บเลขที่ใบสมัครไว้ใช้ตอนสอบถาม']),
+      h('a',{href:'Rider App.html',style:'width:100%;text-decoration:none'},[h('button',{class:'btn'},['เข้าแอปไรเดอร์'])]),
       h('button',{class:'link',onclick:checkStatus},['เช็คสถานะใบสมัครด้วยเบอร์โทร']),
     ].forEach(function(n){ bd.appendChild(n); });
     return;
