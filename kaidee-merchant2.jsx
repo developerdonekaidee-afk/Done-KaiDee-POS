@@ -29,11 +29,7 @@ function PayNotifyMode({ lang }){ const TH=lang==='th';
 
 /* ══════════════ ORDERS QUEUE ══════════════ */
 const FLOW = ['new','cooking','ready','delivering','done'];
-const STATUS_LABEL = {
-  new:{th:'ใหม่',en:'New',c:'var(--accent)'}, cooking:{th:'กำลังทำ',en:'Cooking',c:'#3B82C4'},
-  ready:{th:'พร้อมเสิร์ฟ',en:'Ready',c:'var(--brand)'}, delivering:{th:'กำลังส่ง',en:'Delivering',c:'#8257C4'},
-  done:{th:'เสร็จ',en:'Done',c:'var(--ink-3)'},
-};
+/* STATUS_LABEL ย้ายไป kaidee-data.jsx แล้ว — จอลูกค้าใช้ด้วยและไม่ได้โหลดไฟล์นี้ */
 function nextStatus(o){
   const i = FLOW.indexOf(o.status);
   let ni = i+1;
@@ -3491,4 +3487,4 @@ function ShopClosedGate({ store, onOpen }){
   );
 }
 
-Object.assign(window, { OrdersScreen, OrderCard, DashboardScreen, StoreScreen, ItemEditor, MerchantApp, LockedFeature, OwnerBlocked, DeviceLimitScreen, Empty, STATUS_LABEL, nextStatus, PaySettingsSheet, MembersSheet, Toggle, PAY_META, TIER, ShopProfileSheet, SubscriptionSheet, CostModeSheet, RiderTeamSheet, ShopTypeSheet, ModifiersEditor, StaleShiftGate });
+Object.assign(window, { OrdersScreen, OrderCard, DashboardScreen, StoreScreen, ItemEditor, MerchantApp, LockedFeature, OwnerBlocked, DeviceLimitScreen, Empty, nextStatus, PaySettingsSheet, MembersSheet, Toggle, PAY_META, TIER, ShopProfileSheet, SubscriptionSheet, CostModeSheet, RiderTeamSheet, ShopTypeSheet, ModifiersEditor, StaleShiftGate });

@@ -126,8 +126,8 @@
     </svg>
   </template>
 
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
   <!-- LINE LIFF SDK (exposes window.liff) -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -141,18 +141,31 @@
   <script type="text/babel" src="kaidee-license.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kaidee-api.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="ios-frame.jsx?v=p2-20260802c"></script>
-  <script type="text/babel" src="kaidee-data.jsx?v=p2-20260802c"></script>
+  <script type="text/babel" src="kaidee-data.jsx?v=p2-20260802f"></script>
   <script type="text/babel" src="kaidee-map.jsx?v=p2-20260802c"></script>
+<script>
+/* บทบาทฝั่งลูกค้า (ลูกค้า/จอคิว/จอครัว/ตลาด/ไรเดอร์) ไม่แตะหน้าจอฝั่งร้านเลย — ตัดการคอมไพล์ JSX ฝั่งร้านทิ้ง
+   ประหยัดโค้ดที่ Babel ต้องแปลงในเบราว์เซอร์ราว 700KB ทำให้หน้าลูกค้าเปิดเร็วขึ้นชัดเจน
+   ระวัง: ?shop= เฉย ๆ ไม่ตัด เพราะเจ้าของร้านเปิดลิงก์ร้านตัวเองแล้วแอปสลับเข้าโหมดร้านได้ */
+(function(){
+  try{
+    var r = new URLSearchParams(location.search).get('role') || '';
+    if (['customer','market','board','kds'].indexOf(r) < 0) return;
+    var list = document.querySelectorAll('script[data-role="merchant"]');
+    for (var i=0;i<list.length;i++) list[i].type = 'text/plain';
+  }catch(e){}
+})();
+</script>
   <script type="text/babel" src="kaidee-merchant.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kd-sponsor-feed.jsx?v=p2-20260802c"></script>
-  <script type="text/babel" src="kaidee-home.jsx?v=p2-20260802c"></script>
+  <script type="text/babel" data-role="merchant" src="kaidee-home.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kd-wallet.jsx?v=p2-20260802c"></script>
-  <script type="text/babel" src="kaidee-merchant2.jsx?v=p2-20260802f"></script>
-  <script type="text/babel" src="kaidee-stock.jsx?v=p2-20260802c"></script>
-  <script type="text/babel" src="kaidee-cash.jsx?v=p2-20260802c"></script>
-  <script type="text/babel" src="kaidee-quote.jsx?v=p2-20260802c"></script>
+  <script type="text/babel" data-role="merchant" src="kaidee-merchant2.jsx?v=p2-20260802f"></script>
+  <script type="text/babel" data-role="merchant" src="kaidee-stock.jsx?v=p2-20260802c"></script>
+  <script type="text/babel" data-role="merchant" src="kaidee-cash.jsx?v=p2-20260802c"></script>
+  <script type="text/babel" data-role="merchant" src="kaidee-quote.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kaidee-customer.jsx?v=p2-20260802c"></script>
-  <script type="text/babel" src="kaidee-customer2.jsx?v=p2-20260802c"></script>
+  <script type="text/babel" src="kaidee-customer2.jsx?v=p2-20260802f"></script>
   <script type="text/babel" src="kaidee-rider.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kaidee-help.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kaidee-crm.jsx?v=p2-20260802f"></script>

@@ -306,6 +306,12 @@ function effSaleCost(sale, menu, rawList, mode){
   return sale.items.reduce((a,[id,q])=>{ const m=(menu||MENU).find(x=>x.id===id)||menuById(id); return a + effItemCost(m, rawList, mode)*q; }, 0);
 }
 
+/* สถานะออเดอร์ — ใช้ทั้งจอร้านและจอลูกค้า จึงอยู่ไฟล์กลาง (จอลูกค้าไม่โหลดโค้ดฝั่งร้าน) */
+const STATUS_LABEL = {
+  new:{th:'ใหม่',en:'New',c:'var(--accent)'}, cooking:{th:'กำลังทำ',en:'Cooking',c:'#3B82C4'},
+  ready:{th:'พร้อมเสิร์ฟ',en:'Ready',c:'var(--brand)'}, delivering:{th:'กำลังส่ง',en:'Delivering',c:'#8257C4'},
+  done:{th:'เสร็จ',en:'Done',c:'var(--ink-3)'},
+};
 const CHANNELS = {
   walkin:  { th:'หน้าร้าน',      en:'Walk-in',      c:'#57635C', prefix:'W', ic:IC.store, online:false },
   takeaway:{ th:'กลับบ้าน',      en:'Take away',    c:'#0E9463', prefix:'A', ic:IC.bag,   online:false },
@@ -500,7 +506,7 @@ function FoodTile({ item, size=64, radius=14 }){
 
 Object.assign(window, {
   DICT, tr, LangCtx, useT, DataCtx, useCats, money, money2, Icon, IC, FARE, calcFare, kdShopOpen, kdShiftExpired,
-  CATS, MENU, menuById, SEED_SALES, saleTotal, saleCost, kdVat, CHANNELS, qLabel, PAYS, RIDER_JOBS,
+  CATS, MENU, menuById, STATUS_LABEL, SEED_SALES, saleTotal, saleCost, kdVat, CHANNELS, qLabel, PAYS, RIDER_JOBS,
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
   kdViaMarket, marketMenuView, kdMarketPriceOpen,
   deliveryCfg, deliveryFee, customerPaysDelivery,
