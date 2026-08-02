@@ -655,7 +655,7 @@ export default {
       }
       // POST /trial-comp {phone,line,comp} (แอดมิน) → ตั้ง/ยกเลิกสิทธิ์ใช้ฟรีตลอด (UAT)
       if (seg[0] === 'trial-comp' && req.method === 'POST') {
-        const tok = req.headers.get('X-Admin-Token'); if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return json({ ok:false, error:'ไม่มีสิทธิ์' }, req, 403);
+        const tok = req.headers.get('X-Admin-Token'); if (!(await verifyToken(env, tok))) return json({ ok:false, error:'ไม่มีสิทธิ์' }, req, 403);
         await ensureAudit(env); const b = await readBody(); const keys = trialKeys(b.phone || '', b.line || ''); const ts = now(); const c = b.comp === false ? 0 : 1;
         for (const k of keys) { await env.DB.prepare('INSERT INTO trial_ledger (k,used,comp,first_at,last_at) VALUES (?,0,?,?,?) ON CONFLICT(k) DO UPDATE SET comp=?,last_at=?').bind(k, c, ts, ts, c, ts).run(); }
         return json({ ok: true }, req);
@@ -663,7 +663,7 @@ export default {
       // GET /deletion-log (แอดมิน) → รายการลบร้านทั้งหมด (หลักฐานถาวร)
       if (seg[0] === 'deletion-log' && req.method === 'GET') {
         const tok = req.headers.get('X-Admin-Token') || url.searchParams.get('token');
-        if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return json({ ok:false, error:'ไม่มีสิทธิ์' }, req, 403);
+        if (!(await verifyToken(env, tok))) return json({ ok:false, error:'ไม่มีสิทธิ์' }, req, 403);
         await ensureAudit(env);
         const { results } = await env.DB.prepare('SELECT * FROM deletion_log ORDER BY at DESC LIMIT 500').all();
         return json({ ok: true, logs: results || [] }, req);
@@ -763,7 +763,7 @@ export default {
         if (req.method === 'POST' && seg[1] && seg[2] === 'admin-access') {
           const b = await readBody();
           const tok = req.headers.get('X-Admin-Token') || b.token;
-          if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return json({ ok: false, error: 'ต้องเป็นแอดมินแอป' }, req, 403);
+          if (!(await verifyToken(env, tok))) return json({ ok: false, error: 'ต้องเป็นแอดมินแอป' }, req, 403);
           const cur = await getShop(env, seg[1]);
           if (!cur) return err('shop not found', req, 404);
           await ensureAdminLog(env);
@@ -778,7 +778,7 @@ export default {
         // GET /shops/:id/admin-access-log — ประวัติแอดมินเข้าดูร้าน (แอดมินเท่านั้น)
         if (req.method === 'GET' && seg[1] && seg[2] === 'admin-access-log') {
           const tok = req.headers.get('X-Admin-Token') || url.searchParams.get('token');
-          if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return json({ error: 'admin only' }, req, 403);
+          if (!(await verifyToken(env, tok))) return json({ error: 'admin only' }, req, 403);
           await ensureAdminLog(env);
           const { results } = await env.DB.prepare('SELECT * FROM admin_access_log WHERE shop_id=? ORDER BY at DESC LIMIT 200').bind(seg[1]).all();
           return json(results, req);
@@ -847,7 +847,7 @@ export default {
           const cur = await getShop(env, seg[1]);
           if (!cur) return err('shop not found', req, 404);
           // อนุญาต: แอดมิน (token) หรือ เจ้าของร้านเอง (ownerLine ตรงกับ owner_line) → ให้ร้านล้างข้อมูลตัวเองจากในแอปได้
-          const okAdmin = !env.ADMIN_SECRET || (await verifyToken(env, tok));
+          const okAdmin = await verifyToken(env, tok);
           const okOwner = !!(b.ownerLine && cur.owner_line && String(b.ownerLine) === String(cur.owner_line));
           if (!okAdmin && !okOwner) return json({ ok: false, error: 'ไม่มีสิทธิ์' }, req, 403);
           const wipeMenu = !!b.wipeMenu;   // เผื่ออยากล้างเมนูด้วย (default: เก็บเมนูไว้)
@@ -877,7 +877,7 @@ export default {
         if (req.method === 'DELETE' && seg[1]) {
           const b = await readBody();
           const tok = req.headers.get('X-Admin-Token') || b.token;
-          if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return json({ ok: false, error: 'ไม่มีสิทธิ์' }, req, 403);
+          if (!(await verifyToken(env, tok))) return json({ ok: false, error: 'ไม่มีสิทธิ์' }, req, 403);
           const cur = await getShop(env, seg[1]);
           if (!cur) return err('shop not found', req, 404);
           const tbls = ['orders','sales','members','menu','raw','purchases','cash_days','quotes','settings','devices','counters',
@@ -991,7 +991,7 @@ export default {
         // GET /wallet — แอดมินดูกระเป๋าทุกร้าน (join บัญชีรับเงินของร้านมาโชว์ด้วย)
         if (req.method === 'GET' && !seg[1]) {
           const tok = req.headers.get('X-Admin-Token');
-          if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+          if (!(await verifyToken(env, tok))) return err('admin only', req, 403);
           const { results } = await env.DB.prepare(
             `SELECT w.biz_id, w.balance, w.auto, w.updated_at, a.promptpay as pp, a.bank as bank, a.acct_no as acct_no
              FROM wallets w LEFT JOIN wallet_accounts a ON a.biz_id = w.biz_id ORDER BY w.updated_at DESC LIMIT 500`).all();
@@ -1069,7 +1069,7 @@ export default {
           // POST /wallet/:biz/adjust {amount,note,by} — แอดมินปรับยอดมือ (+/-)
           if (req.method === 'POST' && seg[2] === 'adjust') {
             const tok = req.headers.get('X-Admin-Token');
-            if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+            if (!(await verifyToken(env, tok))) return err('admin only', req, 403);
             const b = await readBody();
             const amt = Math.round((Number(b.amount) || 0) * 100) / 100;
             if (!amt) return err('จำนวนเงินไม่ถูกต้อง', req, 400);
@@ -1104,7 +1104,7 @@ export default {
       if (seg[0] === 'wallet-topups' && req.method === 'GET') {
         await ensureWallet(env);
         const tok = req.headers.get('X-Admin-Token');
-        if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+        if (!(await verifyToken(env, tok))) return err('admin only', req, 403);
         const st = url.searchParams.get('status') || 'pending';
         const { results } = await env.DB.prepare("SELECT * FROM wallet_txns WHERE type='topup' AND status=? ORDER BY created_at ASC LIMIT 300").bind(st).all();
         // ts/ref เป็นคอลัมน์เก่าจากตารางที่มีอยู่ก่อน (ว่างเสมอ) — Back Office โชว์เวลา/เลขอ้างอิงจากสองคีย์นี้ ต้อง map จาก created_at/id
@@ -1115,7 +1115,7 @@ export default {
       if (seg[0] === 'wallet-txns' && seg[1] && req.method === 'PATCH') {
         await ensureWallet(env);
         const tok = req.headers.get('X-Admin-Token');
-        if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+        if (!(await verifyToken(env, tok))) return err('admin only', req, 403);
         const b = await readBody();
         const cur = await env.DB.prepare('SELECT * FROM wallet_txns WHERE id=?').bind(seg[1]).first();
         if (!cur) return err('transaction not found', req, 404);
@@ -1134,7 +1134,7 @@ export default {
       /* ── WALLET-BANK-ALERT (ข้อความแจ้งเงินเข้าบัญชีกลาง → auto จับคู่กับ topup ที่ pending อยู่ ไม่ผูกร้านเดียว) ── */
       if (seg[0] === 'wallet-bank-alert' && req.method === 'POST') {
         const tok = req.headers.get('X-Admin-Token');
-        if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+        if (!(await verifyToken(env, tok))) return err('admin only', req, 403);
         const b = await readBody();
         const r = await autoMatchWalletTopup(env, b.text || b.message || '');
         return json({ ok: true, ...r }, req);
@@ -1149,7 +1149,7 @@ export default {
         }
         if (req.method === 'PUT') {
           const tok = req.headers.get('X-Admin-Token');
-          if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+          if (!(await verifyToken(env, tok))) return err('admin only', req, 403);
           const b = await readBody();
           const v = JSON.stringify({ promptpay: b.promptpay || '', bank: b.bank || '', acctNo: b.acctNo || '', acctName: b.acctName || '' });
           await env.DB.prepare("INSERT INTO app_config (k,v) VALUES ('wallet_account',?) ON CONFLICT(k) DO UPDATE SET v=?").bind(v, v).run();
@@ -1167,7 +1167,7 @@ export default {
         }
         if (req.method === 'PUT') {
           const tok = req.headers.get('X-Admin-Token');
-          if (env.ADMIN_SECRET && !(await verifyToken(env, tok))) return err('admin only', req, 403);
+          if (!(await verifyToken(env, tok))) return err('admin only', req, 403);
           const b = await readBody();
           const v = JSON.stringify({ slipAuto: !!b.slipAuto, provider: b.provider || '', lineSlip: !!b.lineSlip });
           await env.DB.prepare("INSERT INTO app_config (k,v) VALUES ('wallet_verify',?) ON CONFLICT(k) DO UPDATE SET v=?").bind(v, v).run();
