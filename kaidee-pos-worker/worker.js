@@ -334,13 +334,19 @@ async function walletPending(env, biz){
 }
 // ยืนยัน topup ที่ pending → เข้ายอด wallet จริง (ใช้ร่วมกันทั้งแอดมินกดมือ และ auto-match แจ้งเตือนธนาคาร)
 // conditional UPDATE (status='pending' เท่านั้นถึงจะเปลี่ยนได้) กันยืนยันซ้ำ/แข่งกัน — คืน {ok:false} ถ้าโดนจัดการไปแล้ว
-async function confirmWalletTopup(env, txnId, by){
+// gotAmount = ยอดที่โอนเข้าจริง (ถ้ามี) — เข้ากระเป๋าเท่ายอดที่ขอเติมเสมอ ส่วนเศษที่ต่างกันเก็บไว้ใน reason ให้ตรวจย้อนหลังได้
+async function confirmWalletTopup(env, txnId, by, gotAmount){
   const cur = await env.DB.prepare('SELECT * FROM wallet_txns WHERE id=?').bind(txnId).first();
   if (!cur) return { ok: false, error: 'transaction not found' };
   if (cur.status !== 'pending') return { ok: false, error: 'รายการนี้ถูกจัดการไปแล้ว' };
   const lock = await env.DB.prepare("UPDATE wallet_txns SET status='confirmed',by=?,handled_at=? WHERE id=? AND status='pending'")
     .bind(by || 'admin', now(), txnId).run();
   if (!(lock.meta && lock.meta.changes)) return { ok: false, error: 'รายการนี้ถูกจัดการไปแล้ว' };
+  if (gotAmount != null) {
+    const diff = +(Number(gotAmount) - Number(cur.amount)).toFixed(2);
+    if (diff) { try { await env.DB.prepare('UPDATE wallet_txns SET reason=? WHERE id=?')
+      .bind('โอนจริง ' + Number(gotAmount).toFixed(2) + ' (' + (diff > 0 ? '+' : '') + diff + ')', txnId).run(); } catch (e) {} }
+  }
   const w = await walletRow(env, cur.biz_id);
   const bal = Math.round((w.balance + cur.amount) * 100) / 100;
   await env.DB.prepare(`INSERT INTO wallets (biz_id,balance,auto,updated_at) VALUES (?,?,1,?)
@@ -353,11 +359,11 @@ let _wbaReady = false;
 async function ensureWalletBankAlerts(env){ if(_wbaReady) return; _wbaReady = true;
   try{ await env.DB.prepare('CREATE TABLE IF NOT EXISTS wallet_bank_alerts (id TEXT PRIMARY KEY, raw TEXT, amount INTEGER, matched_txn TEXT, matched_biz TEXT, created_at INTEGER)').run(); }catch(e){} }
 // จับคู่ข้อความแจ้งเงินเข้า (บัญชีกลางของระบบ ที่ร้านโอนมาเติมกระเป๋า) → topup ที่ pending อยู่ ไม่ผูก shop เดียว (เทียบทุกร้าน)
-// จับคู่ด้วยยอด "ตรงถึงสตางค์" เอาอันที่ pending ค้างนานสุดก่อน (FIFO)
-// ห้ามปัดเศษก่อนเทียบ: ของเดิมเทียบ Math.round(ยอดที่ขอเติม) กับยอดที่โอนเข้าจริง แล้วยอมคลาดเคลื่อน 0.5
-//   → ยอดลงท้าย .50 (เช่น 500.50) จะไม่มีวันจับคู่ได้เลย เพราะปัดเป็น 501 แล้วต่างพอดี 0.5
-//   → และยอดที่ต่างกันจริงไม่เกิน 0.49 กลับถูกจับคู่ให้ (เติมเงินเข้าผิดร้านได้)
-// เติมเงินเข้ากระเป๋าต้องตรงเป๊ะ ไม่ต้องเผื่อ — ที่เหลือให้แอดมินตรวจเอง ปลอดภัยกว่าเข้าผิดบัญชี
+// จับคู่ด้วยยอด "ปัดเป็นบาทเต็มทั้งสองฝั่ง" — โอน 500.25 หรือ 499.75 ก็นับเป็น 500 ตามที่ขอเติม
+// ของเดิมปัดข้างเดียว (ปัดยอดที่ขอ แล้วเทียบกับยอดโอนดิบ ยอมคลาด 0.5) → ยอดลงท้าย .50 ไม่มีวันจับคู่ได้
+//   เช่น ขอเติม 500.50 ปัดเป็น 501 ห่างจากยอดโอน 500.50 พอดี 0.5 → ตกเงื่อนไข "< 0.5" ทั้งที่โอนตรงเป๊ะ
+// ยอดที่เข้ากระเป๋า = ยอดที่ขอเติม (500) ส่วนต่างเศษสตางค์บันทึกไว้ในรายการให้ตรวจย้อนหลังได้
+// เอา pending ที่ค้างนานสุดก่อน (FIFO)
 async function autoMatchWalletTopup(env, text){
   await ensureWallet(env); await ensureWalletBankAlerts(env);
   const entries = parseCredits(text || ''); const ts = now(); const matched = [];
@@ -365,11 +371,11 @@ async function autoMatchWalletTopup(env, text){
     const { results: rows } = await env.DB.prepare("SELECT * FROM wallet_txns WHERE type='topup' AND status='pending' ORDER BY created_at ASC LIMIT 500").all();
     const used = new Set();
     for (const e of entries) {
-      const cand = rows.filter(r => !used.has(r.id) && Math.abs(Number(r.amount) - e.amount) < 0.005);
+      const cand = rows.filter(r => !used.has(r.id) && Math.round(Number(r.amount)) === Math.round(e.amount));
       const aid = 'wba' + ts + Math.random().toString(36).slice(2, 5);
       if (cand.length) {
         const r = cand[0]; used.add(r.id);
-        const res = await confirmWalletTopup(env, r.id, 'auto-bank-match');
+        const res = await confirmWalletTopup(env, r.id, 'auto-bank-match', e.amount);
         if (res.ok) {
           await env.DB.prepare('INSERT INTO wallet_bank_alerts (id,raw,amount,matched_txn,matched_biz,created_at) VALUES (?,?,?,?,?,?)')
             .bind(aid, (e.raw || '').slice(0, 200), e.amount, r.id, r.biz_id, ts).run();
