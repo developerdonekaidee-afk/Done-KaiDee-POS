@@ -159,7 +159,11 @@
       "Bash(curl -s -o /dev/null -w \"Rider App.html: %{http_code}\\\\n\" -m 20 \"https://kaidee-git.oneday-pos.workers.dev/Rider%20App.html\")",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\)[0];console.log\\(r.databaseId,r.status,r.conclusion,'|',r.displayTitle\\)}\\)\")",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\)[0];console.log\\(r.databaseId,r.status,r.conclusion||''\\)}\\)\")",
-      "Bash(curl -s -m 20 -X POST https://platform.oneday-pos.workers.dev/riders -H 'content-type: application/json' -d '{\"name\":\"ทดสอบ LINE\",\"phone\":\"0777777777\",\"vehicle\":\"moto\",\"line\":\"U_qa_line_123\"}')"
+      "Bash(curl -s -m 20 -X POST https://platform.oneday-pos.workers.dev/riders -H 'content-type: application/json' -d '{\"name\":\"ทดสอบ LINE\",\"phone\":\"0777777777\",\"vehicle\":\"moto\",\"line\":\"U_qa_line_123\"}')",
+      "Bash(curl -s -m 15 \"https://kaidee-git.oneday-pos.workers.dev/index.html\")",
+      "Bash(curl -sL -m 20 \"https://kaidee-git.oneday-pos.workers.dev/\")",
+      "Bash(node perf.js)",
+      "Bash(curl -sL -m 15 \"https://kaidee-git.oneday-pos.workers.dev/\")"
     ]
   }
 }

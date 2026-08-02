@@ -143,19 +143,6 @@
   <script type="text/babel" src="ios-frame.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kaidee-data.jsx?v=p2-20260802f"></script>
   <script type="text/babel" src="kaidee-map.jsx?v=p2-20260802c"></script>
-<script>
-/* บทบาทฝั่งลูกค้า (ลูกค้า/จอคิว/จอครัว/ตลาด/ไรเดอร์) ไม่แตะหน้าจอฝั่งร้านเลย — ตัดการคอมไพล์ JSX ฝั่งร้านทิ้ง
-   ประหยัดโค้ดที่ Babel ต้องแปลงในเบราว์เซอร์ราว 700KB ทำให้หน้าลูกค้าเปิดเร็วขึ้นชัดเจน
-   ระวัง: ?shop= เฉย ๆ ไม่ตัด เพราะเจ้าของร้านเปิดลิงก์ร้านตัวเองแล้วแอปสลับเข้าโหมดร้านได้ */
-(function(){
-  try{
-    var r = new URLSearchParams(location.search).get('role') || '';
-    if (['customer','market','board','kds'].indexOf(r) < 0) return;
-    var list = document.querySelectorAll('script[data-role="merchant"]');
-    for (var i=0;i<list.length;i++) list[i].type = 'text/plain';
-  }catch(e){}
-})();
-</script>
   <script type="text/babel" src="kaidee-merchant.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kd-sponsor-feed.jsx?v=p2-20260802c"></script>
   <script type="text/babel" data-role="merchant" src="kaidee-home.jsx?v=p2-20260802c"></script>
@@ -172,6 +159,19 @@
   <script type="text/babel" src="kaidee-board.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kaidee-market-home.jsx?v=p2-20260802c"></script>
   <script type="text/babel" src="kaidee-market-shop.jsx?v=p2-20260802c"></script>
+<script>
+/* บทบาทฝั่งลูกค้า (ลูกค้า/จอคิว/จอครัว/ตลาด/ไรเดอร์) ไม่แตะหน้าจอฝั่งร้านเลย — ตัดการคอมไพล์ JSX ฝั่งร้านทิ้ง
+   ประหยัดโค้ดที่ Babel ต้องแปลงในเบราว์เซอร์ราว 700KB ทำให้หน้าลูกค้าเปิดเร็วขึ้นชัดเจน
+   ระวัง: ?shop= เฉย ๆ ไม่ตัด เพราะเจ้าของร้านเปิดลิงก์ร้านตัวเองแล้วแอปสลับเข้าโหมดร้านได้ */
+(function(){
+  try{
+    var r = new URLSearchParams(location.search).get('role') || '';
+    if (['customer','market','board','kds'].indexOf(r) < 0) return;
+    var list = document.querySelectorAll('script[data-role="merchant"]');
+    for (var i=0;i<list.length;i++) list[i].type = 'text/plain';
+  }catch(e){}
+})();
+</script>
   <script type="text/babel" src="kaidee-app.jsx?v=p2-20260802c"></script>
   <script>
     if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
