@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="gate.js?v=p2-20260802a"></script>
+<meta charset="UTF-8">
+<meta name="build" content="p2-20260802a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>สมัครไรเดอร์ · :Done KaiDee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#26619C;--brand-2:#1F4F86;--brand-soft:#E8EFF7;--ink:#17211b;--ink-2:#4b5a52;--ink-3:#8a978f;
+  --line:#dde5e0;--ok:#12945C;--warn:#F4900C;--red:#C0392B;--font:"IBM Plex Sans Thai",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#F3F6F4;color:var(--ink);font-family:var(--font);min-height:100dvh}
+.wrap{max-width:520px;margin:0 auto;min-height:100dvh;background:#fff;display:flex;flex-direction:column}
+.hd{background:linear-gradient(152deg,var(--brand-2),var(--brand));color:#fff;padding:26px 20px 20px}
+.hd h1{font-size:22px;font-weight:800}
+.hd p{font-size:13px;opacity:.92;margin-top:5px;line-height:1.5}
+.steps{display:flex;gap:6px;margin-top:16px}
+.steps i{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.3)}
+.steps i.on{background:#fff}
+.bd{flex:1;padding:20px;display:flex;flex-direction:column;gap:14px}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+.req{color:var(--red)}
+.f{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-family:inherit;font-size:15px;background:#fff}
+.f:focus{outline:none;border-color:var(--brand)}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.pick{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:center;gap:13px;border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;background:#fff;font-family:inherit;text-align:left;width:100%}
+.opt.on{border-color:var(--brand);background:var(--brand-soft)}
+.opt .e{font-size:26px;flex:0 0 auto}
+.opt b{font-size:15px;display:block}
+.opt span{font-size:12px;color:var(--ink-3);display:block;margin-top:2px;line-height:1.4}
+.docs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.doc{border:1.6px dashed var(--line);border-radius:13px;padding:12px 10px;text-align:center;cursor:pointer;background:#fff;position:relative;overflow:hidden;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.doc.on{border-style:solid;border-color:var(--ok)}
+.doc .e{font-size:22px}
+.doc b{font-size:12.5px;font-weight:700;line-height:1.3}
+.doc small{font-size:10.5px;color:var(--ink-3)}
+.doc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.doc .tick{position:absolute;top:6px;right:6px;background:var(--ok);color:#fff;font-size:11px;font-weight:800;border-radius:999px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;z-index:2}
+.note{background:var(--brand-soft);color:var(--brand-2);border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.55}
+.note.warn{background:#FFF4D6;color:#8A6100}
+.ck{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink-2);line-height:1.5;cursor:pointer}
+.ck input{width:20px;height:20px;margin-top:1px;flex:0 0 auto;accent-color:var(--brand)}
+.err{color:var(--red);font-size:13px;font-weight:600;min-height:18px}
+.ft{padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:10px;background:#fff}
+.btn{flex:1;border:none;border-radius:13px;padding:15px;font-family:inherit;font-size:15.5px;font-weight:800;color:#fff;background:var(--brand);cursor:pointer}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:#fff;color:var(--ink-2);border:1.5px solid var(--line);flex:0 0 auto;padding:15px 20px}
+.done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:34px 24px}
+.done .big{font-size:56px}
+.done h2{font-size:21px;font-weight:800}
+.done p{font-size:14px;color:var(--ink-2);line-height:1.6}
+.ref{font-family:ui-monospace,monospace;font-size:20px;font-weight:800;letter-spacing:2px;color:var(--brand);background:var(--brand-soft);padding:10px 18px;border-radius:12px}
+.link{background:none;border:none;font-family:inherit;font-size:13px;color:var(--ink-3);text-decoration:underline;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <h1>สมัครเป็นไรเดอร์</h1>
+    <p id="sub">รับงานส่งอาหารจากร้านบนแพลตฟอร์ม :Done KaiDee — ไม่มีค่าสมัคร ไม่มีค่ามัดจำ</p>
+    <div class="steps" id="steps"><i class="on"></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="bd" id="bd"></div>
+  <div class="ft" id="ft"></div>
+</div>
+
+<script>
+/* สมัครไรเดอร์ของแพลตฟอร์ม — แยกจากระบบวิน (Labor Win) คนละใบสมัคร คนละฐานข้อมูล
+   ยื่นใบสมัคร → แอดมินตรวจเอกสาร → อนุมัติแล้วเริ่มรับงานได้ (มาตรฐานเดียวกับ Grab/LINE MAN) */
+var API = (function(){ try{ return (localStorage.getItem('kd_plat_base')||'').trim().replace(/\/$/,'') || 'https://platform.oneday-pos.workers.dev'; }catch(e){ return 'https://platform.oneday-pos.workers.dev'; } })();
+
+var DOCS = [
+  { k:'natId',   e:'🪪', t:'บัตรประชาชน',      s:'ด้านหน้า ชัดทุกตัวอักษร', need:true },
+  { k:'licence', e:'🛵', t:'ใบขับขี่',          s:'ตรงประเภทรถที่ใช้',      need:true },
+  { k:'reg',     e:'📄', t:'ทะเบียนรถ',        s:'เล่มสีฟ้า/สำเนา',         need:true },
+  { k:'insure',  e:'🛡️', t:'พ.ร.บ. / ประกัน',  s:'ที่ยังไม่หมดอายุ',        need:true },
+  { k:'selfie',  e:'🤳', t:'เซลฟี่คู่บัตร',     s:'เห็นหน้าและบัตรชัด',      need:true },
+  { k:'book',    e:'🏦', t:'หน้าสมุดบัญชี',     s:'ชื่อบัญชีตรงกับผู้สมัคร',  need:false },
+];
+var VEHICLES = [
+  { k:'moto',  e:'🛵', t:'มอเตอร์ไซค์',        s:'ส่งอาหาร/พัสดุ · งานเยอะที่สุด' },
+  { k:'car',   e:'🚗', t:'รถยนต์',             s:'ออเดอร์ใหญ่ · ของหนัก' },
+  { k:'walk',  e:'🚲', t:'จักรยาน / เดินส่ง',  s:'ในตลาด/ระยะใกล้' },
+];
+
+var S = { step:0, vehicle:'moto', name:'', phone:'', natId:'', plate:'', area:'', lang:'th',
+          bank:'', acct:'', emName:'', emPhone:'', docs:{}, agree:false, busy:false, err:'', ref:'', status:'' };
+
+function h(tag, attrs, kids){
+  var el = document.createElement(tag);
+  for (var k in (attrs||{})){
+    if (k === 'class') el.className = attrs[k];
+    else if (k.slice(0,2) === 'on') el.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+  }
+  (kids||[]).forEach(function(c){ if (c == null) return; el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+  return el;
+}
+function field(label, key, opts){
+  opts = opts || {};
+  var inp = h('input', { class:'f', type:opts.type||'text', inputmode:opts.inputmode||null, placeholder:opts.ph||'', value:S[key]||'', maxlength:opts.max||null });
+  inp.addEventListener('input', function(){ S[key] = inp.value; });
+  return h('div', {}, [ h('div',{class:'lbl'},[label]), inp ]);
+}
+
+/* ย่อรูปก่อนส่ง — เอกสารถ่ายจากมือถือใหญ่หลายเมกะไบต์ ส่งดิบ ๆ จะช้าและเปลืองที่เก็บ */
+function readShrunk(file, cb){
+  var fr = new FileReader();
+  fr.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      var max = 1100, w = img.width, hh = img.height;
+      if (w > max || hh > max){ var r = Math.min(max/w, max/hh); w = Math.round(w*r); hh = Math.round(hh*r); }
+      var c = document.createElement('canvas'); c.width = w; c.height = hh;
+      c.getContext('2d').drawImage(img, 0, 0, w, hh);
+      cb(c.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = function(){ cb(null); };
+    img.src = fr.result;
+  };
+  fr.onerror = function(){ cb(null); };
+  fr.readAsDataURL(file);
+}
+
+function docTile(d){
+  var got = S.docs[d.k];
+  var tile = h('label', { class:'doc'+(got?' on':'') }, [
+    got ? h('img', { src:got, alt:'' }) : null,
+    got ? h('span', { class:'tick' }, ['✓']) : null,
+    got ? null : h('span', { class:'e' }, [d.e]),
+    got ? null : h('b', {}, [d.t + (d.need?'':' (ถ้ามี)')]),
+    got ? null : h('small', {}, [d.s]),
+  ]);
+  var inp = h('input', { type:'file', accept:'image/*', capture:'environment', style:'display:none' });
+  inp.addEventListener('change', function(e){
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    readShrunk(f, function(url){ if (url){ S.docs[d.k] = url; render(); } });
+  });
+  tile.appendChild(inp);
+  return tile;
+}
+
+function stepBody(){
+  if (S.step === 0) return [
+    h('div',{class:'lbl'},['ใช้รถแบบไหนรับงาน']),
+    h('div',{class:'pick'}, VEHICLES.map(function(v){
+      return h('button',{ class:'opt'+(S.vehicle===v.k?' on':''), onclick:function(){ S.vehicle=v.k; render(); } },
+        [ h('span',{class:'e'},[v.e]), h('div',{},[ h('b',{},[v.t]), h('span',{},[v.s]) ]) ]);
+    })),
+    h('div',{class:'note'},['ไรเดอร์ :Done KaiDee รับงานอิสระ ไม่สังกัดวิน ไม่มีหัวคิว — ลูกค้า/ร้านจ่ายค่าส่งให้คุณโดยตรง แพลตฟอร์มไม่หักค่าคอมและไม่ถือเงินของคุณ']),
+  ];
+  if (S.step === 1) return [
+    field('ชื่อ–สกุล (ตามบัตร)','name',{ph:'เช่น สมชาย ใจดี'}),
+    field('เบอร์โทร','phone',{type:'tel',inputmode:'tel',ph:'08x-xxx-xxxx'}),
+    field('เลขบัตรประชาชน','natId',{inputmode:'numeric',max:17,ph:'1-2345-67890-12-3'}),
+    field('ทะเบียนรถ','plate',{ph:'เช่น 1กก 1234 กรุงเทพฯ'}),
+    field('พื้นที่ที่จะวิ่งงาน','area',{ph:'เช่น ลาดสวาย · ตลาดสี่มุมเมือง'}),
+    h('div',{class:'lbl'},['ผู้ติดต่อฉุกเฉิน']),
+    h('div',{class:'row'},[ field('ชื่อ','emName',{ph:'ชื่อผู้ติดต่อ'}), field('เบอร์','emPhone',{type:'tel',inputmode:'tel',ph:'08x-xxx-xxxx'}) ]),
+  ];
+  if (S.step === 2) return [
+    h('div',{class:'note'},['ถ่ายให้เห็นครบทั้งใบ ไม่มีนิ้วบัง แสงพอ อ่านตัวเลขออก — เอกสารไม่ชัดเป็นเหตุผลที่ใบสมัครถูกตีกลับบ่อยที่สุด']),
+    h('div',{class:'docs'}, DOCS.map(docTile)),
+    h('div',{class:'lbl'},['บัญชีรับเงิน (ถ้ามี — ใช้ตอนรับงานที่ลูกค้าโอน)']),
+    h('div',{class:'row'},[ field('ธนาคาร','bank',{ph:'เช่น กสิกรไทย'}), field('เลขบัญชี / พร้อมเพย์','acct',{inputmode:'numeric',ph:'xxx-x-xxxxx-x'}) ]),
+  ];
+  return [
+    h('div',{class:'note'},['ตรวจข้อมูลอีกครั้งก่อนส่ง — แก้ทีหลังต้องแจ้งแอดมิน']),
+    h('div',{class:'note warn'},['เอกสารของคุณใช้เพื่อยืนยันตัวตนกับแพลตฟอร์มเท่านั้น ไม่เปิดเผยให้ร้านหรือลูกค้า']),
+    (function(){
+      var v = VEHICLES.filter(function(x){ return x.k===S.vehicle; })[0] || VEHICLES[0];
+      var got = DOCS.filter(function(d){ return S.docs[d.k]; }).length;
+      var rows = [ ['รถที่ใช้', v.t], ['ชื่อ', S.name||'—'], ['เบอร์', S.phone||'—'], ['พื้นที่', S.area||'—'], ['เอกสารที่แนบ', got+' / '+DOCS.length+' รายการ'] ];
+      return h('div',{}, rows.map(function(r){
+        return h('div',{style:'display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px'},
+          [ h('span',{style:'color:var(--ink-3)'},[r[0]]), h('b',{style:'text-align:right'},[r[1]]) ]);
+      }));
+    })(),
+    (function(){
+      var lb = h('label',{class:'ck'});
+      var cb = h('input',{type:'checkbox'}); cb.checked = S.agree;
+      cb.addEventListener('change', function(){ S.agree = cb.checked; render(); });
+      lb.appendChild(cb);
+      lb.appendChild(h('span',{},['ข้อมูลที่กรอกเป็นความจริง และยินยอมให้ :Done KaiDee ตรวจสอบเอกสาร/ประวัติเพื่อพิจารณาใบสมัคร']));
+      return lb;
+    })(),
+    h('div',{class:'err'},[S.err||'']),
+  ];
+}
+
+function canNext(){
+  if (S.step === 1) return !!S.name.trim() && S.phone.replace(/\D/g,'').length >= 9;
+  if (S.step === 2) return DOCS.filter(function(d){ return d.need; }).every(function(d){ return !!S.docs[d.k]; });
+  if (S.step === 3) return S.agree && !S.busy;
+  return true;
+}
+
+function submit(){
+  S.busy = true; S.err = ''; render();
+  fetch(API + '/riders', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({
+    name:S.name.trim(), phone:S.phone, natId:S.natId, vehicle:S.vehicle, plate:S.plate, area:S.area, lang:S.lang,
+    payout:{ bank:S.bank, acct:S.acct }, emergency:{ name:S.emName, phone:S.emPhone }, docs:S.docs,
+  })})
+  .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+  .then(function(res){
+    S.busy = false;
+    if (!res.ok){ S.err = (res.j && res.j.error) || 'ส่งใบสมัครไม่สำเร็จ ลองใหม่อีกครั้ง'; render(); return; }
+    S.ref = res.j.ref || res.j.id || ''; S.status = res.j.status || 'pending'; S.step = 4; render();
+  })
+  .catch(function(){ S.busy = false; S.err = 'เชื่อมต่อไม่ได้ — เช็คอินเทอร์เน็ตแล้วลองใหม่'; render(); });
+}
+
+function checkStatus(){
+  var p = prompt('ใส่เบอร์โทรที่ใช้สมัคร');
+  if (!p) return;
+  fetch(API + '/riders/status?phone=' + encodeURIComponent(p)).then(function(r){ return r.json(); }).then(function(j){
+    if (!j.found) return alert('ไม่พบใบสมัครของเบอร์นี้');
+    var m = { pending:'⏳ กำลังตรวจเอกสาร', approved:'✅ อนุมัติแล้ว เริ่มรับงานได้เลย', rejected:'❌ ไม่ผ่าน' };
+    alert((m[j.status] || j.status) + (j.note ? '\n\nหมายเหตุ: ' + j.note : ''));
+  }).catch(function(){ alert('เชื่อมต่อไม่ได้'); });
+}
+
+function render(){
+  var bd = document.getElementById('bd'), ft = document.getElementById('ft');
+  bd.innerHTML = ''; ft.innerHTML = '';
+  var steps = document.getElementById('steps').children;
+  for (var i = 0; i < steps.length; i++) steps[i].className = (i <= Math.min(S.step,3)) ? 'on' : '';
+
+  if (S.step === 4){
+    document.getElementById('sub').textContent = 'ส่งใบสมัครเรียบร้อยแล้ว';
+    bd.className = 'done';
+    [ h('div',{class:'big'},['🎉']),
+      h('h2',{},['ส่งใบสมัครแล้ว']),
+      h('div',{class:'ref'},[String(S.ref).toUpperCase()]),
+      h('p',{},['ทีมงานตรวจเอกสารภายใน 1–3 วันทำการ แล้วโทรแจ้งผลตามเบอร์ที่ให้ไว้ · เก็บเลขที่ใบสมัครไว้ใช้ตอนสอบถาม']),
+      h('button',{class:'link',onclick:checkStatus},['เช็คสถานะใบสมัครด้วยเบอร์โทร']),
+    ].forEach(function(n){ bd.appendChild(n); });
+    return;
+  }
+
+  bd.className = 'bd';
+  stepBody().forEach(function(n){ bd.appendChild(n); });
+
+  if (S.step > 0) ft.appendChild(h('button',{class:'btn ghost',onclick:function(){ S.step--; S.err=''; render(); }},['ย้อนกลับ']));
+  var last = S.step === 3;
+  var next = h('button',{ class:'btn', onclick:function(){ if (last) submit(); else { S.step++; S.err=''; render(); } } },
+    [ S.busy ? 'กำลังส่ง…' : (last ? 'ส่งใบสมัคร →' : 'ถัดไป →') ]);
+  next.disabled = !canNext();
+  ft.appendChild(next);
+  if (S.step === 0) ft.appendChild(h('button',{class:'btn ghost',onclick:checkStatus},['เช็คสถานะ']));
+}
+render();
+</script>
+</body>
+</html>

@@ -438,6 +438,59 @@ export default {
         }
       }
 
+      /* ── RIDERS (สมัครไรเดอร์ของแพลตฟอร์ม — แยกจากระบบวิน/Labor Win คนละชุดข้อมูล) ──
+         เก็บใน records coll='riders' ของ biz 'riders' · ผู้สมัครยื่นเอง แอดมินตรวจเอกสารแล้วอนุมัติ */
+      if (seg[0] === 'riders') {
+        const RB = 'riders';
+        // POST /riders — ยื่นใบสมัคร (สาธารณะ) · เบอร์เดิม = อัปเดตใบเดิม ไม่สร้างซ้ำ
+        if (req.method === 'POST' && !seg[1]) {
+          const b = await readBody();
+          const phone = String(b.phone || '').replace(/\D/g, '');
+          if (!b.name || phone.length < 9) return err('name and phone required', req, 400);
+          const existing = (await collList(env, RB, 'riders', 0, 3000))
+            .find(r => String(r.phone || '').replace(/\D/g, '') === phone);
+          if (existing && existing.status === 'approved') return json({ ok: true, id: existing.id, status: 'approved', already: true }, req);
+          const id = existing ? existing.id : safeId(rid('rd'));
+          const rec = { id, name: b.name, phone, natId: b.natId || '', vehicle: b.vehicle || 'moto',
+            plate: b.plate || '', area: b.area || '', lang: b.lang || 'th',
+            payout: { bank: (b.payout && b.payout.bank) || '', acct: (b.payout && b.payout.acct) || '', promptpay: (b.payout && b.payout.promptpay) || '' },
+            emergency: { name: (b.emergency && b.emergency.name) || '', phone: (b.emergency && b.emergency.phone) || '' },
+            docs: b.docs && typeof b.docs === 'object' ? b.docs : {},
+            status: 'pending', note: '', appliedAt: now(), reviewedAt: null };
+          await collUpsert(env, RB, 'riders', rec);
+          return json({ ok: true, id, status: 'pending', ref: id.toUpperCase() }, req, 201);
+        }
+        // GET /riders/status?phone= — ผู้สมัครเช็คสถานะตัวเอง (ไม่คืนรูปเอกสาร)
+        if (req.method === 'GET' && seg[1] === 'status') {
+          const phone = String(url.searchParams.get('phone') || '').replace(/\D/g, '');
+          if (phone.length < 9) return err('phone required', req, 400);
+          const r = (await collList(env, RB, 'riders', 0, 3000))
+            .find(x => String(x.phone || '').replace(/\D/g, '') === phone);
+          if (!r) return json({ found: false }, req);
+          return json({ found: true, id: r.id, name: r.name, status: r.status, note: r.note || '', appliedAt: r.appliedAt }, req);
+        }
+        // GET /riders — แอดมินดูใบสมัครทั้งหมด (มีรูปเอกสารด้วย)
+        if (req.method === 'GET' && !seg[1]) {
+          if (!(await verifyToken(env, adminTokenFrom(req, url)))) return err('admin only', req, 403);
+          const status = url.searchParams.get('status');
+          let list = await collList(env, RB, 'riders', 0, 3000);
+          if (status && status !== 'all') list = list.filter(r => (r.status || 'pending') === status);
+          return json({ riders: list.sort((a, b) => (b.appliedAt || 0) - (a.appliedAt || 0)) }, req);
+        }
+        // PATCH /riders/:id {status,note} — แอดมินอนุมัติ/ปฏิเสธ
+        if (req.method === 'PATCH' && seg[1]) {
+          if (!(await verifyToken(env, adminTokenFrom(req, url)))) return err('admin only', req, 403);
+          const b = await readBody();
+          const cur = await env.DB.prepare('SELECT * FROM records WHERE biz_id=? AND coll=? AND id=?').bind(RB, 'riders', safeId(seg[1])).first();
+          if (!cur) return err('not found', req, 404);
+          let base = {}; try { base = JSON.parse(cur.data || '{}'); } catch (e) {}
+          const merged = { ...base, status: b.status || base.status, note: b.note != null ? b.note : base.note, reviewedAt: now() };
+          await env.DB.prepare('UPDATE records SET data=?, updated_at=? WHERE biz_id=? AND coll=? AND id=?')
+            .bind(JSON.stringify(merged), now(), RB, 'riders', safeId(seg[1])).run();
+          return json({ ok: true, status: merged.status }, req);
+        }
+      }
+
       /* ── PRICING (tier ราคาต่อสาย · ไม่มี Pro รวมข้าม vertical) ── */
       if (seg[0] === 'pricing') {
         // GET /pricing?vertical=            → รายการ tier ของสายนั้น (หรือทั้งหมด)

@@ -306,6 +306,18 @@ function Worker({st,up,flash}){
         <div className="paysel">{Object.entries(WK_STATUS).map(([k,v])=><div key={k} className={'p'+(w.status===k?' on':'')} onClick={()=>setW({status:k})}>
           <div><b style={{fontSize:13.5}}>{v.th}{v.badge&&<span className="mini">{v.badge}</span>}</b><div style={{fontSize:11.5,color:'var(--ink-3)'}}>{v.s}</div></div><span className="r"></span></div>)}</div>
       </>:tab==='me'?<>
+        {/* ประกาศรับสมัครไรเดอร์แพลตฟอร์ม — คนละระบบกับวิน (ไม่ผูกวิน ไม่หักค่าคอม ไม่แชร์ข้อมูลกัน)
+            หน้านี้แค่เปิดช่องให้แรงงานเห็นว่ามีงานอีกทางหนึ่งให้สมัคร */}
+        <a href="Rider Signup.html" style={{textDecoration:'none',color:'inherit'}}>
+          <div className="card" style={{display:'flex',alignItems:'center',gap:11,borderLeft:'3px solid var(--blue)'}}>
+            <span style={{fontSize:24}}>🛵</span>
+            <div style={{flex:1,minWidth:0}}>
+              <b style={{fontSize:14}}>รับสมัครไรเดอร์ :Done KaiDee</b>
+              <div style={{fontSize:11.5,color:'var(--ink-3)',lineHeight:1.45,marginTop:2}}>งานส่งอาหารจากร้านบนแพลตฟอร์ม · คนละระบบกับวิน ไม่หักค่าคอมหัวคิว · ต้องส่งเอกสารและรอตรวจ</div>
+            </div>
+            <span style={{color:'var(--ink-3)',fontSize:16}}>›</span>
+          </div>
+        </a>
         <div className="card"><div className="rowb"><b>👤 {w.name}</b><span className="mini2">{win?win.dot+' '+win.name:'ฟรีแลนซ์'}</span></div>
           <div className="rowb" style={{marginTop:4}}><span style={{fontSize:12,color:'var(--ink-3)'}}>สถานะ: {WK_STATUS[w.status].th}</span>{myStars>0?<span style={{fontSize:12}}><StarRow v={myStars}/> {myStars.toFixed(1)} <span style={{color:'var(--ink-3)'}}>({(w.ratings||[]).length})</span></span>:<span style={{fontSize:11.5,color:'var(--ink-3)'}}>ยังไม่มีรีวิว</span>}</div></div>
         <div className="lbl">รายได้</div>
