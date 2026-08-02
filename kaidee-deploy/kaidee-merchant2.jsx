@@ -919,6 +919,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
   const openReset=()=>{ setResetCode(String(Math.floor(1000+Math.random()*9000))); setResetCodeIn(''); setResetOk(false); setResetSheet(true); };
   const [menuMgrOpen,setMenuMgrOpen] = m2State(false);
   const [marketSheet,setMarketSheet] = m2State(false);
+  const [pinSheet,setPinSheet] = m2State(false);
   // มาจาก "ตั้งเวลาเปิด-ปิดร้านก่อน" (กดจากหน้าเงินสด) → เปิดชีตตั้งค่าร้านให้เลย
   React.useEffect(()=>{ try{ if(window.__kdOpenHours){ window.__kdOpenHours=false; setShopSheet(true); } }catch(e){} }, []);
   const grouped = cats.map(c=>({ cat:c, items:menu.filter(m=>m.cat===c.id) }));
@@ -1051,6 +1052,16 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
               <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?'คิดต่อเมนู: ต้นทุน/จาน หรือ สูตร+ตัดสต๊อก':'Per item: flat or recipe + stock'}</div>
             </div>
             <span style={{ fontSize:11, fontWeight:700, color:'var(--brand-ink)', background:'var(--brand-soft)', padding:'4px 10px', borderRadius:999 }}>{lang==='th'?'ผสม':'Hybrid'}</span>
+          </button>
+          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ความปลอดภัย':'Security'}</div>
+          <button onClick={()=>setPinSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
+            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
+            <span style={{ width:38, height:38, borderRadius:11, background:'#FFF7E8', color:'#8A6100', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🔑</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'PIN เจ้าของร้าน':'Owner PIN'}</div>
+              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{lang==='th'?'ใช้ดึงร้านกลับเมื่อเปลี่ยนเครื่อง/ล้างแคช และเข้าหลังบ้านบนคอม — ตั้งไว้ก่อนจะปลอดภัยกว่า':'Recover your shop on a new device · Backoffice login'}</div>
+            </div>
+            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
           </button>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ทีมงาน':'Team'}</div>
           <button onClick={()=>setRiderSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
@@ -1213,6 +1224,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
           // ลบบนเซิร์ฟเวอร์ด้วย (push เมนูเป็น upsert อย่างเดียว — ไม่ลบให้) ไม่งั้นเมนูที่ลบจะกลับมาตอนโหลดใหม่/เปิดอีกเครื่อง
           try{ if(window.KD_LIVE && window.KD_API && window.KD_API.deleteMenuItem) window.KD_API.deleteMenuItem(delId).catch(()=>{}); }catch(e){} }} />}
       {marketSheet && <MarketJoinSheet shop={shop} setShop={setShop} onClose={()=>setMarketSheet(false)} />}
+      {pinSheet && <OwnerPinSheet shop={shop} onClose={()=>setPinSheet(false)} />}
       {paySheet && <PaySettingsSheet pay={pay} setPay={setPay} onClose={()=>setPaySheet(false)} />}
       {memSheet && <MembersSheet members={members} pay={pay} setPay={setPay} onClose={()=>setMemSheet(false)} />}
       {shopSheet && <ShopProfileSheet shop={shop} setShop={setShop} regOpen={register&&register.open} onClose={()=>setShopSheet(false)} />}
@@ -1229,6 +1241,65 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
       {saleModeOpen && <ManageSaleModesSheet chanCfg={chanCfg} toggleSaleMode={toggleSaleMode} removeSaleMode={removeSaleMode} setChannelGp={setChannelGp} onAdd={()=>{ setSaleModeOpen(false); setSmAddOpen(true); }} onClose={()=>setSaleModeOpen(false)} />}
       {smAddOpen && <AddSaleModeSheet onClose={()=>{ setSmAddOpen(false); setSaleModeOpen(true); }} onAdd={(def)=>{ addSaleMode&&addSaleMode(def); setSmAddOpen(false); setSaleModeOpen(true); }} />}
     </div>
+  );
+}
+
+/* ══════════════ PIN เจ้าของร้าน — ใช้กู้ร้านคืน + เข้าหลังบ้านบนคอม ══════════════
+   เซิร์ฟเวอร์ยืนยันตัวตนด้วย LINE ของเจ้าของ (owner_line) ก่อนยอมให้ตั้ง — เครื่องพนักงานตั้งแทนไม่ได้ */
+function OwnerPinSheet({ shop, onClose }){
+  const { lang } = useT(); const TH = lang!=='en';
+  const [pin,setPin]   = m2State('');
+  const [pin2,setPin2] = m2State('');
+  const [busy,setBusy] = m2State(false);
+  const [msg,setMsg]   = m2State('');
+  const [err,setErr]   = m2State('');
+  const line = (shop && shop.owner && shop.owner.line) || (typeof window!=='undefined' && window.__lineUser && window.__lineUser.userId) || '';
+  const sid  = (shop && shop.shopId) || (typeof window!=='undefined' && window.KD_SHOP) || '';
+  const save = async ()=>{
+    setErr(''); setMsg('');
+    if(pin.length < 4) return setErr(TH?'PIN ต้องมีอย่างน้อย 4 หลัก':'PIN must be at least 4 digits');
+    if(pin !== pin2)  return setErr(TH?'PIN สองช่องไม่ตรงกัน':'PINs do not match');
+    if(!line)         return setErr(TH?'ยืนยันตัวตนเจ้าของไม่ได้ — เปิดแอปผ่าน LINE ของเจ้าของร้านแล้วลองใหม่':'Owner identity unavailable');
+    setBusy(true);
+    try{
+      const r = await window.KD_API.ownerSetPin(sid, { line, pin });
+      if(r && r.ok){ setMsg(TH?'ตั้ง PIN แล้ว — จำไว้ให้ดี ใช้ดึงร้านกลับตอนเปลี่ยนเครื่อง':'PIN saved'); setPin(''); setPin2(''); }
+      else setErr((r && r.error) || (TH?'ตั้ง PIN ไม่สำเร็จ':'Could not save PIN'));
+    }catch(e){ setErr(TH?'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้':'Connection failed'); }
+    setBusy(false);
+  };
+  return (
+    <Sheet open={true} onClose={onClose} height="82%">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'4px 20px 12px' }}>
+        <div>
+          <div style={{ fontSize:19, fontWeight:700 }}>{TH?'PIN เจ้าของร้าน':'Owner PIN'}</div>
+          <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:1 }}>{TH?'ตั้งครั้งเดียว ใช้ได้ตลอด':'Set once, use anytime'}</div>
+        </div>
+        <button onClick={onClose} style={{ border:'none', background:'var(--bg)', width:34, height:34, borderRadius:999, cursor:'pointer' }}>{IC.x}</button>
+      </div>
+      <div style={{ overflowY:'auto', padding:'0 20px 20px', flex:1 }}>
+        <div style={{ background:'var(--brand-soft)', color:'var(--brand-ink)', borderRadius:12, padding:'11px 13px', fontSize:12.5, lineHeight:1.55, marginBottom:14 }}>
+          {TH?'ใช้ตอน: เปลี่ยนมือถือ · ล้างแคชแล้วข้อมูลร้านหาย · เข้าหลังบ้านบนคอม — ใส่รหัสร้าน + PIN แล้วร้านเดิมกลับมาทั้งหมด ไม่ต้องสมัครใหม่':'Use it to restore your shop on a new device or sign in to Backoffice.'}
+        </div>
+        <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', marginBottom:6 }}>{TH?'รหัสร้านของคุณ (จดไว้คู่กับ PIN)':'Your shop code'}</div>
+        <div className="num" style={{ background:'var(--bg)', borderRadius:12, padding:'12px 14px', fontWeight:800, fontSize:15, letterSpacing:'.5px' }}>{sid || '—'}</div>
+        <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', margin:'14px 0 6px' }}>{TH?'ตั้ง PIN ใหม่ (4–8 หลัก)':'New PIN (4–8 digits)'}</div>
+        <input className="kd-input num" type="password" inputMode="numeric" maxLength={8} value={pin}
+          onChange={e=>setPin(e.target.value.replace(/\D/g,''))} placeholder="••••" style={{ width:'100%' }}/>
+        <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', margin:'12px 0 6px' }}>{TH?'ยืนยัน PIN อีกครั้ง':'Confirm PIN'}</div>
+        <input className="kd-input num" type="password" inputMode="numeric" maxLength={8} value={pin2}
+          onChange={e=>setPin2(e.target.value.replace(/\D/g,''))} onKeyDown={e=>{ if(e.key==='Enter') save(); }} placeholder="••••" style={{ width:'100%' }}/>
+        {err && <div style={{ color:'var(--danger)', fontSize:12.5, fontWeight:700, marginTop:10 }}>{err}</div>}
+        {msg && <div style={{ color:'var(--brand-ink)', fontSize:12.5, fontWeight:700, marginTop:10 }}>{msg}</div>}
+        <div style={{ background:'#FFF7E8', color:'#8A6100', borderRadius:12, padding:'11px 13px', fontSize:12, lineHeight:1.55, marginTop:14 }}>
+          {TH?'อย่าบอก PIN นี้กับพนักงาน — ใครมี รหัสร้าน + PIN จะดึงข้อมูลร้านทั้งหมดไปเปิดบนเครื่องอื่นได้':'Keep this PIN private — shop code + PIN restores your whole shop elsewhere.'}
+        </div>
+      </div>
+      <div style={{ flex:'0 0 auto', padding:'11px 20px calc(11px + env(safe-area-inset-bottom))', borderTop:'1px solid var(--hair)' }}>
+        <button onClick={save} disabled={busy||pin.length<4} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:14, opacity:(busy||pin.length<4)?.5:1 }}>
+          {busy?(TH?'กำลังบันทึก…':'Saving…'):(TH?'บันทึก PIN':'Save PIN')}</button>
+      </div>
+    </Sheet>
   );
 }
 

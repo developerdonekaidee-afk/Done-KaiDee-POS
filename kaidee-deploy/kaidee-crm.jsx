@@ -175,9 +175,54 @@ function CrmPlanGate({ phone, line, vertical, onBack, onConfirm }){
 }
 
 /* ══ CRM LANDING (ยังไม่สมัคร) ══ */
+/* ══ กู้ร้านคืน — เข้าด้วย LINE ของเจ้าของ หรือ รหัสร้าน + PIN (ไม่ต้องสมัครร้านซ้ำ) ══ */
+function CrmRecoverSheet({ onClose, onEnter }){
+  const [shopId,setShopId] = cState(''); const [pin,setPin] = cState('');
+  const [busy,setBusy] = cState(false); const [err,setErr] = cState(''); const [found,setFound] = cState(null);
+  const lineUid = (typeof window!=='undefined' && window.__lineUser && window.__lineUser.userId) || '';
+  const enter = (id)=>{ try{ localStorage.setItem('kd_shop', id); }catch(e){}
+    const o = location.origin + location.pathname; location.href = o + '?shop=' + encodeURIComponent(id) + '&role=merchant'; };
+  // เปิดผ่านไลน์ → หาร้านที่ผูกกับ LINE นี้ให้เลย ไม่ต้องจำรหัสร้าน
+  React.useEffect(()=>{ if(!lineUid || !(window.KD_API&&window.KD_API.getMyShop)) return;
+    window.KD_API.getMyShop(lineUid).then(sh=>{ const o=sh&&(sh.ownerLine||(sh.owner&&sh.owner.line)); if(sh&&sh.shopId&&o===lineUid) setFound(sh); }).catch(()=>{});
+  },[]);
+  const byPin = async ()=>{
+    const id = shopId.trim(); if(!id || !pin) return;
+    setBusy(true); setErr('');
+    try{ const r = await window.KD_API.ownerLogin(id, { pin });
+      if(r && r.ok){ enter(id); return; }
+      setErr((r && r.error) || 'รหัสร้านหรือ PIN ไม่ถูกต้อง');
+    }catch(e){ setErr('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'); }
+    setBusy(false);
+  };
+  return (<div onClick={onClose} style={{position:'absolute',inset:0,zIndex:120,background:'rgba(10,20,15,.55)',display:'flex',alignItems:'flex-end'}}>
+    <div onClick={e=>e.stopPropagation()} style={{width:'100%',background:'#fff',borderRadius:'20px 20px 0 0',padding:'18px 18px calc(20px + env(safe-area-inset-bottom))',maxHeight:'92%',overflowY:'auto',fontFamily:'var(--font)'}}>
+      <div style={{fontSize:19,fontWeight:800}}>เข้าใช้งานร้านของคุณ</div>
+      <div style={{fontSize:13,color:'var(--ink-2)',lineHeight:1.55,margin:'6px 0 14px'}}>เคยสมัครไว้แล้วแต่เครื่องนี้ไม่มีข้อมูลร้าน (เปลี่ยนเครื่อง/ล้างแคช) — ดึงร้านเดิมกลับมาได้ที่นี่ <b>ไม่ต้องสมัครใหม่</b></div>
+      {found && <button onClick={()=>enter(found.shopId)} className="kd-btn kd-btn-primary kd-btn-block" style={{padding:14,marginBottom:12}}>
+        เข้าร้าน “{found.name||found.shopId}” ด้วย LINE นี้</button>}
+      {!found && lineUid && <div style={{background:'var(--bg)',borderRadius:12,padding:'11px 13px',fontSize:12.5,color:'var(--ink-2)',lineHeight:1.55,marginBottom:12}}>
+        ไม่พบร้านที่ผูกกับบัญชี LINE นี้ — ถ้าสมัครด้วย LINE อื่น ให้เปิดลิงก์นี้จากบัญชีนั้น หรือใช้รหัสร้าน + PIN ด้านล่าง</div>}
+      <div style={{fontSize:12.5,fontWeight:700,color:'var(--ink-3)',marginBottom:6}}>รหัสร้าน (Shop code)</div>
+      <input className="kd-input" value={shopId} onChange={e=>setShopId(e.target.value.trim())} placeholder="เช่น potato-corner" style={{width:'100%'}}/>
+      <div style={{fontSize:12.5,fontWeight:700,color:'var(--ink-3)',margin:'12px 0 6px'}}>PIN เจ้าของร้าน</div>
+      <input className="kd-input num" type="password" inputMode="numeric" value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,''))}
+        onKeyDown={e=>{ if(e.key==='Enter') byPin(); }} placeholder="4–8 หลัก" style={{width:'100%'}}/>
+      {err && <div style={{color:'var(--danger)',fontSize:12.5,fontWeight:700,marginTop:9}}>{err}</div>}
+      <button onClick={byPin} disabled={busy||!shopId.trim()||!pin} className="kd-btn kd-btn-primary kd-btn-block" style={{padding:14,marginTop:14,opacity:(busy||!shopId.trim()||!pin)?.5:1}}>
+        {busy?'กำลังตรวจสอบ…':'เข้าสู่ระบบ'}</button>
+      <div style={{background:'#FFF7E8',color:'#8A6100',borderRadius:12,padding:'11px 13px',fontSize:12,lineHeight:1.55,marginTop:12}}>
+        ยังไม่เคยตั้ง PIN? ตั้งได้ที่ <b>ตั้งค่าร้าน → PIN เจ้าของร้าน</b> บนเครื่องที่ยังเข้าร้านได้อยู่ · ถ้าเข้าไม่ได้เลยให้ติดต่อทีมงานพร้อมชื่อร้านและเบอร์ที่สมัครไว้
+      </div>
+      <button onClick={onClose} style={{border:'none',background:'none',cursor:'pointer',fontFamily:'var(--font)',fontSize:13,color:'var(--ink-3)',textDecoration:'underline',display:'block',margin:'12px auto 0'}}>ปิด</button>
+    </div>
+  </div>);
+}
+
 function CrmLanding({ onSignup, onCancel, onEnter }){
   const [pkg,setPkg] = cState(PKG_FALLBACK);
   const [existing,setExisting] = cState(null);
+  const [recover,setRecover] = cState(false);
   React.useEffect(()=>{ if(window.KD_API && window.KD_API.getPackages) window.KD_API.getPackages().then(p=>{ if(p) setPkg(_crmNormPkg(p)); }).catch(()=>{}); },[]);
   React.useEffect(()=>{
     let goSignup=false; try{ goSignup=new URLSearchParams(location.search).get('go')==='signup'; }catch(e){}
@@ -214,6 +259,11 @@ function CrmLanding({ onSignup, onCancel, onEnter }){
       </div>
       <div className="kd-body"><div style={{padding:'16px 18px 26px'}}>
         <div style={{textAlign:'center',fontSize:12.5,color:'var(--ink-3)',marginBottom:4}}>{existing?'ร้านของคุณ — แตะปุ่มด้านล่างเพื่อเข้าสู่ระบบ':'สมัครด้วย LINE ของคุณ · ไม่ต้องกรอกบัตร'}</div>
+        {!existing && <div style={{textAlign:'center',marginTop:10}}>
+          <button onClick={()=>setRecover(true)} style={{border:'none',background:'none',cursor:'pointer',fontFamily:'var(--font)',fontSize:13,fontWeight:700,color:'var(--brand-ink)',textDecoration:'underline'}}>
+            มีร้านอยู่แล้ว? เข้าใช้งานร้านของคุณ</button>
+        </div>}
+        {recover && <CrmRecoverSheet onClose={()=>setRecover(false)} onEnter={onEnter}/>}
 
         <div className="kd-card" style={{padding:'6px 18px',marginTop:20}}>
           {feats.map((f,i)=>(<div key={i} style={{display:'flex',gap:13,alignItems:'flex-start',padding:'13px 0',borderBottom:i<feats.length-1?'1px solid var(--hair)':'none'}}>
