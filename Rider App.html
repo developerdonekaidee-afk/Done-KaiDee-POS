@@ -6,7 +6,12 @@
 <meta name="build" content="p2-20260802a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ไรเดอร์ · :Done KaiDee</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="rider-manifest.json">
+<meta name="theme-color" content="#26619C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ไรเดอร์">
+<link rel="apple-touch-icon" href="logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -71,6 +76,7 @@ a.plain{color:inherit;text-decoration:none}
   <div class="bd" id="bd"></div>
   <div class="tabs" id="tabs"></div>
 </div>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js" onerror="window.__noLiff=1"></script>
 <script>
 /* แอปไรเดอร์แพลตฟอร์ม :Done KaiDee — คนละระบบกับวิน (Labor Win)
    งานส่งเก็บใน platform-worker region 'delivery' แยกจาก pool ของวินคนละชุด
@@ -246,6 +252,11 @@ function viewMe(){
       h('div',{style:'font-size:13px;margin-top:4px'},[S.loc ? (S.loc.lat+', '+S.loc.lng) : 'ยังไม่ได้แชร์พิกัด']),
       h('button',{class:'btn ghost',style:'margin-top:10px',onclick:function(){ locate(function(l){ S.loc=l||S.loc; ping(S.online); render(); }); }},['📍 อัปเดตตำแหน่ง']),
     ]),
+    standalone() ? null : h('div',{class:'card'},[
+      h('div',{class:'lbl'},['ใช้เป็นแอปบนเครื่อง']),
+      h('div',{style:'font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:4px'},['ติดตั้งเป็นไอคอนบนหน้าจอโฮมได้เลย ไม่ต้องโหลดจาก App Store / Play Store · เปิดครั้งต่อไปเข้าตรง ไม่ต้องเปิดไลน์ก่อน']),
+      h('button',{class:'btn',style:'margin-top:10px',onclick:installApp},['📲 ติดตั้งเป็นแอป']),
+    ]),
     h('button',{class:'btn ghost',onclick:signOut},['ออกจากระบบ']),
   ];
 }
@@ -295,6 +306,39 @@ function render(){
     tabs.appendChild(b);
   });
 }
+
+/* ── ติดตั้งเป็นแอปบนเครื่อง (PWA) — ไม่ต้องผ่าน App Store / Play Store ── */
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt = e; render(); });
+function standalone(){ try{ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }catch(e){ return false; } }
+function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+function inLine(){ return /Line\//i.test(navigator.userAgent); }
+function installApp(){
+  if (deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(){ deferredPrompt=null; render(); }); return; }
+  if (inLine()) return alert('เปิดจากในไลน์ติดตั้งไม่ได้\n\nกดปุ่ม ⋯ มุมขวาบน → "เปิดในเบราว์เซอร์" แล้วค่อยกดติดตั้งอีกครั้ง');
+  if (isIOS()) return alert('ติดตั้งบน iPhone/iPad\n\n1. กดปุ่มแชร์ (สี่เหลี่ยมลูกศรขึ้น) ด้านล่าง\n2. เลือก "เพิ่มไปยังหน้าจอโฮม"\n3. กด "เพิ่ม" — จะได้ไอคอนแอปเหมือนแอปทั่วไป');
+  alert('เปิดเมนูของเบราว์เซอร์ (⋮) แล้วเลือก "ติดตั้งแอป" หรือ "เพิ่มไปยังหน้าจอหลัก"');
+}
+try{ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=p2-20260802a').catch(function(){}); }catch(e){}
+
+/* ── ผูกกับบัญชีไลน์ (เฉพาะตอนเปิดผ่าน LINE OA / LIFF) → เข้าใช้งานไม่ต้องพิมพ์เบอร์ ── */
+function lineLogin(){
+  if (!window.liff) return;
+  try{
+    liff.init({ liffId: '2010720123-HXe3iZJD' }).then(function(){
+      if (!liff.isLoggedIn()) return;
+      liff.getProfile().then(function(pf){
+        if (!pf || !pf.userId) return;
+        S.line = pf.userId;
+        if (S.me) return;                       // เข้าระบบไว้แล้ว ไม่ต้องทำอะไร
+        fetch(API+'/riders/by-line?line='+encodeURIComponent(pf.userId)).then(function(r){ return r.json(); }).then(function(j){
+          if (j && j.found && j.status === 'approved'){ S.me = { id:j.id, name:j.name, phone:j.phone, line:pf.userId }; save(); render(); refresh(); }
+        }).catch(function(){});
+      }).catch(function(){});
+    }).catch(function(){});
+  }catch(e){}
+}
+lineLogin();
 
 render();
 if (S.me){ refresh(); if (S.online) locate(function(l){ S.loc=l||S.loc; ping(true); render(); }); }

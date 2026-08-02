@@ -156,7 +156,8 @@
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\).job;console.log\\('เบอร์ลูกค้า:',j.custPhone,'| เก็บปลายทาง:',j.cod,j.codAmount,'| ที่อยู่ร้าน:',j.shopAddr,'| เลขออเดอร์:',j.orderNo\\)}\\)\")",
       "Bash(PLAT_PASS=e5421493868dfe121a99f5587fbdee51 node riderapp.js)",
       "Bash(curl -s -m 20 \"https://platform.oneday-pos.workers.dev/riders/status?phone=0888888888\")",
-      "Bash(curl -s -o /dev/null -w \"Rider App.html: %{http_code}\\\\n\" -m 20 \"https://kaidee-git.oneday-pos.workers.dev/Rider%20App.html\")"
+      "Bash(curl -s -o /dev/null -w \"Rider App.html: %{http_code}\\\\n\" -m 20 \"https://kaidee-git.oneday-pos.workers.dev/Rider%20App.html\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(d\\)[0];console.log\\(r.databaseId,r.status,r.conclusion,'|',r.displayTitle\\)}\\)\")"
     ]
   }
 }

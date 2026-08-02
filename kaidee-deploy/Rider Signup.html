@@ -70,6 +70,7 @@ body{background:#F3F6F4;color:var(--ink);font-family:var(--font);min-height:100d
   <div class="ft" id="ft"></div>
 </div>
 
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js" onerror="window.__noLiff=1"></script>
 <script>
 /* สมัครไรเดอร์ของแพลตฟอร์ม — แยกจากระบบวิน (Labor Win) คนละใบสมัคร คนละฐานข้อมูล
    ยื่นใบสมัคร → แอดมินตรวจเอกสาร → อนุมัติแล้วเริ่มรับงานได้ (มาตรฐานเดียวกับ Grab/LINE MAN) */
@@ -88,6 +89,12 @@ var VEHICLES = [
   { k:'car',   e:'🚗', t:'รถยนต์',             s:'ออเดอร์ใหญ่ · ของหนัก' },
   { k:'walk',  e:'🚲', t:'จักรยาน / เดินส่ง',  s:'ในตลาด/ระยะใกล้' },
 ];
+
+/* เปิดผ่าน LINE OA (LIFF) → เก็บ userId ไว้ผูกกับใบสมัคร เพื่อให้เข้าแอปไรเดอร์ได้เลยโดยไม่ต้องพิมพ์เบอร์ */
+var LINE_ID = '';
+try{ if (window.liff) liff.init({ liffId:'2010720123-HXe3iZJD' }).then(function(){
+  if (liff.isLoggedIn()) liff.getProfile().then(function(p){ if (p && p.userId) LINE_ID = p.userId; }).catch(function(){});
+}).catch(function(){}); }catch(e){}
 
 var S = { step:0, vehicle:'moto', name:'', phone:'', natId:'', plate:'', area:'', lang:'th',
           bank:'', acct:'', emName:'', emPhone:'', docs:{}, agree:false, busy:false, err:'', ref:'', status:'' };
@@ -207,7 +214,7 @@ function submit(){
   S.busy = true; S.err = ''; render();
   fetch(API + '/riders', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({
     name:S.name.trim(), phone:S.phone, natId:S.natId, vehicle:S.vehicle, plate:S.plate, area:S.area, lang:S.lang,
-    payout:{ bank:S.bank, acct:S.acct }, emergency:{ name:S.emName, phone:S.emPhone }, docs:S.docs,
+    payout:{ bank:S.bank, acct:S.acct }, emergency:{ name:S.emName, phone:S.emPhone }, docs:S.docs, line:LINE_ID,
   })})
   .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
   .then(function(res){

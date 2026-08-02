@@ -455,7 +455,7 @@ export default {
             .find(r => String(r.phone || '').replace(/\D/g, '') === phone);
           if (existing && existing.status === 'approved') return json({ ok: true, id: existing.id, status: 'approved', already: true }, req);
           const id = existing ? existing.id : safeId(rid('rd'));
-          const rec = { id, name: b.name, phone, natId: b.natId || '', vehicle: b.vehicle || 'moto',
+          const rec = { id, name: b.name, phone, natId: b.natId || '', vehicle: b.vehicle || 'moto', line: b.line || (existing && existing.line) || '',
             plate: b.plate || '', area: b.area || '', lang: b.lang || 'th',
             payout: { bank: (b.payout && b.payout.bank) || '', acct: (b.payout && b.payout.acct) || '', promptpay: (b.payout && b.payout.promptpay) || '' },
             emergency: { name: (b.emergency && b.emergency.name) || '', phone: (b.emergency && b.emergency.phone) || '' },
@@ -472,6 +472,14 @@ export default {
             .find(x => String(x.phone || '').replace(/\D/g, '') === phone);
           if (!r) return json({ found: false }, req);
           return json({ found: true, id: r.id, name: r.name, status: r.status, note: r.note || '', appliedAt: r.appliedAt }, req);
+        }
+        // GET /riders/by-line?line= — เปิดแอปผ่าน LINE OA แล้วเข้าใช้งานเลย ไม่ต้องพิมพ์เบอร์
+        if (req.method === 'GET' && seg[1] === 'by-line') {
+          const line = url.searchParams.get('line') || '';
+          if (!line) return err('line required', req, 400);
+          const r = (await collList(env, RB, 'riders', 0, 3000)).find(x => x.line && x.line === line);
+          if (!r) return json({ found: false }, req);
+          return json({ found: true, id: r.id, name: r.name, phone: r.phone, status: r.status, note: r.note || '' }, req);
         }
         // GET /riders — แอดมินดูใบสมัครทั้งหมด (มีรูปเอกสารด้วย)
         if (req.method === 'GET' && !seg[1]) {
