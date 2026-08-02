@@ -488,7 +488,9 @@ function CustomerApp({ store }){
       </div>}
       <div style={{ position:'absolute', inset:0, bottom:74 }}>
         {checkout ? <Checkout cart={cart} shop={store.shop} payCfg={store.pay} store={store} onBack={()=>setCheckout(false)} onPlace={place}/> :
-         tab==='menu'   ? <CustMenu menu={menuView} cart={cart} addItem={addItem} shop={store.shop} hotIds={hotIds}/> :
+         tab==='menu'   ? ((viaMarket && window.MarketShopMenu)
+             ? <MarketShopMenu menu={menuView} cart={cart} addItem={addItem} shop={store.shop} hotIds={hotIds} onCart={()=>setTab('cart')}/>
+             : <CustMenu menu={menuView} cart={cart} addItem={addItem} shop={store.shop} hotIds={hotIds}/>) :
          tab==='cart'   ? <CustCart cart={cart} menu={store.menu} setQty={setQty} onCheckout={()=>setCheckout(true)}/> :
          tab==='orders' ? <CustOrders orders={store.orders} patchOrder={store.patchOrder}/> :
                           <CustProfile store={store}/>}
