@@ -52,7 +52,8 @@ function crmFileToLogo(file){
 /* ══ แพ็กเกจ: จุดขายต่อ tier (เติมให้ข้อมูลจาก backend ที่อาจไม่มี tagline/feats) ══ */
 const PKG_TIER_FEATS = {
   starter: { tagline:'ขายหน้าร้าน + ลูกค้าสั่งเอง', feats:['คิดเงิน + เปิดบิลหน้าร้าน','ลูกค้าสั่งเองผ่านมือถือ','สต๊อก + สรุปยอด–กำไร'] },
-  shop:    { tagline:'ขายหน้าร้าน + เดลิเวอรี', feats:['ทุกอย่างในแพ็กเริ่มต้น','บันทึกการขายเดลิเวอรี เช่น Grab / LINE MAN / Shopee','กระทบยอดเดลิเวอรีอัตโนมัติ'] },
+  shop:    { tagline:'ขายหน้าร้าน + รวมยอดเดลิเวอรี',
+             feats:['ทุกอย่างในแพ็กเริ่มต้น','บันทึกยอดขายจากแอปเดลิเวอรี เช่น Grab / LINE MAN / Shopee รวมไว้ที่เดียว','เช็คว่าแพลตฟอร์มโอนเงินครบไหม — ระบบเทียบยอดให้อัตโนมัติ'] },
   pro:     { tagline:'Backoffice + หลายสาขา', feats:['ทุกอย่างในแพ็กร้านค้า','Backoffice บนจอคอม','รองรับหลายสาขา'] },
 };
 // จำนวนเครื่องมาจากแพ็กจริงบนเซิร์ฟเวอร์ — คำโปรยต้องไม่พูดว่า "หลายเครื่อง" ถ้าแพ็กนั้นให้เครื่องเดียว
@@ -191,7 +192,7 @@ function CrmLanding({ onSignup, onCancel, onEnter }){
     {ic:'📱',bg:'var(--accent-soft)',c:'var(--accent)',t:'สั่งออเดอร์ผ่านมือถือ',s:'ลูกค้าเปิดเมนู สั่งเอง จ่ายเอง จากมือถือ ไม่ต้องต่อคิว'},
     {ic:'🖥️',bg:'#EAF3EE',c:'var(--brand)',t:'หน้าจอแสดงคิว',s:'โชว์คิวแยกแต่ละช่องทางบนจอหน้าร้าน ลูกค้ารู้ว่าถึงคิวไหนแล้ว'},
     {ic:'🛵',bg:'#ECEEED',c:'var(--ink)',t:'ระบบไรเดอร์ร้านค้า',s:'มอบงานส่งให้ไรเดอร์ร้าน ติดตามสถานะ คิดค่าส่งอัตโนมัติ'},
-    {ic:'🧾',bg:'#FDF0E2',c:'var(--gold)',t:'บันทึกขายได้หลายช่องทาง',s:'คีย์ยอด Grab / LINE MAN / ShopeeFood / หน้าร้าน รวมอยู่ในที่เดียว'},
+    {ic:'🧾',bg:'#FDF0E2',c:'var(--gold)',t:'บันทึกยอดขายได้หลายช่องทาง',s:'หน้าร้าน + คีย์ยอดจากแอปเดลิเวอรี เช่น Grab / LINE MAN / ShopeeFood รวมไว้ที่เดียว (ไม่ใช่รับออเดอร์อัตโนมัติ)'},
     {ic:'📊',bg:'var(--accent-soft)',c:'var(--accent)',t:'รู้กำไร + คุมสต๊อก',s:'สรุปยอดขาย–ต้นทุน–กำไรรายวัน ตัดสต๊อกอัตโนมัติตามสูตร'},
   ];
   return (
@@ -244,6 +245,11 @@ function CrmLanding({ onSignup, onCancel, onEnter }){
                 {meta.feats.map((ft,j)=>(<div key={j} style={{display:'flex',gap:7,alignItems:'flex-start',fontSize:12.5,color:'var(--ink-2)'}}><span style={{color:'var(--brand)',fontWeight:700,flex:'0 0 auto'}}>✓</span><span style={{lineHeight:1.4}}>{ft}</span></div>))}
               </div>}
             </div>); })}
+        </div>
+        {/* พูดให้ชัดตั้งแต่ก่อนสมัคร: เราไม่ได้ต่อ API กับแพลตฟอร์มเดลิเวอรี — ร้านรับออเดอร์ในแอปนั้นตามเดิม
+            ที่ระบบทำให้คือรวมยอดทุกช่องทางไว้ที่เดียวและตรวจว่าเงินโอนเข้าครบไหม (กันเข้าใจผิดแล้วรู้สึกโดนหลอกทีหลัง) */}
+        <div style={{background:'var(--bg)',borderRadius:12,padding:'11px 13px',fontSize:12,color:'var(--ink-2)',lineHeight:1.6,marginTop:12}}>
+          <b style={{color:'var(--ink)'}}>เรื่องเดลิเวอรี — บอกให้ชัดก่อน:</b> ระบบ<b>ไม่ได้รับออเดอร์</b>จาก Grab / LINE MAN / Shopee โดยตรง ร้านยังรับออเดอร์ในแอปพวกนั้นตามปกติ · สิ่งที่ระบบทำให้คือ<b>บันทึกยอดขายทุกช่องทางรวมไว้ที่เดียว</b> เห็นยอด–ต้นทุน–กำไรรวม และเทียบให้ว่าแพลตฟอร์มโอนเงินมาครบตามที่ควรได้หรือยัง
         </div>
         {pkg.addon && pkg.addon.consign && <div className="kd-card" style={{padding:'14px 16px',marginTop:12,display:'flex',gap:12,alignItems:'flex-start',background:'var(--accent-soft)',border:'1px dashed var(--accent)'}}>
           <div style={{width:40,height:40,borderRadius:11,flex:'0 0 auto',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,background:'#fff'}}>🤝</div>
@@ -447,7 +453,7 @@ function CrmChooser({ onDone, onBack }){
   const toggle=(k)=>setSel(s=>({ ...s, [k]:!s[k] }));
   const MODS = [
     { k:'orders', ic:'🛒', bg:'var(--brand-soft)', t:'ให้ลูกค้าสั่งเอง (มือถือ)', s:'ลูกค้าสแกน QR ที่โต๊ะ/โปสเตอร์ หรือเปิดลิงก์ — ไม่ต้องมี LINE OA ก็สั่งได้ · มี LINE OA ก็กดสั่งจากแชทได้ · ออเดอร์เด้งเข้าแอปคุณ' },
-    { k:'delivery', ic:'🛵', bg:'#FDF0E2', t:'ขายผ่านเดลิเวอรี', s:'คีย์ยอด Grab / LINE MAN / ShopeeFood รวมในรายงานเดียว' },
+    { k:'delivery', ic:'🛵', bg:'#FDF0E2', t:'ขายผ่านเดลิเวอรี', s:'คีย์ยอดจากแอปเดลิเวอรี เช่น Grab / LINE MAN / ShopeeFood รวมในรายงานเดียว' },
     { k:'riders', ic:'📦', bg:'#ECEEED', t:'มีคนส่งของร้านเอง', s:'มอบงานส่งให้ไรเดอร์ร้าน ติดตามสถานะ คิดค่าส่ง' },
   ];
   return (
