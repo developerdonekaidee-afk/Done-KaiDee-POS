@@ -779,7 +779,9 @@ function KaiDeeApp(){
       {isPhone ? (
         <div className="kd-fill">
           {appInner}
-          <FloatingDemo role={role} setRole={setRole} lang={lang} setLang={setLang} onHelp={()=>setHelp(true)}/>
+          {/* ปุ่มลอยสลับบทบาทเป็นของเดโม/ทีมงาน — ลูกค้าจริงที่เข้ามาจากหน้าแพลตฟอร์มไม่ควรเห็น (กดแล้วหลุดเข้าจอร้าน) */}
+          {!(role==='market' || (typeof kdViaMarket==='function' && kdViaMarket())) &&
+            <FloatingDemo role={role} setRole={setRole} lang={lang} setLang={setLang} onHelp={()=>setHelp(true)}/>}
         </div>
       ) : (
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:18 }}>
