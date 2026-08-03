@@ -27,6 +27,8 @@ function MarketHome({ store }){
   const [locOpen, setLocOpen] = mhState(false);
   const [sort, setSort] = mhState(()=> custLoc() ? 'near' : 'open');   // near | open | promo
   const [tab, setTab] = mhState('shops');   // shops | orders
+  const [favs, setFavs] = mhState(()=>favShops());
+  const [favOnly, setFavOnly] = mhState(false);
 
   const useGps = async ()=>{
     setLocBusy(true);
@@ -69,6 +71,7 @@ function MarketHome({ store }){
   }) : shops;
   const openScore = (s)=> ((window.kdShopOpen ? window.kdShopOpen(s) : s.isOpen!==false) && s.marketOpen!==false) ? 0 : 1;
   const filtered = withDist ? withDist.filter(s =>
+    (!favOnly || favs.includes(s.id)) &&
     (cat === 'all' || s.cat === cat) &&
     (!qlc || (s.name || '').toLowerCase().includes(qlc) || (s.cat || '').toLowerCase().includes(qlc))
   ).sort((a,b)=>{
@@ -168,8 +171,17 @@ function MarketHome({ store }){
               boxShadow: on ? 'none' : '0 1px 3px rgba(20,40,32,.08)',
             }}>{k==='near' && !loc ? '📍 ' : ''}{l}</button>;
           })}
+          {favs.length > 0 && <button onClick={()=>setFavOnly(v=>!v)} style={{
+            flexShrink:0, border:'none', cursor:'pointer', whiteSpace:'nowrap', fontFamily:'inherit',
+            padding:'7px 14px', borderRadius:999, fontWeight:700, fontSize:12.5,
+            background: favOnly ? 'var(--ink,#1B2420)' : 'var(--card,#fff)',
+            color: favOnly ? '#fff' : 'var(--ink-2,#57635C)',
+            boxShadow: favOnly ? 'none' : '0 1px 3px rgba(20,40,32,.08)',
+          }}>❤️ {TH?'ร้านโปรด':'Favourites'} {favs.length}</button>}
         </div>
       )}
+      {favOnly && filtered && filtered.length===0 && <div style={{ textAlign:'center', color:'var(--ink-3,#8A948E)', padding:'30px 20px 0', fontSize:13 }}>
+        {TH?'ร้านโปรดของคุณไม่มีร้านไหนตรงกับตัวกรองที่เลือกอยู่':'No favourites match the current filters'}</div>}
 
       {/* category chips */}
       {cats.length > 0 && (
@@ -225,12 +237,12 @@ function MarketHome({ store }){
               <div key={c} style={{ marginBottom:4 }}>
                 <div style={{ fontWeight:800, fontSize:15.5, color:'var(--ink,#1B2420)', margin:'2px 0 10px' }}>{c}</div>
                 <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                  {inCat.map(s => <ShopCard key={s.id} s={s} directory={directory} TH={TH} onOpen={openShop}/>)}
+                  {inCat.map(s => <ShopCard key={s.id} s={s} directory={directory} TH={TH} onOpen={openShop} fav={favs.includes(s.id)} onFav={()=>setFavs(toggleFav(s.id))}/>)}
                 </div>
               </div>
             );
           })
-        ) : (filtered && filtered.map(s => <ShopCard key={s.id} s={s} directory={directory} TH={TH} onOpen={openShop}/>))}
+        ) : (filtered && filtered.map(s => <ShopCard key={s.id} s={s} directory={directory} TH={TH} onOpen={openShop} fav={favs.includes(s.id)} onFav={()=>setFavs(toggleFav(s.id))}/>))}
       </div>
       {bottomNav}
     </div>
@@ -329,9 +341,10 @@ function MyOrders({ TH }){
   );
 }
 
-function ShopCard({ s, directory, TH, onOpen }){
+function ShopCard({ s, directory, TH, onOpen, fav, onFav }){
   return (
     <button onClick={() => onOpen(s)} style={{
+      position:'relative',
       display:'flex', flexDirection:'column', textAlign:'left', cursor:'pointer', border:'none', padding:0,
       background:'var(--card,#fff)', borderRadius:18, overflow:'hidden',
       boxShadow:'0 2px 10px rgba(20,40,32,.08)', fontFamily:'inherit',
@@ -358,8 +371,17 @@ function ShopCard({ s, directory, TH, onOpen }){
           <span style={{ fontSize:10 }}>🎟️</span>{promoText(s.promo, TH)}
         </div>}
       </div>
+      {/* หัวใจ — วางคร่อมขอบรูปกับเนื้อการ์ด ไม่ทับป้ายสถานะหรือป้ายโปร */}
+      <span role="button" tabIndex={0} aria-label={fav?(TH?'เอาออกจากร้านโปรด':'Remove from favourites'):(TH?'เพิ่มเป็นร้านโปรด':'Add to favourites')}
+        onClick={e=>{ e.stopPropagation(); onFav && onFav(); }}
+        onKeyDown={e=>{ if(e.key==='Enter'||e.key===' '){ e.stopPropagation(); e.preventDefault(); onFav && onFav(); } }}
+        style={{ position:'absolute', top:88, right:12, width:34, height:34, borderRadius:999, cursor:'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center', fontSize:16,
+          background:'#fff', boxShadow:'0 2px 8px rgba(20,40,32,.18)' }}>
+        {fav ? '❤️' : '🤍'}
+      </span>
       <div style={{ padding:'11px 14px 13px' }}>
-        <div style={{ fontWeight:700, fontSize:15, color:'var(--ink,#1B2420)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{s.name}</div>
+        <div style={{ fontWeight:700, fontSize:15, color:'var(--ink,#1B2420)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', paddingRight:30 }}>{s.name}</div>
         <div style={{ fontSize:12, color:'var(--ink-3,#8A948E)', marginTop:3 }}>{s.cat ? s.cat + ' · ' : ''}{s.open}–{s.close}</div>
         {/* ระยะทาง/เวลา/ค่าส่ง — ขึ้นเมื่อลูกค้าบอกตำแหน่งแล้วและร้านปักหมุดไว้ */}
         {s._km != null && <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:5, fontSize:11.5, color:'var(--ink-2,#57635C)', fontWeight:600 }}>

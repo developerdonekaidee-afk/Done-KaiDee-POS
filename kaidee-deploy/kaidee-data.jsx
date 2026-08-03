@@ -541,6 +541,17 @@ function delAddr(addr){
   return list;
 }
 
+/* ร้านโปรด — เก็บในเครื่อง (ต่ออุปกรณ์) · ย้ายเครื่องแล้วต้องกดใหม่
+   ยังไม่ผูกกับบัญชี LINE เพราะต้องมีตารางใหม่ฝั่งเซิร์ฟเวอร์ ค่อยทำตอนมีคนใช้จริง */
+const KD_FAV_KEY = 'kd_fav_shops';
+function favShops(){ try{ const s = localStorage.getItem(KD_FAV_KEY); const a = s?JSON.parse(s):[]; return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function toggleFav(id){
+  const list = favShops();
+  const next = list.includes(id) ? list.filter(x=>x!==id) : [id, ...list];
+  try{ localStorage.setItem(KD_FAV_KEY, JSON.stringify(next.slice(0,100))); }catch(e){}
+  return next;
+}
+
 // ขอพิกัดจากเครื่อง — คืน null ถ้าผู้ใช้ไม่อนุญาต/เครื่องไม่รองรับ (ไม่ throw ให้จอค้าง)
 function kdAskLoc(){
   return new Promise(res=>{
@@ -576,7 +587,7 @@ Object.assign(window, {
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
   kdViaMarket, marketMenuView, kdMarketPriceOpen,
   promoText, promoSubText,
-  custLoc, setCustLoc, kdDistKm, kdEtaMin, kdAskLoc, addrBook, saveAddr, delAddr,
+  custLoc, setCustLoc, kdDistKm, kdEtaMin, kdAskLoc, addrBook, saveAddr, delAddr, favShops, toggleFav,
   deliveryCfg, deliveryFee, customerPaysDelivery,
   RUNITS, runit, TRACK_UNIT, buyUnitsFor, convQty, rawValue, RAW_CATS, RAW, rawById, SEED_PURCHASES, effItemCost, effSaleCost,
   TopBar, TabBar, Sheet, useToast, Stat, FoodTile,
