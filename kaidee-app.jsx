@@ -107,8 +107,11 @@ function KaiDeeApp(){
     try{ if(qp('role')==='kds'){ sessionStorage.setItem('kd_dl_kds','1'); if(qp('shop')) sessionStorage.setItem('kd_dl_shop', qp('shop')); }
       if(qp('role')==='kds' || sessionStorage.getItem('kd_dl_kds')==='1') return 'kds'; }catch(e){}
     // ⭐ หน้า "ร้านในตลาดนี้" (role=market&market=<ชื่อตลาด>) — ดูรายชื่อร้านได้เลย ไม่ต้องล็อกอิน LINE ก่อน
+    // ธงนี้จำไว้กู้ตอน LINE ล้าง liff.state ทิ้ง — แต่ต้องเลิกจำทันทีที่ลูกค้าเจาะเข้าร้านใดร้านหนึ่ง (?shop=)
+    // ไม่งั้นกดร้านจากหน้ารวมร้าน = navigate แล้วเด้งกลับหน้ารวมทุกครั้ง เข้าสั่งอาหารไม่ได้เลย
     try{ if(qp('role')==='market'){ sessionStorage.setItem('kd_dl_market','1'); }
-      if(qp('role')==='market' || sessionStorage.getItem('kd_dl_market')==='1') return 'market'; }catch(e){}
+      if(qp('shop')) sessionStorage.removeItem('kd_dl_market');
+      else if(qp('role')==='market' || sessionStorage.getItem('kd_dl_market')==='1') return 'market'; }catch(e){}
     // ⭐ หน้าแรกของเว็บ (ไม่มีพารามิเตอร์) หรือ ?go=signup → ส่งไปหน้า "สมัครใช้งาน" (Signup Chooser) ให้เลือกระบบก่อน
     // ข้าม chooser เมื่อ: มีร้านในเครื่องแล้ว · มี sys/shop/role/liff.state มาด้วย (เข้าตรงตามเดิม)
     (()=>{ try{

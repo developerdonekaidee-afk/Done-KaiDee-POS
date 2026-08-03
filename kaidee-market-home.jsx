@@ -158,10 +158,21 @@ function ShopCard({ s, directory, TH, onOpen }){
         })()}
         {directory && s.market && <div style={{ position:'absolute', bottom:10, left:10, fontSize:10.5, fontWeight:700, padding:'3px 9px', borderRadius:999,
           background:'rgba(255,255,255,.94)', color:'var(--accent-ink,#1F5C99)' }}>📍{s.market}</div>}
+        {/* ป้ายโปร — มุมซ้ายบน สีส้มแยกจากป้ายสถานะ ให้เห็นก่อนอ่านชื่อร้าน */}
+        {s.promo && <div style={{ position:'absolute', top:10, left:10, display:'flex', alignItems:'center', gap:4,
+          fontSize:11, fontWeight:800, padding:'4px 9px', borderRadius:999, background:'#E8590C', color:'#fff',
+          boxShadow:'0 2px 6px rgba(232,89,12,.35)' }}>
+          <span style={{ fontSize:10 }}>🎟️</span>{promoText(s.promo, TH)}
+        </div>}
       </div>
       <div style={{ padding:'11px 14px 13px' }}>
         <div style={{ fontWeight:700, fontSize:15, color:'var(--ink,#1B2420)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{s.name}</div>
         <div style={{ fontSize:12, color:'var(--ink-3,#8A948E)', marginTop:3 }}>{s.cat ? s.cat + ' · ' : ''}{s.open}–{s.close}</div>
+        {/* ป้ายมุมบนบอกว่าลดเท่าไหร่แล้ว บรรทัดนี้จึงบอกแค่ชื่อโปร — ไม่ทวนเงื่อนไขซ้ำให้รก */}
+        {s.promo && <div style={{ fontSize:11.5, color:'#B4531A', fontWeight:700, marginTop:4,
+          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+          {s.promo.name}{s.promoCount > 1 && (TH ? ` +อีก ${s.promoCount - 1}` : ` +${s.promoCount - 1} more`)}
+        </div>}
       </div>
     </button>
   );

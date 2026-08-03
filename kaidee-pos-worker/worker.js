@@ -397,6 +397,36 @@ async function promoLinesFromDB(env, shop, items) {
   }).filter(Boolean);
 }
 
+/* โปรที่ "ใช้ได้ตอนนี้" โดยยังไม่ดูตะกร้า — ใช้ทำป้ายบนการ์ดร้านและแถบโปรในหน้าร้าน
+   เช็คเฉพาะเงื่อนไขที่ไม่เกี่ยวกับตะกร้า (เปิดอยู่ · ช่วงวันเวลา · สิทธิ์เหลือ) */
+const promoLiveNow = (p, at) => {
+  const blocked = promoBlocker(p, { at, subtotal: Infinity, channel: null, lines: [], fee: 0 });
+  return !blocked || blocked === 'channelOff';
+};
+// ป้ายโปรบนการ์ดร้าน: เอาเฉพาะโปรที่ลดให้อัตโนมัติ (โปรที่ต้องกรอกโค้ดไม่ควรโฆษณา เพราะลูกค้าไม่รู้โค้ด)
+const PROMO_RANK = { percent: 0, fixed: 1, freeDelivery: 2, buyXgetY: 3, itemPrice: 4 };
+async function attachShopPromos(env, list) {
+  if (!list.length) return list;
+  await ensurePromoTables(env);
+  const ids = list.map(s => s.id);
+  const ph = ids.map(() => '?').join(',');
+  const { results } = await env.DB.prepare(`SELECT * FROM promos WHERE active=1 AND shop_id IN (${ph})`).bind(...ids).all();
+  const at = now(), by = {};
+  (results || []).forEach(r => {
+    const p = rowPromo(r);
+    if (p.code || !promoLiveNow(p, at)) return;
+    (by[r.shop_id] = by[r.shop_id] || []).push(p);
+  });
+  return list.map(s => {
+    const ps = (by[s.id] || []).sort((a, b) =>
+      (PROMO_RANK[a.kind] ?? 9) - (PROMO_RANK[b.kind] ?? 9) || (+b.value || 0) - (+a.value || 0));
+    if (!ps.length) return s;
+    const b = ps[0];
+    return { ...s, promoCount: ps.length,
+      promo: { name: b.name, kind: b.kind, value: +b.value || 0, minSpend: b.minSpend | 0, buyQty: b.buyQty | 0, getQty: b.getQty | 0 } };
+  });
+}
+
 // ประเมินโปรทุกใบของร้านเทียบกับตะกร้าปัจจุบัน — ใช้ทั้งหน้าเลือกคูปองและตอนสร้างออเดอร์
 async function promoEvaluate(env, shop, cx) {
   await ensurePromoTables(env);
@@ -876,7 +906,7 @@ export default {
           if (!market) return json([], req);
           const { results } = await env.DB.prepare("SELECT * FROM shops WHERE status='active' ORDER BY is_open DESC, name").all();
           const list = results.map(rowShop).filter(s => s.market === market);
-          return json(list, req);
+          return json(await attachShopPromos(env, list), req);
         }
         // GET /shops/directory — ร้านทั้งหมดทุกตลาดรวมฟีดเดียว (หน้า "ร้านทั้งหมด" ฝั่งลูกค้า แบบ Grab) · ต้องอยู่ก่อน /:id
         // เฉพาะร้านที่ตั้ง market ไว้แล้วเท่านั้น (ร้านที่ยังไม่เข้าตลาดไหนจะไม่โผล่ในฟีดรวม) · เรียงตามตลาด → เปิดก่อน → ชื่อ
@@ -884,7 +914,7 @@ export default {
           const { results } = await env.DB.prepare("SELECT * FROM shops WHERE status='active' ORDER BY is_open DESC, name").all();
           const list = results.map(rowShop).filter(s => s.market)
             .sort((a, b) => (a.market || '').localeCompare(b.market || '', 'th'));
-          return json(list, req);
+          return json(await attachShopPromos(env, list), req);
         }
         // ── OWNER LOGIN (Backoffice) : POST /shops/:id/owner-login {line} | {pin} → owner token ──
         if (req.method === 'POST' && seg[1] && seg[2] === 'owner-login') {
@@ -1537,9 +1567,19 @@ export default {
       if (seg[0] === 'promos') {
         await ensurePromoTables(env);
         // GET /promos — ร้านดูทั้งหมด (รวมที่ปิด/หมดอายุ เพื่อแก้/เปิดใหม่ได้)
+        // GET /promos?live=1 — ฝั่งลูกค้า: เฉพาะใบที่ใช้ได้ตอนนี้และลดให้อัตโนมัติ (ไม่โชว์ใบที่ต้องกรอกโค้ด)
         if (req.method === 'GET' && !seg[1]) {
           const { results } = await env.DB.prepare('SELECT * FROM promos WHERE shop_id=? ORDER BY created_at DESC').bind(shop).all();
-          return json((results || []).map(rowPromo), req);
+          let list = (results || []).map(rowPromo);
+          if (url.searchParams.get('live')) {
+            const at = now();
+            list = list.filter(p => p.active && !p.code && promoLiveNow(p, at))
+              .sort((a, b) => (PROMO_RANK[a.kind] ?? 9) - (PROMO_RANK[b.kind] ?? 9) || (+b.value || 0) - (+a.value || 0))
+              .map(p => ({ id: p.id, name: p.name, kind: p.kind, value: +p.value || 0, minSpend: p.minSpend | 0,
+                           maxDisc: p.maxDisc | 0, buyQty: p.buyQty | 0, getQty: p.getQty | 0,
+                           scope: p.scope, scopeIds: p.scopeIds || [], channels: p.channels || [] }));
+          }
+          return json(list, req);
         }
         // POST /promos — ร้านสร้าง/แก้โปร
         if (req.method === 'POST' && !seg[1]) {

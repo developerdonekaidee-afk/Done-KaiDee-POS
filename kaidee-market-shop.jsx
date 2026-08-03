@@ -1,7 +1,7 @@
 // kaidee-market-shop.jsx — หน้าร้านฝั่งลูกค้า "แพลตฟอร์ม" (?via=market) สไตล์ LINE MAN / Grab
 // ใช้แทน CustMenu เฉพาะตอนลูกค้าเข้ามาจากหน้า "ร้านทั้งหมด/ตลาด" เท่านั้น — flow เดิมทาง LINE OA ไม่กระทบ
 // สั่ง → ตะกร้า → ชำระเงิน → ติดตามสถานะ ใช้ของเดิมทั้งหมด (Checkout / TrackSheet) ไม่แตะโค้ดจ่ายเงิน
-const { useState:msState } = React;
+const { useState:msState, useEffect:msEffect } = React;
 
 function MsChip({ on, children, onClick }){
   return <button onClick={onClick} style={{ border:'none', cursor:'pointer', fontFamily:'var(--font)', whiteSpace:'nowrap',
@@ -16,6 +16,25 @@ function MarketShopMenu({ menu, cart, addItem, shop = {}, hotIds, onCart }){
   const [q, setQ] = msState('');
   const [cat, setCat] = msState('all');
   const [detail, setDetail] = msState(null);
+  // โปรที่ร้านเปิดอยู่ตอนนี้ (เฉพาะที่ลดอัตโนมัติ) — โชว์ก่อนลูกค้าเลือกของ จะได้รู้ว่าคุ้มตรงไหน
+  const [promos, setPromos] = msState([]);
+  msEffect(()=>{
+    let dead = false;
+    (async()=>{
+      try{ const r = await window.KD_API.listPromos({ live:1 }); if(!dead) setPromos(r||[]); }
+      catch(e){ if(!dead) setPromos([]); }
+    })();
+    return ()=>{ dead = true; };
+  }, [shop && shop.shopId]);
+  // เมนูที่เข้าโปร → ติดป้ายบนการ์ดเมนูให้ตรงใบ
+  const promoByItem = (()=>{
+    const map = {};
+    promos.forEach(p=>{
+      if(p.scope==='item') (p.scopeIds||[]).forEach(id=>{ if(!map[id]) map[id]=p; });
+      else if(p.scope==='cat') (menu||[]).forEach(m=>{ if((p.scopeIds||[]).includes(m.cat) && !map[m.id]) map[m.id]=p; });
+    });
+    return map;
+  })();
 
   const isHot = (m)=> !!(m && ((hotIds && hotIds.has && hotIds.has(m.id)) || m.hot));
   const openNow = (window.kdShopOpen ? window.kdShopOpen(shop) : shop.isOpen !== false) && shop.marketOpen !== false;
@@ -75,6 +94,24 @@ function MarketShopMenu({ menu, cart, addItem, shop = {}, hotIds, onCart }){
         <span style={{ fontSize:11.5, fontWeight:700, color:'var(--ink-2)', background:'var(--bg)', padding:'5px 10px', borderRadius:999 }}>{TH?'ราคาเท่าหน้าร้าน':'Same price as in-store'}</span>
       </div>
 
+      {/* แถบโปรของร้าน — เลื่อนแนวนอนแบบ LINE MAN · ลดให้อัตโนมัติตอนจ่ายเงิน ไม่ต้องกดอะไร */}
+      {promos.length > 0 && <div style={{ flexShrink:0, background:'#fff', padding:'11px 0 13px', borderBottom:'1px solid var(--hair)' }}>
+        <div style={{ fontSize:12.5, fontWeight:800, color:'var(--ink-2)', padding:'0 16px 8px' }}>
+          {TH?'🎟️ โปรของร้านนี้':'🎟️ Deals here'}</div>
+        <div style={{ display:'flex', gap:9, overflowX:'auto', padding:'0 16px' }} className="kd-chiprow">
+          {promos.map(p=>(
+            <div key={p.id} style={{ flexShrink:0, minWidth:158, maxWidth:230, borderRadius:14, padding:'11px 13px',
+              background:'linear-gradient(135deg,#FFF1E8,#FFE3D0)', border:'1px solid #FFD3B5' }}>
+              <div style={{ fontSize:14, fontWeight:800, color:'#B4531A' }}>{promoText(p, TH)}</div>
+              <div style={{ fontSize:11.5, color:'var(--ink-2)', marginTop:3, lineHeight:1.4 }}>{p.name}</div>
+              {promoSubText(p, TH) && <div style={{ fontSize:11, color:'var(--ink-3)', marginTop:2 }}>{promoSubText(p, TH)}</div>}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize:11, color:'var(--ink-3)', padding:'9px 16px 0' }}>
+          {TH?'ระบบหักให้อัตโนมัติตอนจ่ายเงิน ไม่ต้องกดรับสิทธิ์':'Applied automatically at checkout'}</div>
+      </div>}
+
       {/* ค้นหา + หมวด (เกาะบนเวลาเลื่อน) */}
       <div style={{ flexShrink:0, background:'#fff', padding:'10px 16px 12px', borderBottom:'1px solid var(--hair)' }}>
         <div style={{ position:'relative', marginBottom:10 }}>
@@ -120,6 +157,9 @@ function MarketShopMenu({ menu, cart, addItem, shop = {}, hotIds, onCart }){
                       {(m.options && m.options.length>0) &&
                         <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:4 }}>{TH?`เลือกได้ ${m.options.length} แบบ`:`${m.options.length} options`}</div>}
                       <div className="num" style={{ fontSize:16, fontWeight:800, marginTop:6 }}>{money(m.price)}</div>
+                      {promoByItem[m.id] && <div style={{ display:'inline-flex', alignItems:'center', gap:4, marginTop:5,
+                        fontSize:11, fontWeight:800, color:'#B4531A', background:'#FFF1E8', padding:'3px 8px', borderRadius:999 }}>
+                        🎟️ {promoText(promoByItem[m.id], TH)}</div>}
                       {soldout && <div style={{ fontSize:11.5, fontWeight:700, color:'var(--danger)', marginTop:4 }}>{TH?'สินค้าหมด':'Sold out'}</div>}
                     </div>
                     <div style={{ position:'relative', flexShrink:0 }}>

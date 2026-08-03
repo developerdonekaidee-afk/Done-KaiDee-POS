@@ -504,11 +504,30 @@ function FoodTile({ item, size=64, radius=14 }){
   );
 }
 
+/* ── ข้อความโปรโมชั่น — ใช้ร่วมกันทุกจอฝั่งลูกค้า (การ์ดร้าน · หน้าร้าน · หน้าจ่ายเงิน)
+   เพื่อให้ป้ายเดียวกันอ่านเหมือนกันทุกที่ ── */
+function promoText(p, TH){
+  if(!p) return '';
+  const v = Math.round(+p.value||0);
+  if(p.kind==='percent')      return TH?`ลด ${v}%`:`${v}% off`;
+  if(p.kind==='fixed')        return TH?`ลด ฿${v}`:`฿${v} off`;
+  if(p.kind==='freeDelivery') return TH?'ส่งฟรี':'Free delivery';
+  if(p.kind==='itemPrice')    return TH?`฿${v} ต่อชิ้น`:`฿${v} each`;
+  if(p.kind==='buyXgetY')     return TH?`ซื้อ ${p.buyQty||1} แถม ${p.getQty||1}`:`Buy ${p.buyQty||1} get ${p.getQty||1}`;
+  return p.name||'';
+}
+// เงื่อนไขสั้น ๆ ต่อท้ายป้าย — บอกขั้นต่ำก่อนลูกค้าเสียเวลาเลือกของ
+function promoSubText(p, TH){
+  if(!p) return '';
+  return (p.minSpend|0) > 0 ? (TH?`เมื่อครบ ฿${p.minSpend}`:`min ฿${p.minSpend}`) : '';
+}
+
 Object.assign(window, {
   DICT, tr, LangCtx, useT, DataCtx, useCats, money, money2, Icon, IC, FARE, calcFare, kdShopOpen, kdShiftExpired,
   CATS, MENU, menuById, STATUS_LABEL, SEED_SALES, saleTotal, saleCost, kdVat, CHANNELS, qLabel, PAYS, RIDER_JOBS,
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
   kdViaMarket, marketMenuView, kdMarketPriceOpen,
+  promoText, promoSubText,
   deliveryCfg, deliveryFee, customerPaysDelivery,
   RUNITS, runit, TRACK_UNIT, buyUnitsFor, convQty, rawValue, RAW_CATS, RAW, rawById, SEED_PURCHASES, effItemCost, effSaleCost,
   TopBar, TabBar, Sheet, useToast, Stat, FoodTile,

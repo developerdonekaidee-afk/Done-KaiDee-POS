@@ -107,7 +107,8 @@ const KD_API = {
   saveMenuItem:   (item)    => _req('POST', '/menu', item),
   deleteMenuItem: (id)      => _req('DELETE', '/menu/' + id),
   // ── โปร/คูปองที่ร้านสร้างเอง ──
-  listPromos:     ()        => _req('GET', '/promos'),
+  // ไม่ส่งอะไร = ร้านดูทั้งหมด · {live:1} = ฝั่งลูกค้า เฉพาะใบที่ใช้ได้ตอนนี้และลดอัตโนมัติ
+  listPromos:     (q = {})  => _req('GET', '/promos' + qs(q)),
   savePromo:      (p)       => _req('POST', '/promos', p),
   deletePromo:    (id)      => _req('DELETE', '/promos/' + id),
   // ถามเซิร์ฟเวอร์ว่าตะกร้านี้ใช้โปรอะไรได้บ้าง ลดเท่าไหร่ (ยอดจริงคิดซ้ำอีกครั้งตอนสร้างออเดอร์)
