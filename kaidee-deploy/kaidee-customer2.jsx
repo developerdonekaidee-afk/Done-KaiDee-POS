@@ -57,7 +57,9 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
   const [when,setWhen] = c2State(0);          // index into SLOTS
   const [preOpen,setPreOpen] = c2State(false); // โชว์ช่องเวลาเฉพาะตอนกดสั่งจอง
   const [pay,setPay] = c2State('promptpay');
-  const [addr,setAddr] = c2State('คอนโด The Nest ลาดพร้าว ห้อง 812');
+  // ที่อยู่ล่าสุดที่เคยสั่งจริงเท่านั้น — ห้ามใส่ที่อยู่ตัวอย่างไว้ล่วงหน้า ลูกค้าที่กดผ่านเร็วจะสั่งไปผิดที่
+  const [book,setBook] = c2State(()=>addrBook());
+  const [addr,setAddr] = c2State(()=>{ const b = addrBook(); return (b[0] && b[0].addr) || ''; });
   const shopClosed = !!(shop && shop.isOpen===false);
   const preorderOn = payCfg ? payCfg.preorderOn!==false : true;   // ร้านตั้งใน Backoffice (default เปิด)
   const preNote = (payCfg&&payCfg.preorderNote)||'';
@@ -67,7 +69,13 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
   const [custName,setCustName] = c2State(()=>{ try{ return localStorage.getItem('kd_guest_name')||''; }catch(e){ return ''; } });
   const [confirmPre,setConfirmPre] = c2State(false);
   const [formErr,setFormErr] = c2State('');   // FX-003: เตือนในหน้า (alert เด้งไม่ได้บน LINE/PWA)
-  const [pin,setPin] = c2State(null);
+  // หมุดตั้งต้น: จากที่อยู่ล่าสุด ถ้าไม่มีก็ใช้ตำแหน่งที่ปักไว้ตอนดูหน้ารวมร้าน
+  const [pin,setPin] = c2State(()=>{
+    const b = addrBook()[0];
+    if(b && b.lat!=null) return { lat:b.lat, lng:b.lng };
+    const l = custLoc();
+    return (l && l.lat!=null) ? { lat:l.lat, lng:l.lng } : null;
+  });
   const [mapOpen,setMapOpen] = c2State(false);
   const [phone,setPhone] = c2State(()=>{ try{ return localStorage.getItem('kd_guest_phone')||''; }catch(e){ return ''; } });
   const shopLoc = (shop && shop.lat) ? { lat:+shop.lat, lng:+shop.lng } : null;
@@ -123,6 +131,8 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
 
   const doPlace = ()=>{
     try{ if(isGuest){ if(custName.trim()) localStorage.setItem('kd_guest_name', custName.trim()); if(phone.trim()) localStorage.setItem('kd_guest_phone', phone.trim()); } }catch(e){}
+    // จำที่อยู่ที่ "สั่งจริง" เท่านั้น — ครั้งหน้าไม่ต้องพิมพ์ใหม่
+    if(ful==='delivery' && addr.trim()) saveAddr({ addr: addr.trim(), lat: pin?pin.lat:null, lng: pin?pin.lng:null });
     onPlace({
     items:lines.map(e=>[e.id, e.qty, (e.opts||[]).map(o=>o.label).join(', '), e.add||0]), channel: ful==='delivery'?'delivery':(ful==='dinein'?'dinein':'line'),
     pay: ful==='dinein'?'later':(payOptsSafe.includes(pay)?pay:payOptsSafe[0]), payLater: ful==='dinein', total, cost, fee, memberId: _mem?_mem.id:null, memberDisc: memberDisc||0, deliveryMode: deliveryCfg(shop).mode,
@@ -186,7 +196,20 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
         {/* address */}
         {ful==='delivery' && <div style={{ marginBottom:16 }}>
           <SectTitle>{React.cloneElement(IC.pin,{size:15,style:{verticalAlign:'-3px',marginRight:4}})}{lang==='th'?'ที่อยู่จัดส่ง':'Delivery address'}</SectTitle>
-          <textarea className="kd-input" rows={2} value={addr} onChange={e=>setAddr(e.target.value)} style={{ resize:'none' }}/>
+          {/* ที่อยู่ที่เคยสั่งจริง — แตะเลือกแทนการพิมพ์ใหม่ทุกครั้ง */}
+          {book.length > 0 && <div style={{ display:'flex', gap:7, overflowX:'auto', marginBottom:9, paddingBottom:2 }} className="kd-chiprow">
+            {book.map(a=>{ const on = a.addr===addr;
+              return (
+                <button key={a.addr} onClick={()=>{ setAddr(a.addr); if(a.lat!=null) setPin({ lat:a.lat, lng:a.lng }); }}
+                  style={{ flexShrink:0, maxWidth:210, border:'1.5px solid '+(on?'var(--brand)':'var(--hair)'), cursor:'pointer',
+                    background: on?'var(--brand-soft)':'#fff', color: on?'var(--brand-ink)':'var(--ink-2)', fontFamily:'var(--font)',
+                    borderRadius:999, padding:'7px 13px', fontSize:12.5, fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+                  📍 {a.addr}
+                </button>
+              ); })}
+          </div>}
+          <textarea className="kd-input" rows={2} value={addr} onChange={e=>setAddr(e.target.value)} style={{ resize:'none' }}
+            placeholder={lang==='th'?'บ้านเลขที่ ซอย ถนน จุดสังเกต — ยิ่งละเอียด ไรเดอร์ยิ่งหาเจอเร็ว':'House no., soi, road, landmark'}/>
           <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:9 }}>
             <button onClick={()=>setMapOpen(o=>!o)} className="kd-btn" style={{ padding:'9px 13px', fontSize:12.5, background: pin?'var(--brand)':'var(--brand-soft)', color: pin?'#fff':'var(--brand-ink)' }}>{React.cloneElement(IC.pin,{size:14})} {pin?(lang==='th'?'ปักหมุดแล้ว · แก้ไข':'Pinned · edit'):(lang==='th'?'ปักหมุดตำแหน่งบนแผนที่':'Pin on map')}</button>
             {pin && <span style={{ fontSize:11.5, color:'var(--brand-ink)', fontWeight:600 }}>{lang==='th'?`~${dist} กม. จากร้าน`:`~${dist} km`}</span>}

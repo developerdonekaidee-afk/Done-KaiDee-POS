@@ -22,6 +22,19 @@ function MarketHome({ store }){
   const [err, setErr] = mhState(false);
   const [q, setQ] = mhState('');           // ค้นหาชื่อร้าน/ประเภท
   const [cat, setCat] = mhState('all');    // กรองตามหมวด (ชิปด้านบน แบบ Grab/LINE MAN)
+  const [loc, setLoc] = mhState(()=>custLoc());   // ตำแหน่งลูกค้า → ระยะทาง/ค่าส่ง/เวลาบนการ์ด
+  const [locBusy, setLocBusy] = mhState(false);
+  const [locOpen, setLocOpen] = mhState(false);
+  const [sort, setSort] = mhState(()=> custLoc() ? 'near' : 'open');   // near | open | promo
+
+  const useGps = async ()=>{
+    setLocBusy(true);
+    const p = await kdAskLoc();
+    setLocBusy(false);
+    if(!p){ alert(TH?'ขอตำแหน่งไม่สำเร็จ — เปิดสิทธิ์ตำแหน่งให้เบราว์เซอร์ก่อน แล้วลองใหม่':'Could not get your location'); return; }
+    const v = { ...p, label: TH?'ตำแหน่งปัจจุบัน':'Current location' };
+    setLoc(v); setCustLoc(v); setSort('near'); setLocOpen(false);
+  };
 
   mhEffect(() => {
     let alive = true;
@@ -48,10 +61,25 @@ function MarketHome({ store }){
   // หมวดหมู่ที่มีจริงในร้านที่โหลดมา (แบบชิปกรองของ Grab/LINE MAN) — ไม่เดา ใช้ข้อมูลจริงเท่านั้น
   const cats = shops ? Array.from(new Set(shops.map(s => s.cat).filter(Boolean))) : [];
   const qlc = q.trim().toLowerCase();
-  const filtered = shops ? shops.filter(s =>
+  // ติดระยะทาง/เวลา/ค่าส่งให้ทุกร้านก่อน แล้วค่อยกรอง/เรียง — ร้านที่ไม่ได้ปักหมุดไว้จะไม่มีระยะ (null)
+  const withDist = shops ? shops.map(s=>{
+    const km = (loc && s.lat!=null) ? kdDistKm(loc, { lat:+s.lat, lng:+s.lng }) : null;
+    return { ...s, _km: km, _eta: kdEtaMin(km), _fee: km!=null ? deliveryFee(s, Math.round(km*10)/10) : null };
+  }) : shops;
+  const openScore = (s)=> ((window.kdShopOpen ? window.kdShopOpen(s) : s.isOpen!==false) && s.marketOpen!==false) ? 0 : 1;
+  const filtered = withDist ? withDist.filter(s =>
     (cat === 'all' || s.cat === cat) &&
     (!qlc || (s.name || '').toLowerCase().includes(qlc) || (s.cat || '').toLowerCase().includes(qlc))
-  ) : shops;
+  ).sort((a,b)=>{
+    if(sort==='promo'){ const d=(b.promo?1:0)-(a.promo?1:0); if(d) return d; }
+    if(sort==='near' && loc){
+      // ร้านที่ไม่รู้พิกัดไปท้ายสุดเสมอ ไม่ใช่ถือว่าอยู่ใกล้
+      if(a._km==null && b._km!=null) return 1;
+      if(b._km==null && a._km!=null) return -1;
+      if(a._km!=null && b._km!=null && a._km!==b._km) return a._km-b._km;
+    }
+    return openScore(a)-openScore(b) || (a.name||'').localeCompare(b.name||'','th');
+  }) : withDist;
 
   return (
     <div style={{ position:'absolute', inset:0, overflowY:'auto', background:'var(--bg,#F5F7F5)' }}>
@@ -69,7 +97,51 @@ function MarketHome({ store }){
             style={{ flex:1, border:'none', outline:'none', fontSize:14, fontFamily:'inherit', color:'var(--ink,#1B2420)' }}/>
           {q && <span onClick={()=>setQ('')} style={{ cursor:'pointer', color:'var(--ink-3,#8A948E)', fontSize:13 }}>✕</span>}
         </div>
+        {/* แถบตำแหน่ง — ปักหมุดแล้วการ์ดร้านจะบอกระยะทาง เวลาโดยประมาณ และค่าส่ง */}
+        <button onClick={()=>setLocOpen(true)} style={{ marginTop:10, width:'100%', display:'flex', alignItems:'center', gap:8,
+          border:'none', cursor:'pointer', fontFamily:'inherit', textAlign:'left', color:'#fff',
+          background:'rgba(255,255,255,.16)', borderRadius:12, padding:'10px 13px' }}>
+          <span style={{ fontSize:15 }}>📍</span>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:10.5, opacity:.85, fontWeight:700 }}>{TH?'ส่งไปที่':'Deliver to'}</div>
+            <div style={{ fontSize:13.5, fontWeight:700, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+              {loc ? (loc.label || (TH?'ตำแหน่งที่ปักไว้':'Pinned location')) : (TH?'ยังไม่ได้บอกตำแหน่ง — แตะเพื่อดูร้านใกล้คุณ':'Tap to see shops near you')}</div>
+          </div>
+          <span style={{ fontSize:12, opacity:.8 }}>{TH?'เปลี่ยน':'Change'}</span>
+        </button>
       </div>
+
+      {locOpen && <div onClick={()=>setLocOpen(false)} style={{ position:'fixed', inset:0, zIndex:80, background:'rgba(10,20,15,.5)', display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
+        <div onClick={e=>e.stopPropagation()} style={{ background:'#fff', width:'100%', maxWidth:440, borderRadius:'20px 20px 0 0', padding:'20px 20px calc(20px + env(safe-area-inset-bottom))' }}>
+          <div style={{ fontSize:18, fontWeight:800, marginBottom:5 }}>{TH?'ส่งไปที่ไหน':'Where to?'}</div>
+          <div style={{ fontSize:12.5, color:'var(--ink-3,#8A948E)', lineHeight:1.55, marginBottom:16 }}>
+            {TH?'บอกตำแหน่งแล้วจะเห็นระยะทาง ค่าส่ง และเวลาโดยประมาณของแต่ละร้าน · เก็บไว้ในเครื่องคุณเท่านั้น'
+               :'We’ll show distance, delivery fee and ETA per shop. Kept on your device only.'}</div>
+          <button onClick={useGps} disabled={locBusy} style={{ width:'100%', border:'none', cursor:'pointer', fontFamily:'inherit',
+            background:'var(--brand,#26619C)', color:'#fff', borderRadius:14, padding:'14px', fontSize:15, fontWeight:700, opacity:locBusy?.6:1 }}>
+            {locBusy ? (TH?'กำลังหาตำแหน่ง…':'Locating…') : (TH?'📍 ใช้ตำแหน่งปัจจุบัน':'📍 Use current location')}</button>
+          {loc && <button onClick={()=>{ setLoc(null); setCustLoc(null); setSort('open'); setLocOpen(false); }}
+            style={{ width:'100%', marginTop:9, border:'none', cursor:'pointer', fontFamily:'inherit',
+              background:'var(--bg,#F5F7F5)', color:'var(--ink-2,#57635C)', borderRadius:14, padding:'13px', fontSize:14, fontWeight:700 }}>
+            {TH?'ล้างตำแหน่งที่บันทึกไว้':'Clear saved location'}</button>}
+        </div>
+      </div>}
+
+      {/* เรียงลำดับ — "ใกล้ฉัน" ใช้ได้ต่อเมื่อบอกตำแหน่งแล้ว */}
+      {shops && shops.length > 1 && (
+        <div style={{ display:'flex', gap:8, overflowX:'auto', padding:'14px 16px 0', scrollbarWidth:'none' }}>
+          {[['near', TH?'ใกล้ฉัน':'Nearest'], ['open', TH?'เปิดอยู่ก่อน':'Open first'], ['promo', TH?'มีโปร':'Deals']].map(([k,l])=>{
+            const on = sort===k, off = k==='near' && !loc;
+            return <button key={k} onClick={()=>{ if(off) return setLocOpen(true); setSort(k); }} style={{
+              flexShrink:0, border:'none', cursor:'pointer', whiteSpace:'nowrap', fontFamily:'inherit',
+              padding:'7px 14px', borderRadius:999, fontWeight:700, fontSize:12.5,
+              background: on ? 'var(--ink,#1B2420)' : 'var(--card,#fff)',
+              color: on ? '#fff' : (off ? 'var(--ink-3,#8A948E)' : 'var(--ink-2,#57635C)'),
+              boxShadow: on ? 'none' : '0 1px 3px rgba(20,40,32,.08)',
+            }}>{k==='near' && !loc ? '📍 ' : ''}{l}</button>;
+          })}
+        </div>
+      )}
 
       {/* category chips */}
       {cats.length > 0 && (
@@ -168,6 +240,16 @@ function ShopCard({ s, directory, TH, onOpen }){
       <div style={{ padding:'11px 14px 13px' }}>
         <div style={{ fontWeight:700, fontSize:15, color:'var(--ink,#1B2420)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{s.name}</div>
         <div style={{ fontSize:12, color:'var(--ink-3,#8A948E)', marginTop:3 }}>{s.cat ? s.cat + ' · ' : ''}{s.open}–{s.close}</div>
+        {/* ระยะทาง/เวลา/ค่าส่ง — ขึ้นเมื่อลูกค้าบอกตำแหน่งแล้วและร้านปักหมุดไว้ */}
+        {s._km != null && <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:5, fontSize:11.5, color:'var(--ink-2,#57635C)', fontWeight:600 }}>
+          <span>{s._km < 1 ? `${Math.round(s._km*1000)} ม.` : `${s._km.toFixed(1)} กม.`}</span>
+          <span style={{ opacity:.4 }}>·</span>
+          <span>~{s._eta} {TH?'นาที':'min'}</span>
+          {s._fee != null && <>
+            <span style={{ opacity:.4 }}>·</span>
+            <span>{customerPaysDelivery(s) ? (TH?`ค่าส่ง ${money(s._fee)}`:`${money(s._fee)} delivery`) : (TH?'ร้านออกค่าส่งให้':'Free delivery')}</span>
+          </>}
+        </div>}
         {/* ป้ายมุมบนบอกว่าลดเท่าไหร่แล้ว บรรทัดนี้จึงบอกแค่ชื่อโปร — ไม่ทวนเงื่อนไขซ้ำให้รก */}
         {s.promo && <div style={{ fontSize:11.5, color:'#B4531A', fontWeight:700, marginTop:4,
           whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>

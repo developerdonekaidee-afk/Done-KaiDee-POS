@@ -504,6 +504,54 @@ function FoodTile({ item, size=64, radius=14 }){
   );
 }
 
+/* ── ตำแหน่งลูกค้า ──────────────────────────────────────────────
+   เก็บไว้ในเครื่องอย่างเดียว ไม่ส่งขึ้นเซิร์ฟเวอร์จนกว่าจะสั่งจริง (PDPA)
+   ใช้คิดระยะทาง/ค่าส่ง/เวลา บนการ์ดร้าน และเป็นที่อยู่ตั้งต้นตอนจ่ายเงิน */
+const KD_LOC_KEY = 'kd_cust_loc';
+function custLoc(){ try{ const s = localStorage.getItem(KD_LOC_KEY); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
+function setCustLoc(v){ try{ v ? localStorage.setItem(KD_LOC_KEY, JSON.stringify(v)) : localStorage.removeItem(KD_LOC_KEY); }catch(e){} }
+// ระยะทางเส้นตรง (กม.) — ชื่อไม่ชนกับ haversineKm ใน kaidee-map.jsx ที่บางจอไม่ได้โหลด
+function kdDistKm(a, b){
+  if(!a || !b || a.lat==null || b.lat==null) return null;
+  const R = 6371, rad = d => d*Math.PI/180;
+  const dLat = rad(b.lat-a.lat), dLng = rad(b.lng-a.lng);
+  const h = Math.sin(dLat/2)**2 + Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+// เวลาโดยประมาณ = เวลาทำอาหาร + เวลาวิ่ง · ถนนจริงอ้อมกว่าเส้นตรงราว 1.3 เท่า
+function kdEtaMin(km){
+  if(km==null) return null;
+  return Math.max(15, Math.round(12 + km*1.3*3));
+}
+/* สมุดที่อยู่ของลูกค้า — เก็บในเครื่องเช่นกัน · ที่อยู่ล่าสุดขึ้นก่อนเสมอ
+   มีไว้เพราะเดิมหน้าจ่ายเงินใส่ที่อยู่ตัวอย่างไว้ล่วงหน้า ลูกค้าที่กดผ่านเร็ว ๆ สั่งไปที่อยู่ปลอมได้ */
+const KD_ADDR_KEY = 'kd_addr_book';
+function addrBook(){ try{ const s = localStorage.getItem(KD_ADDR_KEY); const a = s?JSON.parse(s):[]; return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function saveAddr(a){
+  if(!a || !String(a.addr||'').trim()) return addrBook();
+  const list = addrBook().filter(x => x.addr !== a.addr);
+  list.unshift({ ...a, at: Date.now() });
+  const cut = list.slice(0, 6);
+  try{ localStorage.setItem(KD_ADDR_KEY, JSON.stringify(cut)); }catch(e){}
+  return cut;
+}
+function delAddr(addr){
+  const list = addrBook().filter(x => x.addr !== addr);
+  try{ localStorage.setItem(KD_ADDR_KEY, JSON.stringify(list)); }catch(e){}
+  return list;
+}
+
+// ขอพิกัดจากเครื่อง — คืน null ถ้าผู้ใช้ไม่อนุญาต/เครื่องไม่รองรับ (ไม่ throw ให้จอค้าง)
+function kdAskLoc(){
+  return new Promise(res=>{
+    if(!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(
+      p => res({ lat:p.coords.latitude, lng:p.coords.longitude }),
+      () => res(null),
+      { enableHighAccuracy:true, timeout:10000, maximumAge:60000 });
+  });
+}
+
 /* ── ข้อความโปรโมชั่น — ใช้ร่วมกันทุกจอฝั่งลูกค้า (การ์ดร้าน · หน้าร้าน · หน้าจ่ายเงิน)
    เพื่อให้ป้ายเดียวกันอ่านเหมือนกันทุกที่ ── */
 function promoText(p, TH){
@@ -528,6 +576,7 @@ Object.assign(window, {
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
   kdViaMarket, marketMenuView, kdMarketPriceOpen,
   promoText, promoSubText,
+  custLoc, setCustLoc, kdDistKm, kdEtaMin, kdAskLoc, addrBook, saveAddr, delAddr,
   deliveryCfg, deliveryFee, customerPaysDelivery,
   RUNITS, runit, TRACK_UNIT, buyUnitsFor, convQty, rawValue, RAW_CATS, RAW, rawById, SEED_PURCHASES, effItemCost, effSaleCost,
   TopBar, TabBar, Sheet, useToast, Stat, FoodTile,

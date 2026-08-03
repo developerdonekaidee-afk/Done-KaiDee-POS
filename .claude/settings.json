@@ -195,7 +195,13 @@
       "Bash(node --check /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uicust.js)",
       "Bash(curl -s -m 20 -w ' [%{http_code}]\\\\n' __TRACKED_VAR__/promos?shop=pos)",
       "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uimarket.js)",
-      "Bash(perl -0pi -e 's/const card = page\\\\.locator\\\\\\('\\\\''text=ร้านทดสอบ POS'\\\\''\\\\\\)\\\\.first\\\\\\(\\\\\\);/const card = page.locator\\('\\\\''button'\\\\'', { hasText: '\\\\''ร้านทดสอบ POS'\\\\'' }\\).first\\(\\);/' /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uimarket.js)"
+      "Bash(perl -0pi -e 's/const card = page\\\\.locator\\\\\\('\\\\''text=ร้านทดสอบ POS'\\\\''\\\\\\)\\\\.first\\\\\\(\\\\\\);/const card = page.locator\\('\\\\''button'\\\\'', { hasText: '\\\\''ร้านทดสอบ POS'\\\\'' }\\).first\\(\\);/' /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uimarket.js)",
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/jsxcheck.js kaidee-data.jsx kaidee-market-home.jsx)",
+      "Bash(curl -s -o /dev/null -X PATCH __TRACKED_VAR__/shops/pos -H 'content-type: application/json' -d '{\"lat\":13.7563,\"lng\":100.5018}')",
+      "Bash(curl -s -o /dev/null -X PATCH __TRACKED_VAR__/shops/shop1 -H 'content-type: application/json' -d '{\"lat\":13.7700,\"lng\":100.5200,\"market\":\"ตลาดทดสอบ\"}')",
+      "Bash(curl -s __TRACKED_VAR__/shops/by-market?market=%E0%B8%95%E0%B8%A5%E0%B8%B2%E0%B8%94%E0%B8%97%E0%B8%94%E0%B8%AA%E0%B8%AD%E0%B8%9A)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{JSON.parse\\(d\\).forEach\\(s=>console.log\\(' ',s.id,'lat',s.lat,'lng',s.lng,'| promo',s.promo?s.promo.kind:'-'\\)\\);}\\);\")",
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uiloc.js)"
     ],
     "additionalDirectories": [
       "/Users/oneday/Desktop/Done-KaiDee-POS/kaidee-pos-worker"
