@@ -9,13 +9,17 @@ Deploy: Cloudflare Workers (git-integrated, auto-deploy on push to `main`)
 
 # 📌 อ่านตรงนี้ก่อน (สถานะล่าสุด 2026-08-03)
 
-## 🔑 ต้องทำก่อนแจ้งเตือนไรเดอร์จะทำงาน
-ตั้ง secret นี้ที่ Cloudflare → Workers → **platform** → Settings → Variables and Secrets
+## 🔑 ต้องตั้ง secret ก่อน แจ้งเตือนไรเดอร์ถึงจะทำงาน
+ตั้ง `VAPID_PRIVATE_JWK` ที่ Cloudflare → Workers → **platform** → Settings → Variables and Secrets
+ค่าคีย์ลับ **ไม่เก็บในไฟล์นี้และห้ามเก็บใน repo** (repo นี้ public) — เจ้าของระบบเก็บไว้เอง
+ถ้าหาย: สร้างคู่ใหม่ได้ตลอด แล้วเอาคีย์สาธารณะไปแทนใน `platform-worker/wrangler.toml` (`VAPID_PUBLIC`)
+```bash
+node -e 'const{generateKeyPairSync}=require("crypto");const{publicKey,privateKey}=generateKeyPairSync("ec",{namedCurve:"prime256v1"});const p=publicKey.export({format:"jwk"}),d=privateKey.export({format:"jwk"});console.log("PUBLIC :",Buffer.concat([Buffer.from([4]),Buffer.from(p.x,"base64url"),Buffer.from(p.y,"base64url")]).toString("base64url"));console.log("PRIVATE:",JSON.stringify({kty:d.kty,crv:d.crv,x:d.x,y:d.y,d:d.d}))'
 ```
-VAPID_PRIVATE_JWK = {"kty":"EC","crv":"P-256","x":"rhPl1dvXog8sby_SW2GBJL843N6tMZe5D2V0PuEPaBg","y":"_FZDUOOgQFmC6qDXajJvESMBF_w__hl0MWi2eIpv0oY","d":"D6KmbkP60KhLNzqs87ZJzJ6xZSLt5AgH1BE8s-u0MM0"}
-```
+สร้างใหม่แล้วไรเดอร์ที่เคยกดเปิดแจ้งเตือนต้องกดเปิดใหม่ทุกคน (ทะเบียนเดิมใช้ไม่ได้กับคีย์ใหม่)
 เช็คว่าตั้งสำเร็จ: `curl "https://platform.oneday-pos.workers.dev/pool/push/key?region=delivery"` ต้องได้ `enabled: true`
-(คีย์สาธารณะคู่กันอยู่ใน `platform-worker/wrangler.toml` แล้ว ไม่ลับ)
+
+> ⚠️ คีย์ชุดแรกที่สร้างไว้ (ขึ้นต้น `BK4T5…`) **เคยหลุดอยู่ในประวัติ git ของ repo public นี้** — เปลี่ยนเป็นชุดใหม่แล้ว ห้ามนำชุดเก่ากลับมาใช้
 
 ## 💸 เรื่องค่าใช้จ่ายที่ต้องรู้
 - **LINE OA ฟรีแค่ 500 ข้อความ/เดือน** — แจ้งเตือนไรเดอร์จึงเปลี่ยนไปใช้ Web Push (ฟรีไม่จำกัด) แล้ว

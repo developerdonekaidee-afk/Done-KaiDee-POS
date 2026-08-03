@@ -35,4 +35,4 @@ new_sqlite_classes = ["BizHub"]
 
 [vars]
 # คีย์สาธารณะของระบบแจ้งเตือน — ไม่ลับ ฝั่งแอปต้องใช้ตัวนี้ตอนขอสิทธิ์
-VAPID_PUBLIC = "BK4T5dXb16IPLG8v0lthgSS_ONzerTGXuQ9ldD7hD2gY_FZDUOOgQFmC6qDXajJvESMBF_w__hl0MWi2eIpv0oY"
+VAPID_PUBLIC = "BHTi8CnozRn2kICdws47K2fiRj_hD0T8mUuZAO9tKav8-MrGPnn-obkjwj9kEi9FOs2eGtJF0C44zG8Qg4-CUhw"
