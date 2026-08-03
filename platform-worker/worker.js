@@ -105,6 +105,66 @@ async function linePush(env, to, messages) {
   } catch (e) { return false; }
 }
 
+// ส่งข้อความหาหลายคนพร้อมกัน (LINE จำกัด 500 คน/ครั้ง)
+async function lineMulticast(env, tos, messages) {
+  const list = [...new Set((tos || []).filter(Boolean))];
+  if (!env.LINE_TOKEN || !list.length) return 0;
+  let sent = 0;
+  for (let i = 0; i < list.length; i += 500) {
+    const chunk = list.slice(i, i + 500);
+    try {
+      const r = await fetch('https://api.line.me/v2/bot/message/multicast', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + env.LINE_TOKEN },
+        body: JSON.stringify({ to: chunk, messages }),
+      });
+      if (r.ok) sent += chunk.length;
+    } catch (e) {}
+  }
+  return sent;
+}
+
+/* ── แจ้งเตือนไรเดอร์เมื่อมีงานใหม่ ─────────────────────────────
+   เดิมไรเดอร์ต้องเปิดแอปค้างไว้ถึงจะเห็นงาน — คนที่ปิดแอปอยู่ไม่มีทางรู้เลย
+   ส่งหาเฉพาะคนที่: อนุมัติแล้ว · ผูก LINE ไว้ · เปิดรับงานอยู่ · อยู่ในรัศมี   */
+const NOTIFY_RADIUS_KM = 10;
+function _km(a, b) {
+  if (!a || !b || a.lat == null || b.lat == null) return null;
+  const R = 6371, rad = d => d * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+async function notifyRidersNewJob(env, pool, job) {
+  if (!env.LINE_TOKEN) return 0;
+  const digits = s => String(s || '').replace(/\D/g, '');
+  const [workers, riders] = await Promise.all([
+    collList(env, pool, 'workers', 0, 3000),
+    collList(env, 'riders', 'riders', 0, 3000),
+  ]);
+  // LINE id อยู่ในใบสมัคร ไม่ได้อยู่ในหมุดที่แอปไรเดอร์ปักไว้ → จับคู่ด้วย id หรือเบอร์
+  const byId = {}, byPhone = {};
+  riders.forEach(r => { if (r.status === 'approved' && r.line) { byId[r.id] = r.line; if (r.phone) byPhone[digits(r.phone)] = r.line; } });
+  const at = { lat: job.lat, lng: job.lng };
+  const tos = workers.filter(w => {
+    if (w.available === false) return false;
+    if (at.lat != null && w.lat != null) { const d = _km(at, { lat: w.lat, lng: w.lng }); if (d != null && d > NOTIFY_RADIUS_KM) return false; }
+    return true;
+  }).map(w => w.line || byId[w.id] || byPhone[digits(w.phone)]).filter(Boolean);
+  if (!tos.length) return 0;
+  const appUrl = env.RIDER_APP_URL || 'https://kaidee-git.oneday-pos.workers.dev/Rider%20App.html';
+  const lines = [
+    '🛵 มีงานส่งใหม่',
+    job.shopName ? 'ร้าน: ' + job.shopName : '',
+    job.pay ? 'ค่าส่ง: ฿' + Math.round(job.pay) : '',
+    job.cod && job.codAmount ? 'เก็บปลายทาง: ฿' + Math.round(job.codAmount) : '',
+    job.note ? 'ส่งที่: ' + String(job.note).slice(0, 80) : '',
+    '',
+    'ใครกดรับก่อนได้ก่อน → ' + appUrl,
+  ].filter(Boolean);
+  return await lineMulticast(env, tos, [{ type: 'text', text: lines.join('\n') }]);
+}
+
 /* ── admin auth (HMAC token, shared ข้ามเครื่อง) ── */
 const te = new TextEncoder();
 async function sha256hex(s) {
@@ -403,6 +463,8 @@ export default {
             total: b.total != null ? +b.total : 0, orderNo: b.orderNo != null ? b.orderNo : null };
           const r = await collUpsert(env, pool, 'jobs', rec);
           ctx.waitUntil(hubBroadcast(env, pool, { type: 'coll', coll: 'jobs', id, op: 'add', updatedAt: r.updatedAt }));
+          // ยิง LINE หาไรเดอร์ที่เปิดรับงานอยู่ — ไม่ให้บล็อกการตอบกลับร้าน ถ้า LINE ล่มงานยังถูกสร้าง
+          if (rec.status === 'open') ctx.waitUntil(notifyRidersNewJob(env, pool, rec).catch(() => {}));
           return json({ ok: true, id, job: rec }, req, 201);
         }
         // GET /pool/job/:id  → งานใบเดียว + ข้อมูลไรเดอร์ที่รับงาน (ให้ฝั่งลูกค้าติดตามได้)

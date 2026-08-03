@@ -135,6 +135,8 @@ function ping(avail){
   if (!S.me) return;
   fetch(API+'/pool/worker?region='+REGION, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({
     id:S.me.id, name:S.me.name, phone:S.me.phone, available:!!avail,
+    /* ส่ง LINE id ไปด้วย ระบบจะได้ยิงแจ้งเตือนงานใหม่หาได้ตอนปิดแอปอยู่ */
+    line:S.line||(S.me&&S.me.line)||'',
     lat:S.loc&&S.loc.lat, lng:S.loc&&S.loc.lng, skills:['delivery'] })}).catch(function(){});
 }
 
