@@ -1890,7 +1890,11 @@ export default {
               await bumpTier(env, shop, cur.line_user);
             }
           }
-          if (b.status && b.status !== cur.status && cur.line_user)
+          // ทุกข้อความ LINE มีค่าใช้จ่าย (โควตาฟรี 500/เดือน) — ค่าเริ่มต้นส่งเฉพาะจังหวะที่ลูกค้าต้องรู้จริง ๆ
+          // คือ "พร้อมแล้ว" กับ "ส่งถึง/จบงาน" · ตั้ง NOTIFY_LINE_LEVEL=all ถ้าอยากได้ทุกสถานะ (จ่ายเพิ่ม)
+          const _lvl = env.NOTIFY_LINE_LEVEL || 'key';
+          const _tellStatus = _lvl === 'all' || (_lvl === 'key' && ['ready', 'delivering', 'done'].includes(status));
+          if (b.status && b.status !== cur.status && cur.line_user && _lvl !== 'off' && _tellStatus)
             await linePush(env, cur.line_user, [{ type: 'text', text: `ออเดอร์ #${cur.no}: ${STATUS_TH[status] || status}` }]);
           // Confirm-First: ร้านยืนยันรับ (new → อื่น) ออเดอร์ที่ยังไม่จ่าย พร้อมเพย์ → แจ้งลูกค้าให้จ่ายได้แล้ว
           if (cur.pay_after_confirm && cur.status === 'new' && status && status !== 'new' && !cur.paid && cur.pay === 'promptpay' && cur.line_user) {

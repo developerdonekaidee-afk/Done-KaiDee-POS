@@ -124,9 +124,59 @@ async function lineMulticast(env, tos, messages) {
   return sent;
 }
 
+/* ── Web Push (การแจ้งเตือนของแอปเอง) ───────────────────────────
+   ใช้แทนการยิง LINE เพราะ LINE OA คิดเงินตามจำนวนข้อความ (ฟรีแค่ 500/เดือน)
+   ไรเดอร์ 10 คน วันละ 20 งาน = 6,000 ข้อความ/เดือน เกินโควตาตั้งแต่สัปดาห์แรก
+   Web Push ฟรีไม่จำกัด ส่งผ่านเบราว์เซอร์ของเครื่องนั้น ๆ โดยตรง
+
+   ส่งแบบ "ไม่มีเนื้อหา" (payload ว่าง) เพราะการใส่เนื้อหาต้องเข้ารหัสตามสเปก
+   ซึ่งซับซ้อนกว่ามาก — service worker ฝั่งแอปจะดึงงานล่าสุดมาแสดงเอง         */
+const VAPID_SUB = 'mailto:it@rocks-foods.com';
+const b64urlToBytes = (s) => {
+  const p = s.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(p + '='.repeat((4 - p.length % 4) % 4));
+  return Uint8Array.from(bin, c => c.charCodeAt(0));
+};
+const bytesToB64url = (b) => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+// เซ็น JWT ตามสเปก VAPID (ES256) — ปลายทางใช้ยืนยันว่าเราเป็นเจ้าของคีย์จริง
+async function vapidJwt(env, audience) {
+  let jwk; try { jwk = JSON.parse(env.VAPID_PRIVATE_JWK || '{}'); } catch (e) { return null; }
+  if (!jwk.d) return null;
+  const key = await crypto.subtle.importKey('jwk', { ...jwk, key_ops: ['sign'], ext: true },
+    { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  const enc = new TextEncoder();
+  const head = bytesToB64url(enc.encode(JSON.stringify({ typ: 'JWT', alg: 'ES256' })));
+  const body = bytesToB64url(enc.encode(JSON.stringify({
+    aud: audience, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: VAPID_SUB })));
+  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, enc.encode(head + '.' + body));
+  return head + '.' + body + '.' + bytesToB64url(sig);
+}
+
+// ส่งสัญญาณเตือนไปยัง endpoint ของเบราว์เซอร์ · คืนรายการที่ตายแล้วเพื่อเอาออกจากทะเบียน
+async function webPushMany(env, subs) {
+  if (!env.VAPID_PRIVATE_JWK || !env.VAPID_PUBLIC || !subs.length) return { sent: 0, dead: [] };
+  let sent = 0; const dead = [];
+  const jwtCache = {};
+  for (const s of subs.slice(0, 400)) {
+    try {
+      const aud = new URL(s.endpoint).origin;
+      if (!jwtCache[aud]) jwtCache[aud] = await vapidJwt(env, aud);
+      if (!jwtCache[aud]) return { sent, dead };
+      const r = await fetch(s.endpoint, { method: 'POST', headers: {
+        TTL: '300', Urgency: 'high',
+        Authorization: `vapid t=${jwtCache[aud]}, k=${env.VAPID_PUBLIC}`,
+      } });
+      if (r.status === 404 || r.status === 410) dead.push(s.id);   // ผู้ใช้ถอนสิทธิ์/ลบแอปแล้ว
+      else if (r.ok) sent++;
+    } catch (e) {}
+  }
+  return { sent, dead };
+}
+
 /* ── แจ้งเตือนไรเดอร์เมื่อมีงานใหม่ ─────────────────────────────
    เดิมไรเดอร์ต้องเปิดแอปค้างไว้ถึงจะเห็นงาน — คนที่ปิดแอปอยู่ไม่มีทางรู้เลย
-   ส่งหาเฉพาะคนที่: อนุมัติแล้ว · ผูก LINE ไว้ · เปิดรับงานอยู่ · อยู่ในรัศมี   */
+   ส่งหาเฉพาะคนที่: เปิดรับงานอยู่ · อยู่ในรัศมี · เปิดสิทธิ์แจ้งเตือนไว้        */
 const NOTIFY_RADIUS_KM = 10;
 function _km(a, b) {
   if (!a || !b || a.lat == null || b.lat == null) return null;
@@ -136,33 +186,46 @@ function _km(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 async function notifyRidersNewJob(env, pool, job) {
-  if (!env.LINE_TOKEN) return 0;
-  const digits = s => String(s || '').replace(/\D/g, '');
-  const [workers, riders] = await Promise.all([
-    collList(env, pool, 'workers', 0, 3000),
-    collList(env, 'riders', 'riders', 0, 3000),
-  ]);
-  // LINE id อยู่ในใบสมัคร ไม่ได้อยู่ในหมุดที่แอปไรเดอร์ปักไว้ → จับคู่ด้วย id หรือเบอร์
-  const byId = {}, byPhone = {};
-  riders.forEach(r => { if (r.status === 'approved' && r.line) { byId[r.id] = r.line; if (r.phone) byPhone[digits(r.phone)] = r.line; } });
   const at = { lat: job.lat, lng: job.lng };
-  const tos = workers.filter(w => {
-    if (w.available === false) return false;
-    if (at.lat != null && w.lat != null) { const d = _km(at, { lat: w.lat, lng: w.lng }); if (d != null && d > NOTIFY_RADIUS_KM) return false; }
-    return true;
-  }).map(w => w.line || byId[w.id] || byPhone[digits(w.phone)]).filter(Boolean);
-  if (!tos.length) return 0;
-  const appUrl = env.RIDER_APP_URL || 'https://kaidee-git.oneday-pos.workers.dev/Rider%20App.html';
-  const lines = [
-    '🛵 มีงานส่งใหม่',
-    job.shopName ? 'ร้าน: ' + job.shopName : '',
-    job.pay ? 'ค่าส่ง: ฿' + Math.round(job.pay) : '',
-    job.cod && job.codAmount ? 'เก็บปลายทาง: ฿' + Math.round(job.codAmount) : '',
-    job.note ? 'ส่งที่: ' + String(job.note).slice(0, 80) : '',
-    '',
-    'ใครกดรับก่อนได้ก่อน → ' + appUrl,
-  ].filter(Boolean);
-  return await lineMulticast(env, tos, [{ type: 'text', text: lines.join('\n') }]);
+  const near = (o) => {
+    if (at.lat == null || o.lat == null) return true;   // ไม่รู้พิกัด = ส่งไว้ก่อน ดีกว่าพลาดงาน
+    const d = _km(at, { lat: o.lat, lng: o.lng });
+    return d == null || d <= NOTIFY_RADIUS_KM;
+  };
+  const [workers, subs] = await Promise.all([
+    collList(env, pool, 'workers', 0, 3000),
+    collList(env, pool, 'push_subs', 0, 3000),
+  ]);
+  // ใครเปิดรับงานอยู่บ้าง — ทะเบียนแจ้งเตือนผูกกับ id ไรเดอร์
+  const onDuty = new Set(workers.filter(w => w.available !== false && near(w)).map(w => w.id));
+  const targets = subs.filter(s => s.endpoint && (!s.rider || onDuty.has(s.rider)));
+  const { sent, dead } = await webPushMany(env, targets);
+  // ทะเบียนที่ปลายทางบอกว่าใช้ไม่ได้แล้ว ลบทิ้ง ไม่งั้นยิงซ้ำทุกงานตลอดไป
+  for (const id of dead) {
+    try { await env.DB.prepare('UPDATE records SET deleted=1, updated_at=? WHERE biz_id=? AND coll=? AND id=?')
+      .bind(now(), pool, 'push_subs', id).run(); } catch (e) {}
+  }
+
+  // LINE เป็นทางเลือกเสริม ปิดไว้เป็นค่าเริ่มต้น เพราะคิดเงินตามจำนวนข้อความ
+  if (env.NOTIFY_VIA_LINE === '1' && env.LINE_TOKEN) {
+    const digits = s => String(s || '').replace(/\D/g, '');
+    const riders = await collList(env, 'riders', 'riders', 0, 3000);
+    const byId = {}, byPhone = {};
+    riders.forEach(r => { if (r.status === 'approved' && r.line) { byId[r.id] = r.line; if (r.phone) byPhone[digits(r.phone)] = r.line; } });
+    const tos = workers.filter(w => w.available !== false && near(w))
+      .map(w => w.line || byId[w.id] || byPhone[digits(w.phone)]).filter(Boolean);
+    const appUrl = env.RIDER_APP_URL || 'https://kaidee-git.oneday-pos.workers.dev/Rider%20App.html';
+    const lines = [
+      '🛵 มีงานส่งใหม่',
+      job.shopName ? 'ร้าน: ' + job.shopName : '',
+      job.pay ? 'ค่าส่ง: ฿' + Math.round(job.pay) : '',
+      job.cod && job.codAmount ? 'เก็บปลายทาง: ฿' + Math.round(job.codAmount) : '',
+      job.note ? 'ส่งที่: ' + String(job.note).slice(0, 80) : '',
+      '', 'ใครกดรับก่อนได้ก่อน → ' + appUrl,
+    ].filter(Boolean);
+    await lineMulticast(env, tos, [{ type: 'text', text: lines.join('\n') }]);
+  }
+  return sent;
 }
 
 /* ── admin auth (HMAC token, shared ข้ามเครื่อง) ── */
@@ -449,6 +512,29 @@ export default {
           const r = await collUpsert(env, pool, 'workers', rec);
           ctx.waitUntil(hubBroadcast(env, pool, { type: 'coll', coll: 'workers', id, op: 'update', updatedAt: r.updatedAt }));
           return json({ ok: true, id }, req);
+        }
+        /* ── ทะเบียนแจ้งเตือนของแอปไรเดอร์ (Web Push) ──
+           GET  /pool/push/key            → คีย์สาธารณะให้แอปใช้ขอสิทธิ์แจ้งเตือน
+           POST /pool/push/subscribe      → บันทึกเครื่องที่ขอรับแจ้งเตือน
+           POST /pool/push/unsubscribe    → เอาออกเมื่อไรเดอร์ปิดแจ้งเตือน                */
+        if (req.method === 'GET' && seg[1] === 'push' && seg[2] === 'key') {
+          return json({ key: env.VAPID_PUBLIC || null, enabled: !!(env.VAPID_PUBLIC && env.VAPID_PRIVATE_JWK) }, req);
+        }
+        if (req.method === 'POST' && seg[1] === 'push' && seg[2] === 'subscribe') {
+          const b = await readBody();
+          const ep = String(b.endpoint || '');
+          if (!/^https:\/\//.test(ep)) return err('endpoint required', req, 400);
+          // id จากตัว endpoint เอง — เครื่องเดิมสมัครซ้ำจะทับของเดิม ไม่เกิดทะเบียนซ้ำ
+          const id = safeId('ps' + ep.slice(-40).replace(/[^a-z0-9]/gi, ''));
+          await collUpsert(env, pool, 'push_subs', { id, endpoint: ep, rider: b.rider || null, at: now() });
+          return json({ ok: true, id }, req, 201);
+        }
+        if (req.method === 'POST' && seg[1] === 'push' && seg[2] === 'unsubscribe') {
+          const b = await readBody();
+          const id = safeId('ps' + String(b.endpoint || '').slice(-40).replace(/[^a-z0-9]/gi, ''));
+          try { await env.DB.prepare('UPDATE records SET deleted=1, updated_at=? WHERE biz_id=? AND coll=? AND id=?')
+            .bind(now(), pool, 'push_subs', id).run(); } catch (e) {}
+          return json({ ok: true }, req);
         }
         // POST /pool/job {id?,title,type,marketId,shopName,lat,lng,pay,note,line,win}  → ร้านโพสต์งาน
         if (req.method === 'POST' && seg[1] === 'job' && !seg[2]) {

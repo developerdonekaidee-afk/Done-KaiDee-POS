@@ -254,6 +254,19 @@ function viewMe(){
       h('div',{style:'font-size:13px;margin-top:4px'},[S.loc ? (S.loc.lat+', '+S.loc.lng) : 'ยังไม่ได้แชร์พิกัด']),
       h('button',{class:'btn ghost',style:'margin-top:10px',onclick:function(){ locate(function(l){ S.loc=l||S.loc; ping(S.online); render(); }); }},['📍 อัปเดตตำแหน่ง']),
     ]),
+    h('div',{class:'card'},(function(){
+      var st = notifyState();
+      var msg = st==='on'       ? 'เปิดอยู่ — มีงานใหม่จะเด้งเตือนแม้ปิดแอป'
+              : st==='blocked'  ? 'ถูกปิดไว้ในตั้งค่าเบราว์เซอร์ — ต้องไปเปิดเองที่ตั้งค่าเว็บไซต์'
+              : st==='unsupported' ? 'เครื่องนี้ยังใช้ไม่ได้ · ถ้าเป็น iPhone ให้ติดตั้งเป็นแอปบนหน้าจอโฮมก่อน'
+              : 'ยังไม่ได้เปิด — เปิดแล้วไม่ต้องเปิดแอปค้างไว้รอ';
+      var rows = [
+        h('div',{class:'lbl'},['แจ้งเตือนงานใหม่']),
+        h('div',{style:'font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:4px'},[msg]),
+      ];
+      if (st==='off' || st==='unsupported') rows.push(h('button',{class:'btn',style:'margin-top:10px',onclick:enableNotify},['🔔 เปิดแจ้งเตือน']));
+      return rows;
+    })()),
     standalone() ? null : h('div',{class:'card'},[
       h('div',{class:'lbl'},['ใช้เป็นแอปบนเครื่อง']),
       h('div',{style:'font-size:12.5px;color:var(--ink-2);line-height:1.55;margin-top:4px'},['ติดตั้งเป็นไอคอนบนหน้าจอโฮมได้เลย ไม่ต้องโหลดจาก App Store / Play Store · เปิดครั้งต่อไปเข้าตรง ไม่ต้องเปิดไลน์ก่อน']),
@@ -321,7 +334,8 @@ function installApp(){
   if (isIOS()) return alert('ติดตั้งบน iPhone/iPad\n\n1. กดปุ่มแชร์ (สี่เหลี่ยมลูกศรขึ้น) ด้านล่าง\n2. เลือก "เพิ่มไปยังหน้าจอโฮม"\n3. กด "เพิ่ม" — จะได้ไอคอนแอปเหมือนแอปทั่วไป');
   alert('เปิดเมนูของเบราว์เซอร์ (⋮) แล้วเลือก "ติดตั้งแอป" หรือ "เพิ่มไปยังหน้าจอหลัก"');
 }
-try{ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=p2-20260802a').catch(function(){}); }catch(e){}
+/* หน้านี้ใช้ rider-sw.js (ลงทะเบียนท้ายไฟล์) — ไม่ลงทะเบียน sw.js ของแอปหลักซ้ำ
+   สอง service worker ที่ scope เดียวกันจะแย่งกันคุมหน้า ทำให้แจ้งเตือนหลุด */
 
 /* ── ผูกกับบัญชีไลน์ (เฉพาะตอนเปิดผ่าน LINE OA / LIFF) → เข้าใช้งานไม่ต้องพิมพ์เบอร์ ── */
 function lineLogin(){
@@ -345,6 +359,81 @@ lineLogin();
 render();
 if (S.me){ refresh(); if (S.online) locate(function(l){ S.loc=l||S.loc; ping(true); render(); }); }
 setInterval(function(){ if (S.me && S.online) refresh(); }, 12000);
+
+/* ── แจ้งเตือนงานใหม่ผ่านแอป (ไม่ใช้ LINE เพราะ LINE คิดเงินตามจำนวนข้อความ) ──
+   ทำงานแม้ปิดแอปแล้ว · Android/Chrome ใช้ได้เลย
+   iPhone ต้อง "เพิ่มลงหน้าจอโฮม" ก่อน ระบบของ Apple ถึงจะยอมให้เตือน            */
+var SW = null;
+function b64ToU8(s){
+  var p = (s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g,'+').replace(/_/g,'/');
+  var raw = atob(p), out = new Uint8Array(raw.length);
+  for (var i=0;i<raw.length;i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+function notifyState(){
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
+  if (Notification.permission === 'denied') return 'blocked';
+  if (Notification.permission === 'granted') return 'on';
+  return 'off';
+}
+async function enableNotify(){
+  try{
+    if (notifyState() === 'unsupported'){
+      alert('เครื่องนี้ยังแจ้งเตือนไม่ได้\n\nถ้าใช้ iPhone: กดปุ่มแชร์ด้านล่าง → "เพิ่มไปยังหน้าจอโฮม" แล้วเปิดแอปจากไอคอนนั้น');
+      return;
+    }
+    var perm = await Notification.requestPermission();
+    if (perm !== 'granted'){
+      alert('ยังไม่ได้เปิดสิทธิ์แจ้งเตือน — เปิดได้ที่ตั้งค่าของเบราว์เซอร์');
+      render(); return;
+    }
+    var reg = SW || await navigator.serviceWorker.ready;
+    var kr = await fetch(API + '/pool/push/key').then(function(r){ return r.json(); });
+    if (!kr || !kr.key){ alert('ระบบแจ้งเตือนยังไม่ได้ตั้งค่าฝั่งเซิร์ฟเวอร์'); return; }
+    var sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: b64ToU8(kr.key) });
+    await fetch(API + '/pool/push/subscribe?region=' + REGION, { method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ endpoint: sub.endpoint, rider: S.me && S.me.id }) });
+    render();
+  }catch(e){ alert('เปิดแจ้งเตือนไม่สำเร็จ ลองใหม่อีกครั้ง'); }
+}
+
+/* ── อัปเดตเวอร์ชัน — ไม่ต้องผ่าน App Store แต่ต้องบอกให้ไรเดอร์รู้ ──
+   เจอของใหม่เมื่อไหร่ขึ้นแถบให้กด ไม่ยัดเยียดรีโหลดกลางคันตอนกำลังวิ่งงาน */
+function showUpdateBar(reg){
+  if (document.getElementById('kd-upd')) return;
+  var bar = document.createElement('div');
+  bar.id = 'kd-upd';
+  bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:99;'
+    + 'background:#1B2420;color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;'
+    + 'box-shadow:0 6px 20px rgba(0,0,0,.28);font-size:13.5px';
+  bar.innerHTML = '<div style="flex:1">มีแอปเวอร์ชันใหม่พร้อมใช้</div>';
+  var b = document.createElement('button');
+  b.textContent = 'อัปเดต';
+  b.style.cssText = 'border:none;border-radius:999px;padding:8px 16px;font-weight:700;font-family:inherit;cursor:pointer;background:#fff;color:#1B2420';
+  b.onclick = function(){
+    if (reg.waiting) reg.waiting.postMessage('skip-waiting');
+    setTimeout(function(){ location.reload(); }, 300);
+  };
+  bar.appendChild(b);
+  document.body.appendChild(bar);
+}
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.register('rider-sw.js').then(function(reg){
+    SW = reg;
+    if (reg.waiting) showUpdateBar(reg);
+    reg.addEventListener('updatefound', function(){
+      var nw = reg.installing;
+      if (!nw) return;
+      nw.addEventListener('statechange', function(){
+        // มีตัวใหม่ติดตั้งเสร็จ ทั้งที่ยังมีตัวเก่าคุมอยู่ = ผู้ใช้มีของเก่าค้าง
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar(reg);
+      });
+    });
+    // เช็คของใหม่ทุกครั้งที่กลับมาเปิดแอป
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) reg.update().catch(function(){}); });
+  }).catch(function(){});
+}
 /* ระหว่างวิ่งงาน ส่งพิกัดขึ้นทุก 20 วิ — ลูกค้าถึงจะเห็นว่าไรเดอร์ถึงไหนแล้ว
    เดิมส่งพิกัดเฉพาะตอนกดเปิดรับงาน ตำแหน่งเลยค้างอยู่ที่เดิมทั้งเที่ยว */
 setInterval(function(){

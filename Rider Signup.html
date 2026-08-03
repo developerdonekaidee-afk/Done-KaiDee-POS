@@ -225,6 +225,24 @@ function submit(){
   .catch(function(){ S.busy = false; S.err = 'เชื่อมต่อไม่ได้ — เช็คอินเทอร์เน็ตแล้วลองใหม่'; render(); });
 }
 
+/* ── ติดตั้งเป็นแอปบนเครื่อง — ไม่ต้องผ่าน App Store / Play Store ──
+   Android/Chrome เรียกหน้าต่างติดตั้งของระบบได้เลย
+   iPhone ทำอัตโนมัติไม่ได้ (Apple ไม่เปิดให้) ต้องบอกวิธีกดเอง          */
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt = e; });
+function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+function inLine(){ return /Line\//i.test(navigator.userAgent); }
+function installApp(){
+  if (deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(){ deferredPrompt = null; }); return; }
+  if (inLine()) return alert('เปิดจากในไลน์ติดตั้งไม่ได้\n\nกดปุ่ม ⋯ มุมขวาบน → "เปิดในเบราว์เซอร์" แล้วค่อยกดติดตั้งอีกครั้ง');
+  if (isIOS()){
+    var tip = document.getElementById('ios-tip');
+    if (tip) tip.style.display = 'block';
+    return alert('ติดตั้งบน iPhone/iPad\n\n1. กดปุ่มแชร์ (สี่เหลี่ยมลูกศรขึ้น) ด้านล่างจอ\n2. เลือก "เพิ่มไปยังหน้าจอโฮม"\n3. กด "เพิ่ม"\n\nต้องติดตั้งแบบนี้ก่อน ระบบของ Apple ถึงจะยอมให้เด้งแจ้งเตือนงานใหม่');
+  }
+  alert('เปิดเมนูของเบราว์เซอร์ (⋮) แล้วเลือก "ติดตั้งแอป" หรือ "เพิ่มไปยังหน้าจอหลัก"');
+}
+
 function checkStatus(){
   var p = prompt('ใส่เบอร์โทรที่ใช้สมัคร');
   if (!p) return;
@@ -249,6 +267,17 @@ function render(){
       h('div',{class:'ref'},[String(S.ref).toUpperCase()]),
       h('p',{},['ทีมงานตรวจเอกสารภายใน 1–3 วันทำการ แล้วโทรแจ้งผลตามเบอร์ที่ให้ไว้ · เก็บเลขที่ใบสมัครไว้ใช้ตอนสอบถาม']),
       h('a',{href:'Rider App.html',style:'width:100%;text-decoration:none'},[h('button',{class:'btn'},['เข้าแอปไรเดอร์'])]),
+      /* ติดตั้งเป็นแอปบนเครื่อง — ไม่ต้องผ่าน App Store / Play Store
+         และ iPhone ต้องติดตั้งแบบนี้ก่อน ระบบของ Apple ถึงจะยอมให้เด้งแจ้งเตือนงานใหม่ */
+      h('div',{style:'margin-top:14px;padding:14px;border-radius:14px;background:#F2F5F3;text-align:left'},[
+        h('div',{style:'font-weight:700;font-size:14px;margin-bottom:4px'},['📲 ติดตั้งเป็นแอปบนมือถือ']),
+        h('div',{style:'font-size:12.5px;color:#57635C;line-height:1.6'},[
+          'ไม่ต้องโหลดจาก App Store / Play Store — ติดตั้งจากหน้านี้ได้เลย ' +
+          'ติดตั้งแล้วจะมีแจ้งเตือนเด้งเวลามีงานใหม่ ไม่ต้องเปิดแอปค้างไว้รอ']),
+        h('button',{class:'btn',style:'margin-top:10px',onclick:installApp},['ติดตั้งแอปไรเดอร์']),
+        h('div',{id:'ios-tip',style:'font-size:12px;color:#8A948E;line-height:1.6;margin-top:8px;display:none'},[
+          'iPhone: กดปุ่มแชร์ (⬆️) ด้านล่างจอ → เลือก "เพิ่มไปยังหน้าจอโฮม"']),
+      ]),
       h('button',{class:'link',onclick:checkStatus},['เช็คสถานะใบสมัครด้วยเบอร์โทร']),
     ].forEach(function(n){ bd.appendChild(n); });
     return;

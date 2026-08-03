@@ -27,3 +27,12 @@ new_sqlite_classes = ["BizHub"]
 #   npx wrangler secret put ADMIN_SECRET   # กุญแจเซ็น token (สุ่มยาว ๆ)
 #   npx wrangler secret put ADMIN_PASS     # รหัสเข้า Back Office
 #   npx wrangler secret put LINE_TOKEN     # (ถ้าจะยิง LINE push)
+#   npx wrangler secret put VAPID_PRIVATE_JWK   # คีย์ลับสำหรับแจ้งเตือนแอปไรเดอร์
+#
+# แจ้งเตือนงานใหม่: ใช้ Web Push (ฟรีไม่จำกัด) เป็นหลัก
+# ถ้าอยากยิง LINE ด้วย ให้ตั้ง NOTIFY_VIA_LINE = "1" — แต่ LINE OA คิดเงินตามจำนวน
+# ข้อความ ฟรีแค่ 500/เดือน ไรเดอร์ 10 คนวันละ 20 งานก็ 6,000 ข้อความแล้ว
+
+[vars]
+# คีย์สาธารณะของระบบแจ้งเตือน — ไม่ลับ ฝั่งแอปต้องใช้ตัวนี้ตอนขอสิทธิ์
+VAPID_PUBLIC = "BK4T5dXb16IPLG8v0lthgSS_ONzerTGXuQ9ldD7hD2gY_FZDUOOgQFmC6qDXajJvESMBF_w__hl0MWi2eIpv0oY"
