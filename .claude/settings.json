@@ -201,7 +201,8 @@
       "Bash(curl -s -o /dev/null -X PATCH __TRACKED_VAR__/shops/shop1 -H 'content-type: application/json' -d '{\"lat\":13.7700,\"lng\":100.5200,\"market\":\"ตลาดทดสอบ\"}')",
       "Bash(curl -s __TRACKED_VAR__/shops/by-market?market=%E0%B8%95%E0%B8%A5%E0%B8%B2%E0%B8%94%E0%B8%97%E0%B8%94%E0%B8%AA%E0%B8%AD%E0%B8%9A)",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{JSON.parse\\(d\\).forEach\\(s=>console.log\\(' ',s.id,'lat',s.lat,'lng',s.lng,'| promo',s.promo?s.promo.kind:'-'\\)\\);}\\);\")",
-      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uiloc.js)"
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uiloc.js)",
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/jsxcheck.js kaidee-market-home.jsx kaidee-api.jsx)"
     ],
     "additionalDirectories": [
       "/Users/oneday/Desktop/Done-KaiDee-POS/kaidee-pos-worker"

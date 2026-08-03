@@ -26,6 +26,7 @@ function MarketHome({ store }){
   const [locBusy, setLocBusy] = mhState(false);
   const [locOpen, setLocOpen] = mhState(false);
   const [sort, setSort] = mhState(()=> custLoc() ? 'near' : 'open');   // near | open | promo
+  const [tab, setTab] = mhState('shops');   // shops | orders
 
   const useGps = async ()=>{
     setLocBusy(true);
@@ -81,8 +82,35 @@ function MarketHome({ store }){
     return openScore(a)-openScore(b) || (a.name||'').localeCompare(b.name||'','th');
   }) : withDist;
 
+  const navBtn = (k, icon, label)=>{
+    const on = tab===k;
+    return (
+      <button key={k} onClick={()=>setTab(k)} style={{ flex:1, border:'none', background:'none', cursor:'pointer', fontFamily:'inherit',
+        padding:'8px 0 4px', display:'flex', flexDirection:'column', alignItems:'center', gap:3,
+        color: on?'var(--brand,#26619C)':'var(--ink-3,#8A948E)' }}>
+        <span style={{ fontSize:19, lineHeight:1 }}>{icon}</span>
+        <span style={{ fontSize:11, fontWeight:on?800:600 }}>{label}</span>
+      </button>
+    );
+  };
+  const bottomNav = (
+    <div style={{ position:'fixed', left:0, right:0, bottom:0, zIndex:40, display:'flex',
+      background:'#fff', borderTop:'1px solid var(--hair,#E6EAE7)',
+      padding:'2px 8px calc(4px + env(safe-area-inset-bottom))' }}>
+      {navBtn('shops', '🏪', TH?'ร้านค้า':'Shops')}
+      {navBtn('orders', '🧾', TH?'ออเดอร์ของฉัน':'My orders')}
+    </div>
+  );
+
+  if (tab === 'orders') return (
+    <div style={{ position:'absolute', inset:0, overflowY:'auto', background:'var(--bg,#F5F7F5)', paddingBottom:78 }}>
+      <MyOrders TH={TH}/>
+      {bottomNav}
+    </div>
+  );
+
   return (
-    <div style={{ position:'absolute', inset:0, overflowY:'auto', background:'var(--bg,#F5F7F5)' }}>
+    <div style={{ position:'absolute', inset:0, overflowY:'auto', background:'var(--bg,#F5F7F5)', paddingBottom:78 }}>
       <div style={{ padding:'22px 18px 18px', background:'var(--hero,linear-gradient(152deg,#1F4F86,#26619C))', color:'#fff', borderRadius:'0 0 22px 22px' }}>
         <div style={{ fontSize:20, fontWeight:800 }}>{directory ? (TH ? 'ร้านทั้งหมด' : 'All shops') : market}</div>
         <div style={{ fontSize:12.5, opacity:.9, marginTop:4, marginBottom:14 }}>
@@ -203,6 +231,99 @@ function MarketHome({ store }){
             );
           })
         ) : (filtered && filtered.map(s => <ShopCard key={s.id} s={s} directory={directory} TH={TH} onOpen={openShop}/>))}
+      </div>
+      {bottomNav}
+    </div>
+  );
+}
+
+/* ── ออเดอร์ของฉัน (รวมทุกร้าน) ──────────────────────────────────
+   ค้นด้วย LINE userId เท่านั้น — คนที่สั่งแบบไม่ล็อกอินจะไม่มีอะไรให้ดูตรงนี้
+   ต้องบอกเขาตรง ๆ ไม่ใช่โชว์หน้าว่างแล้วปล่อยให้งง                    */
+const MO_STATUS = {
+  new:        { th:'ร้านรับออเดอร์แล้ว', en:'Accepted',  c:'#2E6FB0' },
+  cooking:    { th:'กำลังทำ',            en:'Cooking',   c:'#B4531A' },
+  ready:      { th:'พร้อมรับ/พร้อมส่ง',  en:'Ready',     c:'#12945C' },
+  delivering: { th:'ไรเดอร์กำลังไปส่ง',  en:'On the way',c:'#B4531A' },
+  done:       { th:'เสร็จแล้ว',          en:'Completed', c:'#57635C' },
+  cancelled:  { th:'ยกเลิกแล้ว',         en:'Cancelled', c:'#C0392B' },
+  rejected:   { th:'ร้านปฏิเสธ',         en:'Rejected',  c:'#C0392B' },
+};
+function MyOrders({ TH }){
+  const lu = (typeof window!=='undefined' && window.__lineUser) || null;
+  const [list, setList] = mhState(null);
+  const [err, setErr] = mhState(false);
+  mhEffect(()=>{
+    if(!lu || !lu.userId){ setList([]); return; }
+    let alive = true;
+    (async()=>{
+      try{ const r = await window.KD_API.myOrders(lu.userId); if(alive) setList(Array.isArray(r)?r:[]); }
+      catch(e){ if(alive){ setErr(true); setList([]); } }
+    })();
+    return ()=>{ alive = false; };
+  }, [lu && lu.userId]);
+
+  const openShop = (o)=>{ try{
+    const u = new URL(location.href);
+    ['market'].forEach(k=>u.searchParams.delete(k));
+    u.searchParams.set('shop', o.shopId);
+    u.searchParams.set('role', 'customer');
+    u.searchParams.set('via', 'market');
+    location.href = u.toString();
+  }catch(e){} };
+
+  const live = (list||[]).filter(o=>!['done','cancelled','rejected','void'].includes(o.status));
+  const past = (list||[]).filter(o=>['done','cancelled','rejected','void'].includes(o.status));
+
+  const card = (o)=>{
+    const st = MO_STATUS[o.status] || { th:o.status, en:o.status, c:'var(--ink-3,#8A948E)' };
+    const when = o.createdAt ? new Date(o.createdAt).toLocaleString('th-TH',{ day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+    return (
+      <button key={o.shopId+'/'+o.id} onClick={()=>openShop(o)} style={{ width:'100%', textAlign:'left', border:'none', cursor:'pointer',
+        fontFamily:'inherit', background:'var(--card,#fff)', borderRadius:16, padding:'13px 15px', marginBottom:10,
+        boxShadow:'0 1px 6px rgba(20,40,32,.07)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+          <span style={{ fontSize:20 }}>{o.shopEmoji || '🍽️'}</span>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:14.5, fontWeight:700, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{o.shopName}</div>
+            <div style={{ fontSize:11.5, color:'var(--ink-3,#8A948E)', marginTop:2 }}>#{o.no} · {when}</div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div className="num" style={{ fontSize:15, fontWeight:800 }}>{money(o.total)}</div>
+            <div style={{ fontSize:11, fontWeight:800, color:st.c, marginTop:2 }}>{TH?st.th:st.en}</div>
+          </div>
+        </div>
+        {(o.promoDisc>0 || o.promoFeeDisc>0) && <div style={{ fontSize:11.5, color:'#B4531A', fontWeight:700, marginTop:7 }}>
+          🎟️ {o.promoName || (TH?'ใช้ส่วนลด':'Discount')} · {TH?'ประหยัด':'saved'} {money((o.promoDisc|0)+(o.promoFeeDisc|0))}</div>}
+      </button>
+    );
+  };
+
+  return (
+    <div>
+      <div style={{ padding:'22px 18px 18px', background:'var(--hero,linear-gradient(152deg,#1F4F86,#26619C))', color:'#fff', borderRadius:'0 0 22px 22px' }}>
+        <div style={{ fontSize:20, fontWeight:800 }}>{TH?'ออเดอร์ของฉัน':'My orders'}</div>
+        <div style={{ fontSize:12.5, opacity:.9, marginTop:4 }}>{TH?'ทุกร้านที่คุณเคยสั่ง รวมไว้ที่เดียว':'Every shop you have ordered from'}</div>
+      </div>
+      <div style={{ padding:16 }}>
+        {!lu && <div style={{ textAlign:'center', color:'var(--ink-3,#8A948E)', padding:'40px 24px', fontSize:13.5, lineHeight:1.7 }}>
+          <div style={{ fontSize:38, marginBottom:10 }}>🧾</div>
+          <div style={{ fontWeight:700, color:'var(--ink,#1B2420)', fontSize:15, marginBottom:6 }}>{TH?'ยังดูออเดอร์รวมไม่ได้':'Sign in with LINE to see this'}</div>
+          {TH?'หน้านี้รวมออเดอร์จากทุกร้านให้ ต้องเปิดแอปผ่าน LINE ถึงจะรู้ว่าออเดอร์ไหนเป็นของคุณ · ถ้าสั่งแบบไม่ล็อกอิน ให้กดติดตามจากในหน้าร้านที่สั่งแทน'
+             :'Open via LINE so we can tell which orders are yours.'}
+        </div>}
+        {lu && list===null && <div style={{ textAlign:'center', color:'var(--ink-3,#8A948E)', padding:'40px 20px', fontSize:13.5 }}>{TH?'กำลังโหลด…':'Loading…'}</div>}
+        {err && <div style={{ textAlign:'center', color:'var(--danger,#E0533D)', padding:'20px', fontSize:13.5 }}>{TH?'โหลดออเดอร์ไม่สำเร็จ ลองใหม่อีกครั้ง':'Could not load orders'}</div>}
+        {lu && list && list.length===0 && !err && <div style={{ textAlign:'center', color:'var(--ink-3,#8A948E)', padding:'40px 20px', fontSize:13.5, lineHeight:1.7 }}>
+          <div style={{ fontSize:38, marginBottom:10 }}>🍽️</div>{TH?'ยังไม่เคยสั่งอะไรเลย — เลือกร้านจากแท็บ "ร้านค้า" ได้เลย':'No orders yet'}</div>}
+        {!!live.length && <>
+          <div style={{ fontSize:12.5, fontWeight:800, color:'var(--ink-2,#57635C)', margin:'2px 2px 9px' }}>{TH?'กำลังดำเนินการ':'In progress'}</div>
+          {live.map(card)}
+        </>}
+        {!!past.length && <>
+          <div style={{ fontSize:12.5, fontWeight:800, color:'var(--ink-2,#57635C)', margin:'16px 2px 9px' }}>{TH?'ที่ผ่านมา':'Past orders'}</div>
+          {past.map(card)}
+        </>}
       </div>
     </div>
   );

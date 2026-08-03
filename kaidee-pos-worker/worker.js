@@ -1459,6 +1459,28 @@ export default {
         return json({ ok:true }, req);
       }
 
+      /* ── GET /my-orders?line=U… — ออเดอร์ของลูกค้าคนเดียวข้ามทุกร้าน (หน้า "ออเดอร์ของฉัน") ──
+         ต้องอยู่ก่อน gate เพราะไม่ผูกกับร้านใดร้านหนึ่ง
+         ค้นด้วย LINE userId เท่านั้น — เดาไม่ได้ · ห้ามเปิดให้ค้นด้วยเบอร์ ไม่งั้นใครก็อ่านออเดอร์คนอื่นได้ */
+      if (seg[0] === 'my-orders' && req.method === 'GET') {
+        const line = url.searchParams.get('line') || '';
+        if (!/^U[0-9a-f]{20,}$/i.test(line)) return err('line user id required', req, 400);
+        await ensureOrderCols(env);
+        const { results } = await env.DB.prepare(
+          'SELECT * FROM orders WHERE line_user=? ORDER BY created_at DESC LIMIT 60').bind(line).all();
+        const ids = [...new Set((results || []).map(r => r.shop_id))];
+        let shops = {};
+        if (ids.length) {
+          const ph = ids.map(() => '?').join(',');
+          const sr = await env.DB.prepare(`SELECT id,name,emoji,phone FROM shops WHERE id IN (${ph})`).bind(...ids).all();
+          shops = Object.fromEntries((sr.results || []).map(s => [s.id, s]));
+        }
+        return json((results || []).map(r => {
+          const s = shops[r.shop_id] || {};
+          return { ...rowOrder(r), shopId: r.shop_id, shopName: s.name || r.shop_id, shopEmoji: s.emoji || '', shopPhone: s.phone || '' };
+        }), req);
+      }
+
       // ต่อจากนี้ทุก endpoint ต้องมี shopId
       const shop = await shopFromReq();
       if (!shop) return err('shop (tenant) required — ระบุ ?shop=<id>', req, 400);

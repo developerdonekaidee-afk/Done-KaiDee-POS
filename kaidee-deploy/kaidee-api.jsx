@@ -113,6 +113,8 @@ const KD_API = {
   deletePromo:    (id)      => _req('DELETE', '/promos/' + id),
   // ถามเซิร์ฟเวอร์ว่าตะกร้านี้ใช้โปรอะไรได้บ้าง ลดเท่าไหร่ (ยอดจริงคิดซ้ำอีกครั้งตอนสร้างออเดอร์)
   quotePromos:    (cart)    => _req('POST', '/promos/quote', cart),
+  // ออเดอร์ของลูกค้าคนเดียวข้ามทุกร้าน — ใช้ LINE userId เท่านั้น (เบอร์โทรเดาได้ ห้ามใช้)
+  myOrders:       (line)    => _req('GET', '/my-orders?line=' + encodeURIComponent(line || ''), null, false),
   listOrders:     (q = {})  => _req('GET', '/orders' + qs(q)),
   getOrder:       (id)      => _req('GET', '/orders/' + id),
   createOrder:    (payload) => _req('POST', '/orders', payload),
