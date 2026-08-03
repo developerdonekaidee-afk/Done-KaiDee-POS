@@ -49,8 +49,9 @@ function CustMenu({ menu, cart, addItem, shop={}, hotIds }){
           <div>
             <div style={{ fontWeight:700, fontSize:19, color: hasCover?'#fff':'var(--ink)' }}>{name}</div>
             <div style={{ fontSize:12.5, color: hasCover?'rgba(255,255,255,.92)':'var(--ink-2)', display:'flex', gap:8, marginTop:2, flexWrap:'wrap' }}>
-              <span>{React.cloneElement(IC.star,{size:13,color: hasCover?'#FFD166':'var(--accent)',fill: hasCover?'#FFD166':'var(--accent)',style:{verticalAlign:'-2px'}})} 4.8</span>
-              <span>· {shop.open&&shop.close?`${shop.open}–${shop.close}`:(lang==='th'?'ส่ง 15–25 นาที':'15–25 min')}</span>
+              {/* ดาวจากรีวิวจริงเท่านั้น — ร้านที่ยังไม่มีรีวิวครบ 3 คนไม่โชว์ดาว ไม่ใช่ใส่ตัวเลขให้ทุกร้านเท่ากัน */}
+              {shop.rating > 0 && <span>{React.cloneElement(IC.star,{size:13,color: hasCover?'#FFD166':'var(--accent)',fill: hasCover?'#FFD166':'var(--accent)',style:{verticalAlign:'-2px'}})} {shop.rating}{shop.reviewCount?` (${shop.reviewCount})`:''}</span>}
+              <span>{shop.rating>0?'· ':''}{shop.open&&shop.close?`${shop.open}–${shop.close}`:(lang==='th'?'ส่ง 15–25 นาที':'15–25 min')}</span>
               <span style={{ color: hasCover?'#fff':((window.kdShopOpen?!window.kdShopOpen(shop):shop.isOpen===false)?'var(--ink-3)':'var(--brand-ink)'), fontWeight:700 }}>· {(window.kdShopOpen?!window.kdShopOpen(shop):shop.isOpen===false)?(lang==='th'?'ปิดอยู่':'Closed'):(lang==='th'?'เปิดอยู่':'Open')}</span>
             </div>
           </div>

@@ -117,6 +117,10 @@ const KD_API = {
   myOrders:       (line)    => _req('GET', '/my-orders?line=' + encodeURIComponent(line || ''), null, false),
   // สถานะไรเดอร์ของออเดอร์ (worker ยิงไปถาม platform-worker ให้ — แอปไม่ต้องรู้จัก base ของอีกตัว)
   orderRider:     (id)      => _req('GET', '/orders/' + id + '/rider'),
+  // ── รีวิว/คะแนนดาว (ให้ได้เฉพาะคนที่สั่งจริงและบิลปิดแล้ว) ──
+  getReviews:     ()        => _req('GET', '/reviews'),
+  myReview:       (orderId) => _req('GET', '/reviews/mine?order=' + encodeURIComponent(orderId || '')),
+  postReview:     (b)       => _req('POST', '/reviews', b),
   listOrders:     (q = {})  => _req('GET', '/orders' + qs(q)),
   getOrder:       (id)      => _req('GET', '/orders/' + id),
   createOrder:    (payload) => _req('POST', '/orders', payload),

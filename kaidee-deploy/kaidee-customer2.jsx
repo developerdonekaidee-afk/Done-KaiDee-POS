@@ -614,6 +614,60 @@ function RiderTrack({ o }){
     </div>
   );
 }
+/* ── ให้ดาวหลังได้รับของ — ขอเฉพาะตอนบิลปิดแล้วและยังไม่เคยรีวิว ── */
+function RateBox({ o }){
+  const { lang } = useT(); const TH = lang!=='en';
+  const [done, setDone] = c2State(null);   // null = ยังไม่รู้ว่าเคยรีวิวไหม
+  const [stars, setStars] = c2State(0);
+  const [text, setText] = c2State('');
+  const [busy, setBusy] = c2State(false);
+  const [err, setErr] = c2State('');
+  c2Effect(()=>{
+    let alive = true;
+    (async()=>{
+      try{ const r = await window.KD_API.myReview(o.id); if(alive) setDone(!!(r && r.reviewed)); }
+      catch(e){ if(alive) setDone(false); }
+    })();
+    return ()=>{ alive = false; };
+  }, [o && o.id]);
+
+  if(done === null) return null;
+  if(done) return (
+    <div style={{ margin:'0 20px 16px', borderRadius:14, padding:'12px 14px', background:'var(--brand-soft)', color:'var(--brand-ink)', fontSize:12.5, fontWeight:700 }}>
+      ⭐ {TH?'ขอบคุณสำหรับรีวิวนะคะ':'Thanks for your review'}
+    </div>
+  );
+
+  const send = async ()=>{
+    if(!stars) return setErr(TH?'เลือกจำนวนดาวก่อน':'Pick a star rating');
+    setBusy(true); setErr('');
+    try{
+      const lu = (typeof window!=='undefined' && window.__lineUser) || null;
+      const r = await window.KD_API.postReview({ orderId:o.id, stars, text: text.trim(), lineUserId: lu?lu.userId:null });
+      if(r && r.ok) setDone(true); else setErr((r&&r.error)||(TH?'ส่งรีวิวไม่สำเร็จ':'Could not send'));
+    }catch(e){ setErr(TH?'ส่งรีวิวไม่สำเร็จ — เช็คอินเทอร์เน็ตแล้วลองใหม่':'Could not send — check your connection'); }
+    setBusy(false);
+  };
+
+  return (
+    <div style={{ margin:'0 20px 16px', borderRadius:16, padding:'14px 15px', background:'#fff', border:'1px solid var(--hair)' }}>
+      <div style={{ fontSize:14.5, fontWeight:700 }}>{TH?'อาหารเป็นยังไงบ้าง':'How was it?'}</div>
+      <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{TH?'ให้ดาวร้านนี้ — คนอื่นจะได้ตัดสินใจง่ายขึ้น':'Your rating helps other customers'}</div>
+      <div style={{ display:'flex', gap:6, margin:'11px 0 4px' }}>
+        {[1,2,3,4,5].map(n=>(
+          <button key={n} aria-label={`${n} ${TH?'ดาว':'stars'}`} onClick={()=>{ setStars(n); setErr(''); }}
+            style={{ border:'none', background:'none', cursor:'pointer', fontSize:29, lineHeight:1, padding:'2px 1px',
+              filter: n<=stars ? 'none' : 'grayscale(1)', opacity: n<=stars ? 1 : .35 }}>⭐</button>
+        ))}
+      </div>
+      {stars>0 && <textarea className="kd-input" rows={2} value={text} onChange={e=>setText(e.target.value)}
+        placeholder={TH?'อยากบอกอะไรร้านเพิ่มไหม (ไม่บังคับ)':'Anything to add? (optional)'} style={{ resize:'none', marginTop:8 }}/>}
+      {err && <div style={{ color:'var(--danger)', fontSize:12.5, fontWeight:700, marginTop:8 }}>{err}</div>}
+      {stars>0 && <button onClick={send} disabled={busy} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:12, marginTop:9, opacity:busy?.5:1 }}>
+        {busy?(TH?'กำลังส่ง…':'Sending…'):(TH?'ส่งรีวิว':'Send review')}</button>}
+    </div>
+  );
+}
 function TrackSheet({ o, patchOrder, onClose }){
   const { t, lang } = useT();
   const steps = TRACK_STEPS.filter(s=> s.key!=='delivering' || o.channel==='delivery');
@@ -638,6 +692,8 @@ function TrackSheet({ o, patchOrder, onClose }){
       </div>}
       {/* payFirst: ร้านไม่รับออเดอร์ → คืนเงิน (กรอกบัญชี / รอโอน / สลิปคืนเงิน) */}
       {o.status==='rejected' && o.refund && <RefundBlock o={o} patchOrder={patchOrder}/>}
+      {/* ได้รับของแล้ว → ขอดาว (โผล่ครั้งเดียว รีวิวแล้วเปลี่ยนเป็นคำขอบคุณ) */}
+      {o.status==='done' && <RateBox o={o}/>}
       {/* Confirm-First: ร้านยืนยันแล้ว แต่ยังไม่จ่าย → โชว์ QR ให้จ่ายในหน้าติดตาม */}
       {o.payAfterConfirm && o.status!=='new' && o.status!=='void' && o.status!=='rejected' && !o.paid && o.pay==='promptpay' &&
         <ConfirmPayBlock o={o}/>}

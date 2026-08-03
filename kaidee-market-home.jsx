@@ -382,7 +382,11 @@ function ShopCard({ s, directory, TH, onOpen, fav, onFav }){
       </span>
       <div style={{ padding:'11px 14px 13px' }}>
         <div style={{ fontWeight:700, fontSize:15, color:'var(--ink,#1B2420)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', paddingRight:30 }}>{s.name}</div>
-        <div style={{ fontSize:12, color:'var(--ink-3,#8A948E)', marginTop:3 }}>{s.cat ? s.cat + ' · ' : ''}{s.open}–{s.close}</div>
+        <div style={{ fontSize:12, color:'var(--ink-3,#8A948E)', marginTop:3, display:'flex', alignItems:'center', gap:5, flexWrap:'wrap' }}>
+          {s.rating > 0 && <span style={{ color:'var(--ink-2,#57635C)', fontWeight:700 }}>⭐ {s.rating} <span style={{ fontWeight:400 }}>({s.reviewCount})</span></span>}
+          {s.rating > 0 && <span style={{ opacity:.4 }}>·</span>}
+          <span>{s.cat ? s.cat + ' · ' : ''}{s.open}–{s.close}</span>
+        </div>
         {/* ระยะทาง/เวลา/ค่าส่ง — ขึ้นเมื่อลูกค้าบอกตำแหน่งแล้วและร้านปักหมุดไว้ */}
         {s._km != null && <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:5, fontSize:11.5, color:'var(--ink-2,#57635C)', fontWeight:600 }}>
           <span>{s._km < 1 ? `${Math.round(s._km*1000)} ม.` : `${s._km.toFixed(1)} กม.`}</span>

@@ -326,6 +326,39 @@ async function ensurePromoTables(env){ if(_promoReady) return; _promoReady = tru
   ];
   for (const q of ddl) { try{ await env.DB.prepare(q).run(); }catch(e){} } }
 
+/* ── รีวิว/คะแนนดาว ─────────────────────────────────────────────
+   ให้ได้เฉพาะคนที่สั่งจริงและได้รับของแล้ว 1 บิล = 1 รีวิว
+   ก่อนหน้านี้หน้าร้านโชว์ ★4.8 เท่ากันทุกร้านแบบ hardcode ไม่มีที่มา   */
+let _reviewReady = false;
+async function ensureReviews(env){ if(_reviewReady) return; _reviewReady = true;
+  const ddl = [
+    `CREATE TABLE IF NOT EXISTS reviews ( shop_id TEXT NOT NULL, id TEXT NOT NULL, order_id TEXT,
+       line_user TEXT, stars INTEGER, text TEXT, reply TEXT, created_at INTEGER, PRIMARY KEY (shop_id,id) )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_order ON reviews (shop_id, order_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_reviews_shop ON reviews (shop_id, created_at)`,
+  ];
+  for (const q of ddl) { try{ await env.DB.prepare(q).run(); }catch(e){} } }
+
+// คะแนนเฉลี่ยของหลายร้านในทีเดียว — ใช้ติดบนการ์ดร้านในหน้ารวมร้าน
+async function attachRatings(env, list) {
+  if (!list.length) return list;
+  await ensureReviews(env);
+  const ids = list.map(s => s.id);
+  const ph = ids.map(() => '?').join(',');
+  let by = {};
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT shop_id, COUNT(*) n, AVG(stars) avg FROM reviews WHERE shop_id IN (${ph}) GROUP BY shop_id`).bind(...ids).all();
+    by = Object.fromEntries((results || []).map(r => [r.shop_id, r]));
+  } catch (e) { return list; }
+  return list.map(s => {
+    const r = by[s.id];
+    // ต่ำกว่า 3 รีวิวยังไม่โชว์ดาว — เลขจากคนเดียวไม่ได้บอกอะไร และร้านใหม่จะเสียเปรียบเกินจริง
+    if (!r || (r.n | 0) < 3) return { ...s, reviewCount: r ? (r.n | 0) : 0 };
+    return { ...s, rating: Math.round((r.avg || 0) * 10) / 10, reviewCount: r.n | 0 };
+  });
+}
+
 /* ── โปรโมชั่นของร้าน: กติกา + การคิดส่วนลด ──────────────────────────────
    ทุกยอดต้องคิดที่นี่เสมอ · ฝั่งแอปคิดไว้แค่โชว์ให้ลูกค้าเห็นระหว่างเลือก
    ถ้าเชื่อยอดจากแอป = แก้ค่าในเบราว์เซอร์แล้วได้ของฟรี                        */
@@ -901,7 +934,8 @@ export default {
         if (req.method === 'GET' && seg[1] === 'by-owner') {
           const line = url.searchParams.get('line');
           const s = await getShopByOwner(env, line);   // ไม่มี line/ไม่เจอ = null (คืน null ให้ client รู้ว่าว่าง)
-          return json(s ? rowShop(s) : null, req);
+          if (!s) return json(null, req);
+          return json(rowShop(s), req);
         }
         // GET /shops/by-market?market=<slug> — ร้านทั้งหมดในตลาด/พื้นที่เดียวกัน (หน้า "ร้านในตลาดนี้" ฝั่งลูกค้า) · ต้องอยู่ก่อน /:id
         // market เก็บใน extra JSON เหมือน lat/lng/week ฯลฯ — ตั้งผ่าน PATCH /shops/:id {market:'...'}
@@ -910,7 +944,7 @@ export default {
           if (!market) return json([], req);
           const { results } = await env.DB.prepare("SELECT * FROM shops WHERE status='active' ORDER BY is_open DESC, name").all();
           const list = results.map(rowShop).filter(s => s.market === market);
-          return json(await attachShopPromos(env, list), req);
+          return json(await attachRatings(env, await attachShopPromos(env, list)), req);
         }
         // GET /shops/directory — ร้านทั้งหมดทุกตลาดรวมฟีดเดียว (หน้า "ร้านทั้งหมด" ฝั่งลูกค้า แบบ Grab) · ต้องอยู่ก่อน /:id
         // เฉพาะร้านที่ตั้ง market ไว้แล้วเท่านั้น (ร้านที่ยังไม่เข้าตลาดไหนจะไม่โผล่ในฟีดรวม) · เรียงตามตลาด → เปิดก่อน → ชื่อ
@@ -918,7 +952,7 @@ export default {
           const { results } = await env.DB.prepare("SELECT * FROM shops WHERE status='active' ORDER BY is_open DESC, name").all();
           const list = results.map(rowShop).filter(s => s.market)
             .sort((a, b) => (a.market || '').localeCompare(b.market || '', 'th'));
-          return json(await attachShopPromos(env, list), req);
+          return json(await attachRatings(env, await attachShopPromos(env, list)), req);
         }
         // ── OWNER LOGIN (Backoffice) : POST /shops/:id/owner-login {line} | {pin} → owner token ──
         if (req.method === 'POST' && seg[1] && seg[2] === 'owner-login') {
@@ -977,7 +1011,9 @@ export default {
         // GET /shops/:id — ข้อมูลร้าน (ลูกค้าใช้แสดงหน้าร้าน)
         if (req.method === 'GET' && seg[1]) {
           const s = await getShop(env, seg[1]);
-          return s ? json(rowShop(s), req) : err('shop not found', req, 404);
+          if (!s) return err('shop not found', req, 404);
+          // ติดคะแนนดาวจริงมาด้วย — หน้าร้านฝั่งลูกค้าเคยโชว์ ★4.8 เท่ากันทุกร้านแบบไม่มีที่มา
+          return json((await attachRatings(env, [rowShop(s)]))[0], req);
         }
         // GET /shops — รายชื่อร้าน (สำหรับ admin/เลือกร้าน)
         if (req.method === 'GET') {
@@ -1585,6 +1621,58 @@ export default {
         }
         if (req.method === 'DELETE' && seg[1]) {
           await env.DB.prepare('UPDATE menu SET active=0 WHERE shop_id=? AND id=?').bind(shop, seg[1]).run();
+          return json({ ok: true }, req);
+        }
+      }
+
+      /* ── REVIEWS (คะแนนดาว · ให้ได้เฉพาะคนที่สั่งจริงและได้รับของแล้ว) ── */
+      if (seg[0] === 'reviews') {
+        await ensureReviews(env);
+        // GET /reviews — สรุปคะแนน + รีวิวล่าสุด (สาธารณะ · ไม่คืน LINE id ของคนรีวิว)
+        if (req.method === 'GET' && !seg[1]) {
+          const { results } = await env.DB.prepare(
+            'SELECT id,order_id,stars,text,reply,created_at FROM reviews WHERE shop_id=? ORDER BY created_at DESC LIMIT 50').bind(shop).all();
+          const all = results || [];
+          const n = all.length;
+          const avg = n ? Math.round((all.reduce((a, r) => a + (r.stars | 0), 0) / n) * 10) / 10 : null;
+          return json({ count: n, rating: n >= 3 ? avg : null,
+            breakdown: [5,4,3,2,1].map(s => ({ stars:s, n: all.filter(r => (r.stars|0) === s).length })),
+            reviews: all.map(r => ({ id:r.id, orderId:r.order_id, stars:r.stars|0, text:r.text||'', reply:r.reply||'', at:r.created_at })) }, req);
+        }
+        // GET /reviews/mine?order=<id> — เช็คว่าบิลนี้รีวิวไปแล้วหรือยัง (ฝั่งลูกค้าใช้ตัดสินใจว่าจะขอรีวิวไหม)
+        if (req.method === 'GET' && seg[1] === 'mine') {
+          const oid = url.searchParams.get('order') || '';
+          const r = await env.DB.prepare('SELECT stars,text FROM reviews WHERE shop_id=? AND order_id=?').bind(shop, oid).first();
+          return json({ reviewed: !!r, stars: r ? (r.stars|0) : 0, text: r ? (r.text||'') : '' }, req);
+        }
+        // POST /reviews {orderId, stars, text, lineUserId}
+        if (req.method === 'POST' && !seg[1]) {
+          const b = await readBody();
+          const stars = Math.round(+b.stars || 0);
+          if (stars < 1 || stars > 5) return err('stars must be 1–5', req, 400);
+          if (!b.orderId) return err('orderId required', req, 400);
+          const o = await env.DB.prepare('SELECT * FROM orders WHERE shop_id=? AND id=?').bind(shop, String(b.orderId)).first();
+          // ต้องเป็นบิลจริงของร้านนี้ · ต้องปิดงานแล้ว · ถ้าบิลผูก LINE ไว้ ต้องเป็นเจ้าของบิลเท่านั้น
+          if (!o) return err('order not found', req, 404);
+          if (o.status !== 'done') return json({ ok:false, error:'รีวิวได้หลังจากได้รับของแล้ว' }, req, 400);
+          if (o.line_user && String(b.lineUserId || '') !== String(o.line_user))
+            return json({ ok:false, error:'รีวิวได้เฉพาะเจ้าของบิล' }, req, 403);
+          const t = now();
+          try {
+            await env.DB.prepare(
+              `INSERT INTO reviews (shop_id,id,order_id,line_user,stars,text,created_at) VALUES (?,?,?,?,?,?,?)
+               ON CONFLICT(shop_id,order_id) DO UPDATE SET stars=excluded.stars, text=excluded.text, created_at=excluded.created_at`
+            ).bind(shop, 'rv' + t, String(b.orderId), o.line_user || null, stars, String(b.text || '').slice(0, 500), t).run();
+          } catch (e) { return err('save failed', req, 500); }
+          return json({ ok: true }, req, 201);
+        }
+        // PATCH /reviews/:id {reply} — ร้านตอบกลับรีวิว (ต้องเป็นเจ้าของร้าน)
+        if (req.method === 'PATCH' && seg[1]) {
+          const otok = req.headers.get('X-Owner-Token') || url.searchParams.get('ot');
+          if (!(await verifyOwnerToken(env, shop, otok))) return err('owner auth required', req, 403);
+          const b = await readBody();
+          await env.DB.prepare('UPDATE reviews SET reply=? WHERE shop_id=? AND id=?')
+            .bind(String(b.reply || '').slice(0, 500), shop, seg[1]).run();
           return json({ ok: true }, req);
         }
       }

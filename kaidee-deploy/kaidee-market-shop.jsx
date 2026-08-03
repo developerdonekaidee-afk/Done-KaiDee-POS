@@ -77,7 +77,8 @@ function MarketShopMenu({ menu, cart, addItem, shop = {}, hotIds, onCart }){
           <div style={{ flex:1, minWidth:0, color:'#fff' }}>
             <div style={{ fontSize:20, fontWeight:800, textShadow:'0 1px 6px rgba(0,0,0,.35)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{shop.name||'ร้านค้า'}</div>
             <div style={{ fontSize:12.5, opacity:.95, marginTop:3, display:'flex', gap:9, flexWrap:'wrap' }}>
-              {shop.cat && <span>{shop.cat}</span>}
+              {shop.rating > 0 && <span style={{ fontWeight:700 }}>⭐ {shop.rating} ({shop.reviewCount})</span>}
+              {shop.cat && <span>{shop.rating>0?'· ':''}{shop.cat}</span>}
               {shop.open && shop.close && <span>· {shop.open}–{shop.close}</span>}
             </div>
           </div>
