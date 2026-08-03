@@ -1254,6 +1254,51 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
 
 /* ══════════════ PIN เจ้าของร้าน — ใช้กู้ร้านคืน + เข้าหลังบ้านบนคอม ══════════════
    เซิร์ฟเวอร์ยืนยันตัวตนด้วย LINE ของเจ้าของ (owner_line) ก่อนยอมให้ตั้ง — เครื่องพนักงานตั้งแทนไม่ได้ */
+/* ── ช่องใส่รูป (ปกร้าน · โลโก้ · รูปเมนู) ────────────────────────
+   ย่อในเครื่องก่อนแล้วอัปขึ้น R2 เก็บเป็น URL — ไม่เก็บรูปลงฐานข้อมูลตรง ๆ
+   ถ้าอัปไม่สำเร็จต้องบอกให้เห็น ไม่ใช่เงียบแล้วรูปหาย                      */
+function ImagePicker({ value, onChange, label, hint, ratio, maxSide, folder }){
+  const { lang } = useT(); const TH = lang!=='en';
+  const [busy,setBusy] = m2State(false);
+  const [err,setErr]   = m2State('');
+  const pick = async (f)=>{
+    if(!f) return;
+    setErr(''); setBusy(true);
+    try{
+      const dataUrl = await kdShrinkImage(f, maxSide || 1200);
+      const r = await window.KD_API.uploadImage(dataUrl, folder || 'shop');
+      if(r && r.url) onChange(r.url);
+      else setErr(TH?'อัปโหลดไม่สำเร็จ ลองใหม่อีกครั้ง':'Upload failed');
+    }catch(e){
+      setErr(/501/.test(String(e&&e.message))
+        ? (TH?'ระบบเก็บรูปยังไม่ได้เปิดใช้งาน — แจ้งผู้ดูแลระบบ':'Image storage is not enabled')
+        : (TH?'อัปโหลดไม่สำเร็จ — ไฟล์อาจใหญ่เกินไปหรือเน็ตหลุด':'Upload failed'));
+    }
+    setBusy(false);
+  };
+  return (
+    <div style={{ marginBottom:14 }}>
+      <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', marginBottom:6 }}>{label}</div>
+      <label style={{ display:'block', cursor:busy?'default':'pointer', position:'relative',
+        borderRadius:14, overflow:'hidden', border:'1.5px dashed var(--hair)', background:'var(--bg)',
+        aspectRatio: ratio || '16 / 9' }}>
+        {value
+          ? <img src={value} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
+          : <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, color:'var(--ink-3)' }}>
+              <span style={{ fontSize:26 }}>📷</span>
+              <span style={{ fontSize:12.5, fontWeight:600 }}>{busy?(TH?'กำลังอัปโหลด…':'Uploading…'):(TH?'แตะเพื่อเลือกรูป':'Tap to choose')}</span>
+            </div>}
+        {value && busy && <div style={{ position:'absolute', inset:0, background:'rgba(255,255,255,.75)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:700 }}>{TH?'กำลังอัปโหลด…':'Uploading…'}</div>}
+        <input type="file" accept="image/*" disabled={busy} onChange={e=>pick(e.target.files && e.target.files[0])} style={{ display:'none' }}/>
+      </label>
+      {hint && <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:5, lineHeight:1.5 }}>{hint}</div>}
+      {err && <div style={{ fontSize:12, color:'var(--danger)', fontWeight:700, marginTop:5 }}>{err}</div>}
+      {value && !busy && <button onClick={()=>onChange('')} className="kd-btn" style={{ marginTop:7, padding:'7px 12px', fontSize:12, color:'var(--ink-2)', background:'var(--bg)' }}>
+        {TH?'เอารูปออก':'Remove'}</button>}
+    </div>
+  );
+}
+
 /* ── โปร/คูปองของร้าน ─────────────────────────────────────────────
    ร้านออกส่วนลดเอง แพลตฟอร์มไม่ร่วมจ่าย — ยอดจริงคิดที่เซิร์ฟเวอร์เสมอ
    ใช้กับออเดอร์ฝั่งลูกค้า (ลิงก์ร้าน/แพลตฟอร์ม) ไม่ใช่หน้าขายหน้าร้าน   */
@@ -2288,25 +2333,13 @@ function ShopProfileSheet({ shop, setShop, onClose, regOpen }){
         {/* logo photo */}
         <Lbl>{TH?'โลโก้ (อัปรูปจริง)':'Logo photo'}</Lbl>
         <div style={{ fontSize:11, color:'var(--ink-3)', margin:'-2px 0 8px', lineHeight:1.4 }}>{TH?'แนะนำ 512×512 px · สี่เหลี่ยมจัตุรัส · PNG/JPG ไม่เกิน ~2MB':'512×512 px · square · PNG/JPG'}</div>
-        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
-          <div style={{ width:60, height:60, borderRadius:16, flex:'0 0 auto', background:'var(--brand-soft)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, overflow:'hidden', backgroundImage:f.logo?`url(${f.logo})`:'none', backgroundSize:'cover', backgroundPosition:'center' }}>{!f.logo && f.emoji}</div>
-          <label className="kd-btn kd-btn-ghost" style={{ cursor:'pointer', padding:'11px 14px', fontSize:14, width:'auto' }}>{TH?'เลือกรูป':'Choose'}<input type="file" accept="image/*" style={{ display:'none' }} onChange={async e=>{ const file=e.target.files&&e.target.files[0]; if(file){ try{ upd('logo', await kdSlipResize(file)); }catch(_){}}}}/></label>
-          {f.logo && <button onClick={()=>upd('logo',null)} style={{ border:'none', background:'none', color:'var(--ink-3)', fontWeight:700, fontSize:13, cursor:'pointer' }}>{TH?'ลบรูป':'Remove'}</button>}
-        </div>
+        <ImagePicker value={f.logo} onChange={v=>upd('logo', v||null)} ratio="1 / 1" maxSide={512} folder="logo"
+          label={TH?'เลือกรูปโลโก้':'Choose logo'}
+          hint={TH?'รูปสี่เหลี่ยมจัตุรัสจะสวยที่สุด · ระบบย่อให้อัตโนมัติ ถ่ายจากมือถือได้เลย':'Square works best — resized automatically'}/>
         {/* cover banner */}
         <Lbl>{TH?'รูปหน้าปกร้าน (แบนเนอร์บนหน้าลูกค้า)':'Cover banner'}</Lbl>
-        <div style={{ fontSize:11, color:'var(--ink-3)', margin:'-2px 0 8px', lineHeight:1.4 }}>{TH?'แนะนำ 1200×675 px · แนวนอน 16:9 · PNG/JPG ไม่เกิน ~2MB':'1200×675 px · 16:9 landscape'}</div>
-        <div style={{ marginBottom:16 }}>
-          {f.cover
-            ? <div style={{ position:'relative', borderRadius:14, overflow:'hidden', height:110 }}>
-                <img src={f.cover} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
-                <button onClick={()=>upd('cover',null)} style={{ position:'absolute', top:8, right:8, border:'none', background:'rgba(0,0,0,.6)', color:'#fff', borderRadius:8, padding:'5px 10px', fontFamily:'var(--font)', fontSize:12, cursor:'pointer' }}>{TH?'ลบ':'Remove'}</button>
-              </div>
-            : <label style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6, border:'1.6px dashed var(--hair-2)', borderRadius:14, height:110, color:'var(--ink-3)', background:'#fff', cursor:'pointer', fontSize:13 }}>
-                📷 {TH?'แตะเพื่อใส่รูปหน้าร้าน':'Add cover photo'}
-                <input type="file" accept="image/*" style={{ display:'none' }} onChange={async e=>{ const file=e.target.files&&e.target.files[0]; if(file){ try{ upd('cover', await kdSlipResize(file)); }catch(_){}}}}/>
-              </label>}
-        </div>
+        <ImagePicker value={f.cover} onChange={v=>upd('cover', v||null)} ratio="16 / 9" maxSide={1200} folder="cover"
+          hint={TH?'รูปแนวนอนจะสวยที่สุด · ลูกค้าเห็นรูปนี้ก่อนชื่อร้านเสมอ':'Landscape works best — customers see it first'}/>
         <div style={{ display:'flex', gap:12, marginBottom:14 }}>
           <div style={{ flex:2 }}><Field label={lang==='th'?'ชื่อร้าน':'Store name'}><input className="kd-input" value={f.name} onChange={e=>upd('name',e.target.value)}/></Field></div>
           <div style={{ flex:1 }}><Field label={lang==='th'?'สาขา':'Branch'}><input className="kd-input" value={f.branch} onChange={e=>upd('branch',e.target.value)}/></Field></div>
@@ -3003,6 +3036,8 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
   const TH = lang==='th';
   const [addModeOpen,setAddModeOpen] = m2State(false);
   const [manageOpen,setManageOpen] = m2State(false);
+  const [imgBusy,setImgBusy] = m2State(false);
+  const [imgErr,setImgErr]   = m2State('');
   const cats = useCats();
   const [f,setF] = m2State({ ...item });
   const [perCh,setPerCh] = m2State(!!(item.priceByCh && Object.keys(item.priceByCh).length));
@@ -3048,13 +3083,27 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
           <label style={{ position:'relative', cursor:'pointer', flexShrink:0 }}>
             <FoodTile item={f} size={70} radius={16}/>
             <span style={{ position:'absolute', right:-4, bottom:-4, width:26, height:26, borderRadius:999, background:'var(--brand)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'var(--shadow)', border:'2px solid #fff' }}>{React.cloneElement(IC.scan,{size:13})}</span>
-            <input type="file" accept="image/*" style={{ display:'none' }} onChange={e=>{ const file=e.target.files&&e.target.files[0]; if(!file)return; const r=new FileReader(); r.onload=ev=>upd('img',ev.target.result); r.readAsDataURL(file); }}/>
+            {/* ย่อรูปแล้วอัปขึ้นที่เก็บรูป เก็บแค่ URL — เดิมยัดรูปดิบจากกล้อง (หลายเมกะไบต์) ลงข้อมูลเมนูตรง ๆ
+                ทำให้เมนูบวมและลูกค้าต้องโหลดรูปเต็มทุกครั้งที่เปิดหน้าร้าน */}
+            <input type="file" accept="image/*" style={{ display:'none' }} disabled={imgBusy} onChange={async e=>{
+              const file = e.target.files && e.target.files[0]; if(!file) return;
+              setImgBusy(true); setImgErr('');
+              try{
+                const small = await kdShrinkImage(file, 800);
+                const r = await window.KD_API.uploadImage(small, 'menu');
+                if(r && r.url) upd('img', r.url); else setImgErr(TH?'อัปโหลดรูปไม่สำเร็จ':'Upload failed');
+              }catch(err){ setImgErr(TH?'อัปโหลดรูปไม่สำเร็จ — ไฟล์อาจใหญ่เกินไปหรือเน็ตหลุด':'Upload failed'); }
+              setImgBusy(false);
+            }}/>
           </label>
           <div style={{ flex:1 }}>
             <Field label={lang==='th'?'ชื่อเมนู':'Name'}><input className="kd-input" value={f.th} onChange={e=>upd('th',e.target.value)} placeholder={lang==='th'?'เช่น ข้าวกะเพรา':'e.g. Basil rice'}/></Field>
-            {f.img
-              ? <button onClick={()=>upd('img',null)} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--danger)', fontFamily:'var(--font)', fontSize:12.5, fontWeight:600, marginTop:6, padding:0 }}>{lang==='th'?'ลบรูป':'Remove photo'}</button>
-              : <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:6 }}>{lang==='th'?'แตะรูปเพื่ออัปโหลดภาพสินค้า':'Tap image to upload a photo'}</div>}
+            {imgBusy
+              ? <div style={{ fontSize:12, color:'var(--brand-ink)', fontWeight:700, marginTop:6 }}>{TH?'กำลังอัปโหลดรูป…':'Uploading…'}</div>
+              : f.img
+                ? <button onClick={()=>upd('img',null)} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--danger)', fontFamily:'var(--font)', fontSize:12.5, fontWeight:600, marginTop:6, padding:0 }}>{lang==='th'?'ลบรูป':'Remove photo'}</button>
+                : <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:6 }}>{lang==='th'?'แตะรูปเพื่ออัปโหลดภาพสินค้า':'Tap image to upload a photo'}</div>}
+            {imgErr && <div style={{ fontSize:12, color:'var(--danger)', fontWeight:700, marginTop:4 }}>{imgErr}</div>}
           </div>
         </div>
         <div style={{ marginBottom:14 }}>

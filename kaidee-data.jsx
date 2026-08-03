@@ -541,6 +541,32 @@ function delAddr(addr){
   return list;
 }
 
+/* ── ย่อรูปในเครื่องก่อนอัปโหลด ────────────────────────────────
+   กล้องมือถือถ่ายมา 4–8MB ส่งดิบ ๆ จะเกินเพดาน 3MB และกินเน็ตลูกค้าตอนโหลดหน้าร้าน
+   ย่อ + แปลงเป็น JPEG คุณภาพ 0.82 ก่อนเสมอ                                        */
+function kdShrinkImage(file, maxSide){
+  return new Promise((res, rej)=>{
+    if(!file) return rej(new Error('no file'));
+    const rd = new FileReader();
+    rd.onerror = ()=>rej(new Error('read failed'));
+    rd.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=>rej(new Error('bad image'));
+      img.onload = ()=>{
+        const M = maxSide || 1200;
+        let { width:w, height:h } = img;
+        if(w > M || h > M){ const k = M/Math.max(w,h); w = Math.round(w*k); h = Math.round(h*k); }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = rd.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+
 /* ร้านโปรด — เก็บในเครื่อง (ต่ออุปกรณ์) · ย้ายเครื่องแล้วต้องกดใหม่
    ยังไม่ผูกกับบัญชี LINE เพราะต้องมีตารางใหม่ฝั่งเซิร์ฟเวอร์ ค่อยทำตอนมีคนใช้จริง */
 const KD_FAV_KEY = 'kd_fav_shops';
@@ -587,7 +613,7 @@ Object.assign(window, {
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
   kdViaMarket, marketMenuView, kdMarketPriceOpen,
   promoText, promoSubText,
-  custLoc, setCustLoc, kdDistKm, kdEtaMin, kdAskLoc, addrBook, saveAddr, delAddr, favShops, toggleFav,
+  custLoc, setCustLoc, kdDistKm, kdEtaMin, kdAskLoc, addrBook, saveAddr, delAddr, favShops, toggleFav, kdShrinkImage,
   deliveryCfg, deliveryFee, customerPaysDelivery,
   RUNITS, runit, TRACK_UNIT, buyUnitsFor, convQty, rawValue, RAW_CATS, RAW, rawById, SEED_PURCHASES, effItemCost, effSaleCost,
   TopBar, TabBar, Sheet, useToast, Stat, FoodTile,

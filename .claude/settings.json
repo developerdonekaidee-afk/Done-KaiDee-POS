@@ -203,7 +203,9 @@
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{JSON.parse\\(d\\).forEach\\(s=>console.log\\(' ',s.id,'lat',s.lat,'lng',s.lng,'| promo',s.promo?s.promo.kind:'-'\\)\\);}\\);\")",
       "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/uiloc.js)",
       "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/jsxcheck.js kaidee-market-home.jsx kaidee-api.jsx)",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const s=JSON.parse\\(d\\);console.log\\('rating',s.rating,'| reviewCount',s.reviewCount\\);}\\);\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const s=JSON.parse\\(d\\);console.log\\('rating',s.rating,'| reviewCount',s.reviewCount\\);}\\);\")",
+      "Bash(node /private/tmp/claude-501/-Users-oneday-Desktop-Done-KaiDee-POS/99b4c03a-99d6-41f4-9b09-70bb9b40a204/scratchpad/jsxcheck.js kaidee-merchant2.jsx kaidee-data.jsx kaidee-api.jsx)",
+      "Bash(curl -s -m 20 -w ' [%{http_code}]\\\\n' -X POST \"http://localhost:8787/upload\" -H 'content-type: application/json' -d '{\"image\":\"data:image/gif;base64,R0lGODlhAQABAAAAACw=\",\"folder\":\"menu\"}')"
     ],
     "additionalDirectories": [
       "/Users/oneday/Desktop/Done-KaiDee-POS/kaidee-pos-worker"

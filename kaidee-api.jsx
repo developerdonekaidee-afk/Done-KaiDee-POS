@@ -118,6 +118,8 @@ const KD_API = {
   // สถานะไรเดอร์ของออเดอร์ (worker ยิงไปถาม platform-worker ให้ — แอปไม่ต้องรู้จัก base ของอีกตัว)
   orderRider:     (id)      => _req('GET', '/orders/' + id + '/rider'),
   // ── รีวิว/คะแนนดาว (ให้ได้เฉพาะคนที่สั่งจริงและบิลปิดแล้ว) ──
+  // อัปโหลดรูปขึ้น R2 แล้วได้ URL กลับมา (เก็บ URL ในข้อมูล ไม่เก็บรูปเป็น data URL — payload จะบวมมาก)
+  uploadImage:    (image, folder) => _req('POST', '/upload', { image, folder: folder || 'shop' }, false),
   getReviews:     ()        => _req('GET', '/reviews'),
   myReview:       (orderId) => _req('GET', '/reviews/mine?order=' + encodeURIComponent(orderId || '')),
   postReview:     (b)       => _req('POST', '/reviews', b),
