@@ -1679,8 +1679,12 @@ export default {
           const jobId = row.riderJob || (row.voidReq && null);
           if (!jobId) return json({ called: false }, req);
           const base = env.PLATFORM_URL || 'https://platform.oneday-pos.workers.dev';
+          const path = `/pool/job/${encodeURIComponent(jobId)}?region=delivery`;
           try {
-            const r = await fetch(`${base}/pool/job/${encodeURIComponent(jobId)}?region=delivery`, { headers: { accept: 'application/json' } });
+            // service binding ก่อนเสมอ — ยิงผ่าน URL สาธารณะ worker ต่อ worker บัญชีเดียวกันไม่ผ่าน
+            const r = env.PLATFORM
+              ? await env.PLATFORM.fetch(new Request(base + path, { headers: { accept: 'application/json' } }))
+              : await fetch(base + path, { headers: { accept: 'application/json' } });
             if (!r.ok) return json({ called: true, job: null, rider: null }, req);
             const j = await r.json();
             return json({ called: true, ...j }, req);

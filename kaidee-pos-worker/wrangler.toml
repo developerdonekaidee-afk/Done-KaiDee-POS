@@ -20,6 +20,12 @@ bucket_name = "kaidee-slips"
 name = "SHOP_HUB"
 class_name = "ShopHub"
 
+# ── เรียก platform-worker ตรง ๆ (งานไรเดอร์อยู่ที่นั่น) ──
+# ยิงผ่าน URL สาธารณะไม่ผ่าน (worker เรียก workers.dev บัญชีเดียวกันถูกบล็อก) ต้องผูกเป็น service
+[[services]]
+binding = "PLATFORM"
+service = "platform"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["ShopHub"]
