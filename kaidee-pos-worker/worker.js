@@ -242,6 +242,7 @@ const rowOrder = (r) => ({
   fee: r.fee, qnum: r.qnum, table: r.table_no || null, customer: r.customer, addr: r.addr, when: r.when_txt,
   subtotal: r.subtotal | 0, memberDisc: r.member_disc | 0,
   promoId: r.promo_id || null, promoName: r.promo_name || '', promoDisc: r.promo_disc | 0, promoFeeDisc: r.promo_fee_disc | 0,
+  riderJob: r.rider_job || null, riderJobAt: r.rider_job_at || null,
   callCash: !!r.call_cash, callCashAt: r.call_cash_at, payAfterConfirm: !!r.pay_after_confirm,
   acceptedBy: r.accepted_by || null, acceptedByName: r.accepted_by_name || null,
   verifiedBy: r.verified_by || null, verifiedByName: r.verified_by_name || null,
@@ -269,7 +270,10 @@ async function ensureOrderCols(env){ if(_orderColsReady) return; _orderColsReady
   try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_id TEXT').run(); }catch(e){}
   try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_name TEXT').run(); }catch(e){}
   try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_disc INTEGER DEFAULT 0').run(); }catch(e){}
-  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_fee_disc INTEGER DEFAULT 0').run(); }catch(e){} }
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_fee_disc INTEGER DEFAULT 0').run(); }catch(e){}
+  // งานไรเดอร์ที่ประกาศไว้ (อยู่คนละ worker) — เดิมเก็บแค่ในเครื่องร้าน ลูกค้าอีกเครื่องเลยติดตามไรเดอร์ไม่ได้
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN rider_job TEXT').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN rider_job_at INTEGER').run(); }catch(e){} }
 // idempotent: ตาราง refunds (คืนเงินออเดอร์ที่ร้านปฏิเสธ · confirm-first) — สร้างครั้งเดียวต่อ isolate
 let _refundReady = false;
 async function ensureRefundTable(env){ if(_refundReady) return; _refundReady = true;
@@ -1665,6 +1669,26 @@ export default {
           const { results } = await env.DB.prepare(q).bind(...bind).all();
           return json(results.map(rowOrder), req);
         }
+        /* GET /orders/:id/rider — สถานะไรเดอร์ของออเดอร์นี้
+           งานไรเดอร์อยู่คนละ worker คนละฐานข้อมูล (platform-worker) — worker นี้ยิงไปถามแทนแอป
+           ไม่ให้แอปยิงตรง เพราะแอปฝั่งลูกค้าไม่รู้จัก base ของ platform และจะติด CORS */
+        if (req.method === 'GET' && seg[1] && seg[2] === 'rider') {
+          const o = await env.DB.prepare('SELECT * FROM orders WHERE shop_id=? AND id=?').bind(shop, seg[1]).first();
+          if (!o) return err('not found', req, 404);
+          const row = rowOrder(o);
+          const jobId = row.riderJob || (row.voidReq && null);
+          if (!jobId) return json({ called: false }, req);
+          const base = env.PLATFORM_URL || 'https://platform.oneday-pos.workers.dev';
+          try {
+            const r = await fetch(`${base}/pool/job/${encodeURIComponent(jobId)}?region=delivery`, { headers: { accept: 'application/json' } });
+            if (!r.ok) return json({ called: true, job: null, rider: null }, req);
+            const j = await r.json();
+            return json({ called: true, ...j }, req);
+          } catch (e) {
+            // platform ล่ม = ยังบอกได้ว่าเรียกไรเดอร์แล้ว แค่ยังไม่รู้สถานะ ไม่ใช่พังทั้งหน้า
+            return json({ called: true, job: null, rider: null, offline: true }, req);
+          }
+        }
         if (req.method === 'GET' && seg[1]) {
           const r = await env.DB.prepare('SELECT * FROM orders WHERE shop_id=? AND id=?').bind(shop, seg[1]).first();
           return r ? json(rowOrder(r), req) : err('not found', req, 404);
@@ -1754,8 +1778,11 @@ export default {
           const voidReq = b.voidReq !== undefined ? (b.voidReq ? JSON.stringify(b.voidReq) : null) : (cur.void_req || null);
           const curRefund = (()=>{ try{ return cur.refund ? JSON.parse(cur.refund) : null; }catch(e){ return null; } })();
           const refundJson = b.refund !== undefined ? (b.refund ? JSON.stringify(b.refund) : null) : (cur.refund || null);
-          await env.DB.prepare('UPDATE orders SET status=?, paid=?, call_cash=?, call_cash_at=?, slip_url=?, accepted_by=?, accepted_by_name=?, verified_by=?, verified_by_name=?, void_req=?, refund=?, updated_at=? WHERE shop_id=? AND id=?')
-            .bind(status, paid, callCash, callCashAt, slipUrl, acceptedBy, acceptedByName, verifiedBy, verifiedByName, voidReq, refundJson, now(), shop, seg[1]).run();
+          // งานไรเดอร์: ตั้งได้ครั้งเดียว เขียนทับไม่ได้ กันเรียกซ้ำแล้วงานเดิมหลุดการติดตาม
+          const riderJob = cur.rider_job || (b.riderJob ? String(b.riderJob).slice(0, 60) : null);
+          const riderJobAt = cur.rider_job_at || (b.riderJob ? now() : null);
+          await env.DB.prepare('UPDATE orders SET status=?, paid=?, call_cash=?, call_cash_at=?, slip_url=?, accepted_by=?, accepted_by_name=?, verified_by=?, verified_by_name=?, void_req=?, refund=?, rider_job=?, rider_job_at=?, updated_at=? WHERE shop_id=? AND id=?')
+            .bind(status, paid, callCash, callCashAt, slipUrl, acceptedBy, acceptedByName, verifiedBy, verifiedByName, voidReq, refundJson, riderJob, riderJobAt, now(), shop, seg[1]).run();
           if (cur.line_user) {
             // ⏱️ จังหวะการได้แต้ม ตามที่ร้านตั้ง (loyalty.earnOn): paid=ตอนจ่ายเงิน · accept=ตอนรับออเดอร์ · delivered=ตอนปิดงาน
             const L = await loyaltyCfg(env, shop);

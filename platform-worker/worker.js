@@ -405,6 +405,29 @@ export default {
           ctx.waitUntil(hubBroadcast(env, pool, { type: 'coll', coll: 'jobs', id, op: 'add', updatedAt: r.updatedAt }));
           return json({ ok: true, id, job: rec }, req, 201);
         }
+        // GET /pool/job/:id  → งานใบเดียว + ข้อมูลไรเดอร์ที่รับงาน (ให้ฝั่งลูกค้าติดตามได้)
+        // คืนเฉพาะสิ่งที่ลูกค้าควรเห็น: ชื่อ เบอร์ ทะเบียน พิกัดล่าสุด — ไม่คืนเอกสาร KYC หรือข้อมูลส่วนตัวอื่น
+        if (req.method === 'GET' && seg[1] === 'job' && seg[2]) {
+          const cur = await env.DB.prepare('SELECT * FROM records WHERE biz_id=? AND coll=? AND id=?')
+            .bind(pool, 'jobs', safeId(seg[2])).first();
+          if (!cur) return err('not found', req, 404);
+          let job = {}; try { job = JSON.parse(cur.data || '{}'); } catch (e) {}
+          let rider = null;
+          if (job.worker) {
+            const w = await env.DB.prepare('SELECT * FROM records WHERE biz_id=? AND coll=? AND id=?')
+              .bind(pool, 'workers', safeId(job.worker)).first();
+            if (w) { let d = {}; try { d = JSON.parse(w.data || '{}'); } catch (e) {}
+              rider = { name: d.name || '', phone: d.phone || '', plate: d.plate || '',
+                        lat: d.lat != null ? d.lat : null, lng: d.lng != null ? d.lng : null, seenAt: d.seenAt || null }; }
+            // ทะเบียนรถอยู่ในใบสมัครไรเดอร์แพลตฟอร์ม ไม่ได้อยู่ใน pool worker
+            if (rider && !rider.plate) {
+              const rd = (await collList(env, 'riders', 'riders', 0, 3000))
+                .find(x => x.id === job.worker || (x.phone && rider.phone && String(x.phone).replace(/\D/g,'') === String(rider.phone).replace(/\D/g,'')));
+              if (rd) { rider.plate = rd.plate || ''; rider.name = rider.name || rd.name || ''; }
+            }
+          }
+          return json({ job: { ...job, updatedAt: cur.updated_at }, rider }, req);
+        }
         // PATCH /pool/job/:id {patch}  → รับงาน/ปิดงาน/เปลี่ยนสถานะ
         if (req.method === 'PATCH' && seg[1] === 'job' && seg[2]) {
           const id = safeId(seg[2]); const b = await readBody();

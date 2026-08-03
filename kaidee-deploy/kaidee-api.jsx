@@ -115,6 +115,8 @@ const KD_API = {
   quotePromos:    (cart)    => _req('POST', '/promos/quote', cart),
   // ออเดอร์ของลูกค้าคนเดียวข้ามทุกร้าน — ใช้ LINE userId เท่านั้น (เบอร์โทรเดาได้ ห้ามใช้)
   myOrders:       (line)    => _req('GET', '/my-orders?line=' + encodeURIComponent(line || ''), null, false),
+  // สถานะไรเดอร์ของออเดอร์ (worker ยิงไปถาม platform-worker ให้ — แอปไม่ต้องรู้จัก base ของอีกตัว)
+  orderRider:     (id)      => _req('GET', '/orders/' + id + '/rider'),
   listOrders:     (q = {})  => _req('GET', '/orders' + qs(q)),
   getOrder:       (id)      => _req('GET', '/orders/' + id),
   createOrder:    (payload) => _req('POST', '/orders', payload),

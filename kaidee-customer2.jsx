@@ -541,6 +541,79 @@ function ConfirmPayBlock({ o }){
     </div>
   );
 }
+/* ── ติดตามไรเดอร์ ─────────────────────────────────────────────
+   งานไรเดอร์อยู่คนละเซิร์ฟเวอร์ — worker ของร้านยิงไปถามให้ (GET /orders/:id/rider)
+   ทุกอย่างในนี้เป็นข้อมูลจริง ถ้ายังไม่รู้ก็บอกว่ายังไม่รู้ ไม่วาดภาพหลอก      */
+const RIDER_STEP = {
+  open:     { th:'ประกาศหาไรเดอร์แล้ว · รอมีคนรับงาน', en:'Looking for a rider', ic:'📣' },
+  accepted: { th:'ไรเดอร์รับงานแล้ว · กำลังไปที่ร้าน',  en:'Rider heading to the shop', ic:'🛵' },
+  picked:   { th:'รับอาหารแล้ว · กำลังไปหาคุณ',         en:'Picked up · on the way to you', ic:'🛵' },
+  done:     { th:'ส่งถึงแล้ว',                          en:'Delivered', ic:'✅' },
+};
+function RiderTrack({ o }){
+  const { lang } = useT(); const TH = lang!=='en';
+  const [d, setD] = c2State(null);      // null = ยังไม่รู้ · {called,job,rider}
+  c2Effect(()=>{
+    if(!o || !o.id) return;
+    let alive = true;
+    const pull = async ()=>{
+      try{ const r = await window.KD_API.orderRider(o.id); if(alive) setD(r||{ called:false }); }
+      catch(e){ if(alive) setD({ called:false, offline:true }); }
+    };
+    pull();
+    // ระหว่างของกำลังมา ขอสถานะใหม่ทุก 15 วิ — พอส่งถึงแล้วหยุดยิง
+    const t = setInterval(()=>{ if(o.status!=='done') pull(); }, 15000);
+    return ()=>{ alive = false; clearInterval(t); };
+  }, [o && o.id, o && o.status]);
+
+  if(!d) return null;
+  if(!d.called) return (
+    <div style={{ margin:'0 20px 16px', borderRadius:14, padding:'12px 14px', background:'var(--bg)', fontSize:12.5, color:'var(--ink-2)', lineHeight:1.55 }}>
+      🛵 {TH?'ร้านยังไม่ได้เรียกไรเดอร์ — ปกติจะเรียกตอนอาหารใกล้เสร็จ':'The shop has not called a rider yet'}
+    </div>
+  );
+  if(!d.job) return (
+    <div style={{ margin:'0 20px 16px', borderRadius:14, padding:'12px 14px', background:'var(--bg)', fontSize:12.5, color:'var(--ink-2)', lineHeight:1.55 }}>
+      🛵 {TH?'เรียกไรเดอร์แล้ว — ตอนนี้เช็คสถานะไม่ได้ชั่วคราว ลองใหม่อีกครั้ง':'Rider requested — status unavailable right now'}
+    </div>
+  );
+
+  const st = RIDER_STEP[d.job.status] || RIDER_STEP.open;
+  const r = d.rider;
+  // พิกัดในใบงาน = ปลายทางที่ลูกค้าปักไว้ (ถ้าไม่ได้ปัก จะเป็นพิกัดร้าน)
+  // โชว์ระยะเฉพาะช่วงที่ไรเดอร์กำลังมาหาลูกค้าจริง ๆ — ช่วงขาไปรับของที่ร้านเขาวิ่งออกห่าง บอกไปก็สับสน
+  const riderAt = (r && r.lat!=null) ? { lat:+r.lat, lng:+r.lng } : null;
+  const destAt  = (d.job.lat!=null)  ? { lat:+d.job.lat, lng:+d.job.lng } : null;
+  const showDist = d.job.status==='picked';
+  const km  = (showDist && riderAt && destAt) ? kdDistKm(riderAt, destAt) : null;
+  const eta = km!=null ? Math.max(2, Math.round(km*1.3*3)) : null;
+  const fresh = r && r.seenAt ? (Date.now() - r.seenAt) < 5*60*1000 : false;
+
+  return (
+    <div style={{ margin:'0 20px 16px' }}>
+      <div style={{ borderRadius:16, padding:'13px 15px', background:'var(--brand-soft)', color:'var(--brand-ink)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+          <span style={{ fontSize:20 }}>{st.ic}</span>
+          <div style={{ flex:1, fontSize:14, fontWeight:700 }}>{TH?st.th:st.en}</div>
+        </div>
+        {km!=null && <div style={{ fontSize:12.5, marginTop:6, fontWeight:600 }}>
+          {TH?`ห่างจากคุณอีก ${km<1?Math.round(km*1000)+' ม.':km.toFixed(1)+' กม.'} · ประมาณ ${eta} นาที`
+             :`${km<1?Math.round(km*1000)+' m':km.toFixed(1)+' km'} away · ~${eta} min`}
+          {!fresh && <span style={{ fontWeight:400, opacity:.75 }}>{TH?' (ตำแหน่งล่าสุด อาจไม่อัปเดตนาทีนี้)':' (last known position)'}</span>}
+        </div>}
+      </div>
+      {r && (r.name || r.phone) && <div className="kd-card" style={{ marginTop:9, padding:'12px 14px', display:'flex', alignItems:'center', gap:11 }}>
+        <span style={{ width:38, height:38, borderRadius:999, background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🛵</span>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:14, fontWeight:700 }}>{r.name || (TH?'ไรเดอร์':'Rider')}</div>
+          {r.plate && <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{TH?'ทะเบียน ':'Plate '}{r.plate}</div>}
+        </div>
+        {r.phone && <a href={'tel:'+r.phone} className="kd-btn kd-btn-primary" style={{ padding:'10px 15px', fontSize:13, textDecoration:'none' }}>
+          {TH?'โทรหาไรเดอร์':'Call'}</a>}
+      </div>}
+    </div>
+  );
+}
 function TrackSheet({ o, patchOrder, onClose }){
   const { t, lang } = useT();
   const steps = TRACK_STEPS.filter(s=> s.key!=='delivering' || o.channel==='delivery');
@@ -568,15 +641,8 @@ function TrackSheet({ o, patchOrder, onClose }){
       {/* Confirm-First: ร้านยืนยันแล้ว แต่ยังไม่จ่าย → โชว์ QR ให้จ่ายในหน้าติดตาม */}
       {o.payAfterConfirm && o.status!=='new' && o.status!=='void' && o.status!=='rejected' && !o.paid && o.pay==='promptpay' &&
         <ConfirmPayBlock o={o}/>}
-      {/* map-ish banner for delivery */}
-      {o.channel==='delivery' && <div style={{ margin:'0 20px 16px', height:120, borderRadius:16, overflow:'hidden', position:'relative',
-        background:'linear-gradient(160deg,#E7F6EF,#DCEFE5)' }}>
-        <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(18,165,110,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(18,165,110,.08) 1px,transparent 1px)', backgroundSize:'24px 24px' }}/>
-        <svg style={{ position:'absolute', inset:0 }} width="100%" height="120"><path d="M40 90 C120 70, 160 40, 300 34" stroke="var(--brand)" strokeWidth="3" strokeDasharray="2 8" fill="none" strokeLinecap="round"/></svg>
-        <div style={{ position:'absolute', left:32, bottom:26, color:'var(--brand)' }}>{React.cloneElement(IC.store,{size:22})}</div>
-        <div style={{ position:'absolute', right:34, top:22, color:'var(--danger)' }}>{React.cloneElement(IC.pin,{size:24})}</div>
-        <div style={{ position:'absolute', left:'46%', top:'46%', color:'var(--ink)', animation:'kdPop .4s' }}>{React.cloneElement(IC.moto,{size:26})}</div>
-      </div>}
+      {/* ไรเดอร์จริง — สถานะ ชื่อ ทะเบียน ปุ่มโทร และระยะที่เหลือจริง (เดิมตรงนี้เป็นภาพวาดปลอม) */}
+      {o.channel==='delivery' && <RiderTrack o={o}/>}
       {/* timeline */}
       <div style={{ padding:'0 24px', overflowY:'auto', flex:1 }}>
         {steps.map((s,i)=>{ const done=i<=activeIdx; const active=i===activeIdx; return (

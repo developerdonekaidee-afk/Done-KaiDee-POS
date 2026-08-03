@@ -343,6 +343,14 @@ lineLogin();
 render();
 if (S.me){ refresh(); if (S.online) locate(function(l){ S.loc=l||S.loc; ping(true); render(); }); }
 setInterval(function(){ if (S.me && S.online) refresh(); }, 12000);
+/* ระหว่างวิ่งงาน ส่งพิกัดขึ้นทุก 20 วิ — ลูกค้าถึงจะเห็นว่าไรเดอร์ถึงไหนแล้ว
+   เดิมส่งพิกัดเฉพาะตอนกดเปิดรับงาน ตำแหน่งเลยค้างอยู่ที่เดิมทั้งเที่ยว */
+setInterval(function(){
+  if (!S.me || !S.online) return;
+  var j = S.mine;
+  if (!j || (j.status !== 'accepted' && j.status !== 'picked')) return;
+  locate(function(l){ if (l) { S.loc = l; ping(true); } });
+}, 20000);
 </script>
 </body>
 </html>
