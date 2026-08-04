@@ -2049,6 +2049,32 @@ export default {
           const riderJobAt = cur.rider_job_at || (b.riderJob ? now() : null);
           await env.DB.prepare('UPDATE orders SET status=?, paid=?, call_cash=?, call_cash_at=?, slip_url=?, accepted_by=?, accepted_by_name=?, verified_by=?, verified_by_name=?, void_req=?, refund=?, rider_job=?, rider_job_at=?, updated_at=? WHERE shop_id=? AND id=?')
             .bind(status, paid, callCash, callCashAt, slipUrl, acceptedBy, acceptedByName, verifiedBy, verifiedByName, voidReq, refundJson, riderJob, riderJobAt, now(), shop, seg[1]).run();
+
+          /* ── ยกเลิกบิล → คืนของที่ตัดไปแล้วให้ครบ ──
+             ไม่ใช่แค่ติดธงว่าบิลนี้ยกเลิก — ยอดในบัตรกำนัลและสิทธิ์โปรถูกตัดไปตอนสั่ง
+             ถ้าไม่คืน ลูกค้าเสียเงินในบัตรฟรี และโควตาโปรของร้านหายไปกับบิลที่ไม่ได้ขายจริง
+             เช็ค "เพิ่งเปลี่ยนเป็นยกเลิก" เท่านั้น กัน PATCH ซ้ำแล้วคืนซ้ำ                    */
+          const _wasLive = !['void', 'rejected'].includes(cur.status);
+          const _nowVoid = ['void', 'rejected'].includes(status);
+          if (_wasLive && _nowVoid) {
+            if (cur.voucher_code && (cur.voucher_disc | 0) > 0) {
+              await ensureVouchers(env);
+              const vr = await env.DB.prepare('SELECT * FROM vouchers WHERE shop_id=? AND code=?').bind(shop, cur.voucher_code).first();
+              if (vr) {
+                const v = rowVoucher(vr);
+                const back = cur.voucher_disc | 0;
+                // บัตรกำนัลคืนเป็นยอดในบัตร · คูปอง/แพ็กคืนเป็นสิทธิ์ใช้ได้อีกครั้ง
+                const bal = v.type === 'gift' ? ((v.balance == null ? 0 : v.balance) + back) : null;
+                await env.DB.prepare("UPDATE vouchers SET balance=?, status='unused', used_amount=MAX(0,used_amount-?), used_at=NULL WHERE shop_id=? AND id=?")
+                  .bind(bal, back, shop, v.id).run();
+              }
+            }
+            if (cur.promo_id) {
+              await ensurePromoTables(env);
+              await env.DB.prepare('UPDATE promos SET used=MAX(0,used-1), updated_at=? WHERE shop_id=? AND id=?').bind(now(), shop, cur.promo_id).run();
+              await env.DB.prepare('DELETE FROM promo_uses WHERE shop_id=? AND order_id=?').bind(shop, seg[1]).run();
+            }
+          }
           if (cur.line_user) {
             // ⏱️ จังหวะการได้แต้ม ตามที่ร้านตั้ง (loyalty.earnOn): paid=ตอนจ่ายเงิน · accept=ตอนรับออเดอร์ · delivered=ตอนปิดงาน
             const L = await loyaltyCfg(env, shop);
