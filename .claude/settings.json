@@ -212,10 +212,30 @@
       "Bash(curl -s -m 20 -w ' [%{http_code}]\\\\n' -X POST __TRACKED_VAR__/pool/push/subscribe?region=delivery -H 'content-type: application/json' -d '{\"endpoint\":\"ไม่ใช่ url\"}')",
       "Bash(xargs -I{} gh run view {} --json jobs --jq '.jobs[] | \"\\\\\\(.name\\): \\\\\\(.conclusion\\)\"')",
       "Bash(curl -s -m 20 -o /dev/null -X POST __TRACKED_VAR__/pool/push/unsubscribe?region=delivery -H 'content-type: application/json' -d '{\"endpoint\":\"https://fcm.googleapis.com/fcm/send/QA-TEST-ENDPOINT\"}')",
-      "Bash(curl -s -m 20 -w ' [%{http_code}] \\(ควร 400\\)\\\\n' -X POST __TRACKED_VAR__/pool/push/subscribe?region=delivery -H 'content-type: application/json' -d '{\"endpoint\":\"ไม่ใช่ url\"}')"
+      "Bash(curl -s -m 20 -w ' [%{http_code}] \\(ควร 400\\)\\\\n' -X POST __TRACKED_VAR__/pool/push/subscribe?region=delivery -H 'content-type: application/json' -d '{\"endpoint\":\"ไม่ใช่ url\"}')",
+      "Bash(perl -pi -e 's/\\\\bUUID\\(\\\\??\\)\\(\\\\s+\\)/String$1$2/g' prisma/schema.prisma)",
+      "Bash(npx prisma *)",
+      "Read(//Users/oneday/Desktop/petty-cash-app/**)",
+      "Bash(npx tsc *)",
+      "Bash(cd /Users/oneday/Desktop/petty-cash-app && find node_modules/prisma -name \"config.d.ts\" -o -name \"config.d.mts\" | head; echo \"---\"; grep -rn \"PrismaConfig\" node_modules/prisma/config.d.ts 2>/dev/null | head)",
+      "Bash(cd /Users/oneday/Desktop/petty-cash-app && grep -n \"type PrismaConfig\\\\b\" -A 60 node_modules/@prisma/config/dist/index.d.ts | head -90)",
+      "Bash(cd /Users/oneday/Desktop/petty-cash-app && grep -n \"declare type Datasource\" -A 20 node_modules/@prisma/config/dist/index.d.ts | head -30; echo \"=== MigrationsConfigShape ===\"; grep -n \"MigrationsConfigShape = \" -A 20 node_modules/@prisma/config/dist/index.d.ts | head -30)",
+      "Bash(npm pkg *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npx opennextjs-cloudflare *)",
+      "Bash(npm view *)",
+      "Bash(rm -rf .open-next)",
+      "Bash(docker info *)",
+      "Bash(chmod +x scripts/backup-db.sh)",
+      "Bash(cd /Users/oneday/Desktop/petty-cash-app && find . -path ./node_modules -prune -o -path ./.next -prune -o -path ./.open-next -prune -o -path ./src/generated -prune -o -type f -print | sort)"
     ],
     "additionalDirectories": [
-      "/Users/oneday/Desktop/Done-KaiDee-POS/kaidee-pos-worker"
+      "/Users/oneday/Desktop/Done-KaiDee-POS/kaidee-pos-worker",
+      "/Users/oneday/Desktop/petty-cash-app",
+      "/Users/oneday/Desktop/petty-cash-app/prisma/migrations/20260804000000_init",
+      "/Users/oneday/Desktop/petty-cash-app/prisma/migrations",
+      "/Users/oneday/Desktop/petty-cash-app/prisma"
     ]
   }
 }
