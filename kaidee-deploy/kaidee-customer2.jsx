@@ -113,13 +113,19 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
     })();
     return ()=>{ dead = true; };
   }, [cartKey, orderChannel, rawFee, promoCode]);
+  /* บัตรกำนัล/คูปอง — โค้ดที่ลูกค้ากรอกอาจเป็นโปรหรือเป็นบัตรก็ได้
+     ลองทางโปรก่อน ไม่เจอค่อยถามเซิร์ฟเวอร์ว่าเป็นบัตรไหม (ยอดจริงเซิร์ฟเวอร์คิดซ้ำตอนสั่ง) */
+  const [voucher,setVoucher] = c2State(null);
   const chosen = promoList.find(p=>p.id===promoId && !p.blocked) || null;
   const promoDisc    = chosen ? (chosen.disc|0) : 0;
   const promoFeeDisc = chosen ? Math.min(chosen.feeDisc|0, billFee) : 0;
   // โปรที่ไม่ได้ตั้งให้ใช้ร่วมกับส่วนลดสมาชิก → ลูกค้าได้ทางเดียว (เลือกทางที่ลดเยอะกว่าให้อัตโนมัติไม่ได้ เพราะร้านตั้งใจกันไว้)
   const memberDisc = (chosen && !chosen.stackable) ? 0 : memberDiscRaw;
-  const saved = memberDisc + promoDisc + promoFeeDisc;
-  const total = Math.max(0, subtotal+billFee-memberDisc-promoDisc-promoFeeDisc);
+  // บัตรกำนัลทำหน้าที่เหมือนเงิน — หักจากยอดที่เหลือหลังส่วนลดอื่นแล้ว (ตรงกับที่เซิร์ฟเวอร์คิด)
+  const afterOthers = Math.max(0, subtotal - memberDisc - promoDisc);
+  const vcDisc = voucher ? Math.min(voucher.disc|0, afterOthers) : 0;
+  const saved = memberDisc + promoDisc + promoFeeDisc + vcDisc;
+  const total = Math.max(0, subtotal+billFee-memberDisc-promoDisc-promoFeeDisc-vcDisc);
   const cost = lines.reduce((a,e)=>a+(menuById(e.id)?.cost||0)*e.qty,0);
   const _acc=(payCfg&&payCfg.accept)||{promptpay:true,transfer:true,cash:true,cod:true};
   const payOpts = (((when>0) || ful==='delivery' ? ['promptpay'] : ['promptpay','cash']).filter(k=>_acc[k]!==false)) ;
@@ -137,6 +143,7 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
     items:lines.map(e=>[e.id, e.qty, (e.opts||[]).map(o=>o.label).join(', '), e.add||0]), channel: ful==='delivery'?'delivery':(ful==='dinein'?'dinein':'line'),
     pay: ful==='dinein'?'later':(payOptsSafe.includes(pay)?pay:payOptsSafe[0]), payLater: ful==='dinein', total, cost, fee, memberId: _mem?_mem.id:null, memberDisc: memberDisc||0, deliveryMode: deliveryCfg(shop).mode,
     promoId: chosen?chosen.id:null, promoName: chosen?chosen.name:'', promoDisc, promoFeeDisc,
+    voucherCode: voucher?voucher.code:null,
     payAfterConfirm: (confirmFirst && ful!=='dinein' && (payOptsSafe.includes(pay)?pay:payOptsSafe[0])==='promptpay'),
     phone, customer: isGuest ? (custName.trim()|| (lang==='th'?'ลูกค้า':'Guest')) : undefined, preorder: forcePre||isPre,
     addr: ful==='delivery'?addr:(ful==='dinein'?('ทานที่ร้าน · โต๊ะ '+(table||'-')):'รับกลับบ้าน'), when: SLOTS[when],
@@ -263,10 +270,10 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
             display:'flex', alignItems:'center', gap:12, padding:'14px 15px', fontFamily:'var(--font)', textAlign:'left' }}>
             <span style={{ fontSize:20 }}>🎟️</span>
             <div style={{ flex:1 }}>
-              {chosen
+              {(chosen||voucher)
                 ? <>
-                    <div style={{ fontSize:14.5, fontWeight:700, color:'var(--brand-ink)' }}>{chosen.name}</div>
-                    <div style={{ fontSize:12.5, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?`ลด ${money(promoDisc+promoFeeDisc)}`:`Saves ${money(promoDisc+promoFeeDisc)}`}</div>
+                    <div style={{ fontSize:14.5, fontWeight:700, color:'var(--brand-ink)' }}>{chosen?chosen.name:voucher.name}{chosen&&voucher?' + '+voucher.name:''}</div>
+                    <div style={{ fontSize:12.5, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?`ลด ${money(promoDisc+promoFeeDisc+vcDisc)}`:`Saves ${money(promoDisc+promoFeeDisc+vcDisc)}`}</div>
                   </>
                 : <>
                     <div style={{ fontSize:14.5, fontWeight:600 }}>{lang==='th'?'ใช้ส่วนลด / ใส่โค้ด':'Use a discount or code'}</div>
@@ -277,14 +284,15 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
                     </div>
                   </>}
             </div>
-            {chosen
-              ? <span onClick={e=>{ e.stopPropagation(); setPromoId(''); }} style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', padding:'6px 10px' }}>{lang==='th'?'เอาออก':'Remove'}</span>
+            {(chosen||voucher)
+              ? <span onClick={e=>{ e.stopPropagation(); setPromoId(''); setVoucher(null); }} style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', padding:'6px 10px' }}>{lang==='th'?'เอาออก':'Remove'}</span>
               : <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>}
           </button>
         </div>
       </div>
 
       {promoOpen && <PromoPicker list={promoList} chosen={promoId} code={promoCode} setCode={setPromoCode}
+        voucher={voucher} setVoucher={setVoucher} subtotal={afterOthers}
         onPick={id=>{ setPromoId(id); setPromoOpen(false); }} onClose={()=>setPromoOpen(false)} />}
 
       {/* summary bar */}
@@ -292,6 +300,7 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
         <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-2)', marginBottom:3 }}><span>{t('subtotal')}</span><span className="num">{money(subtotal)}</span></div>
         {memberDisc>0 && <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:3, color:'var(--brand-ink)', fontWeight:700 }}><span>{lang==='th'?`ส่วนลดสมาชิก${_mem&&_mem.tier==='gold'?'ทอง':_mem&&_mem.tier==='silver'?'เงิน':''} ${_tierPct}%`:`Member ${_tierPct}%`}</span><span className="num">−{money(memberDisc)}</span></div>}
         {promoDisc>0 && <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:3, color:'var(--brand-ink)', fontWeight:700 }}><span>{chosen?chosen.name:(lang==='th'?'ส่วนลดร้าน':'Shop discount')}</span><span className="num">−{money(promoDisc)}</span></div>}
+        {vcDisc>0 && <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:3, color:'var(--brand-ink)', fontWeight:700 }}><span>💳 {voucher.name||(lang==='th'?'บัตรกำนัล':'Voucher')}</span><span className="num">−{money(vcDisc)}</span></div>}
         {fee>0 && (custPays
           ? <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-2)', marginBottom:3 }}><span>{lang==='th'?(deliveryCfg(shop).mode==='distance'?`ค่าส่ง · ${dist} กม.`:'ค่าส่ง'):`Delivery${deliveryCfg(shop).mode==='distance'?' · '+dist+' km':''}`}</span><span className="num">{money(billFee)}</span></div>
           : <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, color:'var(--ink-2)', marginBottom:3 }}><span>{lang==='th'?'ค่าส่ง':'Delivery'}</span><span style={{ color:'var(--brand-ink)', fontWeight:700 }}>{lang==='th'?'ร้านออกให้ (ฟรี)':'Free'}</span></div>)}
@@ -323,6 +332,14 @@ function Checkout({ cart, onBack, onPlace, shop, payCfg, store }){
 function SectTitle({ children }){ return <div style={{ fontSize:13.5, fontWeight:700, color:'var(--ink)', margin:'0 2px 9px' }}>{children}</div>; }
 
 /* ── เลือกส่วนลด — แบ่ง "ใช้ได้ตอนนี้" / "ยังไม่ถึงเงื่อนไข" ให้ลูกค้าเห็นว่าต้องซื้ออีกเท่าไหร่ ── */
+const VC_WHY = {
+  notFound: { th:'ไม่พบโค้ดนี้ในร้านนี้',            en:'Code not found' },
+  used:     { th:'โค้ดนี้ถูกใช้ไปแล้ว',              en:'Already used' },
+  void:     { th:'โค้ดนี้ถูกยกเลิกแล้ว',             en:'Cancelled' },
+  expired:  { th:'โค้ดหมดอายุแล้ว',                  en:'Expired' },
+  minSpend: { th:'ยอดยังไม่ถึงขั้นต่ำของโค้ดนี้',    en:'Below minimum spend' },
+  noEffect: { th:'ใช้กับบิลนี้ไม่ได้',                en:'Cannot apply to this order' },
+};
 const PROMO_WHY = {
   minSpend:  { th:'ยอดยังไม่ถึงขั้นต่ำ',       en:'Below minimum spend' },
   channelOff:{ th:'ใช้กับช่องทางนี้ไม่ได้',    en:'Not for this channel' },
@@ -335,9 +352,26 @@ const PROMO_WHY = {
   inactive:  { th:'ปิดใช้งานอยู่',              en:'Inactive' },
   noEffect:  { th:'ยังไม่มีเมนูที่เข้าโปรนี้ในตะกร้า', en:'No qualifying items in your cart' },
 };
-function PromoPicker({ list, chosen, code, setCode, onPick, onClose }){
+function PromoPicker({ list, chosen, code, setCode, onPick, onClose, voucher, setVoucher, subtotal }){
   const { lang } = useT(); const TH = lang!=='en';
   const [typed,setTyped] = c2State(code||'');
+  const [vcErr,setVcErr] = c2State('');
+  const [vcBusy,setVcBusy] = c2State(false);
+  /* โค้ดที่พิมพ์อาจเป็นโปรของร้าน หรือบัตรกำนัลก็ได้ — ลองทางโปรก่อน (setCode ไปให้ตัวแม่ค้นหา)
+     ถ้าไม่มีโปรไหนตรง ค่อยถามเซิร์ฟเวอร์ว่าเป็นบัตรไหม ลูกค้าจะได้ไม่ต้องรู้ว่าโค้ดเป็นชนิดไหน */
+  const applyCode = async ()=>{
+    const c = (typed||'').trim().toUpperCase();
+    if(!c) return;
+    setVcErr(''); setCode(c);
+    if(list.some(p=>p.code===c)) return;          // เป็นโปร — ตัวแม่จัดการต่อเอง
+    setVcBusy(true);
+    try{
+      const r = await window.KD_API.checkVoucher({ code:c, subtotal: subtotal|0 });
+      if(r && r.ok && r.voucher){ setVoucher({ ...r.voucher, disc: r.disc|0 }); setVcErr(''); }
+      else setVcErr(VC_WHY[(r&&r.blocked)||'notFound'] ? VC_WHY[r.blocked||'notFound'][TH?'th':'en'] : (TH?'ใช้โค้ดนี้ไม่ได้':'Cannot use this code'));
+    }catch(e){ setVcErr(TH?'ตรวจโค้ดไม่สำเร็จ — เช็คอินเทอร์เน็ตแล้วลองใหม่':'Could not check the code'); }
+    setVcBusy(false);
+  };
   const usable = list.filter(p=>!p.blocked);
   const locked = list.filter(p=>p.blocked && p.blocked!=='inactive');
   const row = (p)=>{
@@ -375,12 +409,22 @@ function PromoPicker({ list, chosen, code, setCode, onPick, onClose }){
       </div>
       <div style={{ overflowY:'auto', padding:'0 20px 20px', flex:1 }}>
         <div style={{ display:'flex', gap:8, marginBottom:16 }}>
-          <input className="kd-input" value={typed} onChange={e=>setTyped(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''))}
-            placeholder={TH?'มีโค้ดส่วนลด?':'Have a code?'} style={{ flex:1, letterSpacing:'1px', fontWeight:700 }}/>
-          <button onClick={()=>setCode(typed)} className="kd-btn kd-btn-primary" style={{ padding:'0 18px' }}>{TH?'ใช้':'Apply'}</button>
+          <input className="kd-input" value={typed} onChange={e=>setTyped(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,''))}
+            placeholder={TH?'มีโค้ดส่วนลด / บัตรกำนัล?':'Discount or gift card code?'} style={{ flex:1, letterSpacing:'1px', fontWeight:700 }}/>
+          <button onClick={applyCode} disabled={vcBusy} className="kd-btn kd-btn-primary" style={{ padding:'0 18px', opacity:vcBusy?.6:1 }}>{vcBusy?'…':(TH?'ใช้':'Apply')}</button>
         </div>
-        {!!code && !list.some(p=>p.code===code) && <div style={{ fontSize:12.5, color:'var(--danger)', fontWeight:700, marginBottom:14 }}>
-          {TH?`ไม่พบโค้ด ${code} ในร้านนี้`:`Code ${code} not found`}</div>}
+        {voucher && <div className="kd-card" style={{ padding:'12px 14px', marginBottom:14, background:'var(--brand-soft)' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <span style={{ fontSize:19 }}>💳</span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:14, fontWeight:700, color:'var(--brand-ink)' }}>{voucher.name}</div>
+              <div style={{ fontSize:12, color:'var(--ink-2)', marginTop:2 }}>{TH?`ลด ${money(voucher.disc)}`:`Saves ${money(voucher.disc)}`}
+                {voucher.type==='gift' && voucher.balance!=null && (TH?` · บัตรเหลือ ${money(voucher.balance)}`:` · ${money(voucher.balance)} on card`)}</div>
+            </div>
+            <button onClick={()=>{ setVoucher(null); setVcErr(''); }} className="kd-btn" style={{ padding:'6px 11px', fontSize:12, background:'#fff', color:'var(--ink-2)' }}>{TH?'เอาออก':'Remove'}</button>
+          </div>
+        </div>}
+        {vcErr && <div style={{ fontSize:12.5, color:'var(--danger)', fontWeight:700, marginBottom:14 }}>{vcErr}</div>}
 
         {!!usable.length && <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-3)', margin:'0 2px 8px' }}>{TH?'ใช้ได้กับบิลนี้':'Available now'}</div>}
         {usable.map(row)}

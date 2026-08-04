@@ -917,6 +917,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
   const [marketSheet,setMarketSheet] = m2State(false);
   const [pinSheet,setPinSheet] = m2State(false);
   const [promoSheet,setPromoSheet] = m2State(false);
+  const [vcSheet,setVcSheet] = m2State(false);
   // มาจาก "ตั้งเวลาเปิด-ปิดร้านก่อน" (กดจากหน้าเงินสด) → เปิดชีตตั้งค่าร้านให้เลย
   React.useEffect(()=>{ try{ if(window.__kdOpenHours){ window.__kdOpenHours=false; setShopSheet(true); } }catch(e){} }, []);
   const grouped = cats.map(c=>({ cat:c, items:menu.filter(m=>m.cat===c.id) }));
@@ -1057,6 +1058,15 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
             <div style={{ flex:1 }}>
               <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'โปรโมชั่น & คูปอง':'Promos & coupons'}</div>
               <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{lang==='th'?'ลด % · ลดบาท · ส่งฟรี · ซื้อ 1 แถม 1 — ตั้งขั้นต่ำ วัน-เวลา และจำนวนสิทธิ์ได้':'% off · ฿ off · free delivery · buy 1 get 1'}</div>
+            </div>
+            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
+          </button>
+          <button onClick={()=>setVcSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
+            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
+            <span style={{ width:38, height:38, borderRadius:11, background:'#EDF3FF', color:'#2E5AA8', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>💳</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'บัตรกำนัล & คูปอง':'Gift cards & coupons'}</div>
+              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{lang==='th'?'ขายเป็นของขวัญ (จ่าย ฿950 ได้บัตร ฿1,000) หรือแจกเป็นโค้ดส่วนลด · ใช้ทีละส่วนได้':'Sell gift cards or hand out discount codes'}</div>
             </div>
             <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
           </button>
@@ -1233,6 +1243,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
       {marketSheet && <MarketJoinSheet shop={shop} setShop={setShop} onClose={()=>setMarketSheet(false)} />}
       {pinSheet && <OwnerPinSheet shop={shop} onClose={()=>setPinSheet(false)} />}
       {promoSheet && <PromoSheet menu={menu} onClose={()=>setPromoSheet(false)} />}
+      {vcSheet && <VoucherSheet onClose={()=>setVcSheet(false)} />}
       {paySheet && <PaySettingsSheet pay={pay} setPay={setPay} onClose={()=>setPaySheet(false)} />}
       {memSheet && <MembersSheet members={members} pay={pay} setPay={setPay} onClose={()=>setMemSheet(false)} />}
       {shopSheet && <ShopProfileSheet shop={shop} setShop={setShop} regOpen={register&&register.open} onClose={()=>setShopSheet(false)} />}
@@ -1296,6 +1307,225 @@ function ImagePicker({ value, onChange, label, hint, ratio, maxSide, folder }){
       {value && !busy && <button onClick={()=>onChange('')} className="kd-btn" style={{ marginTop:7, padding:'7px 12px', fontSize:12, color:'var(--ink-2)', background:'var(--bg)' }}>
         {TH?'เอารูปออก':'Remove'}</button>}
     </div>
+  );
+}
+
+/* ── บัตรกำนัล / คูปอง ─────────────────────────────────────────────
+   ต่างจากโปร: โปรคือเงื่อนไขที่ลดให้อัตโนมัติ · อันนี้คือ "ใบ" ที่ออกแล้วมีโค้ด
+   ขายได้ (จ่าย ฿950 ได้บัตร ฿1,000) · ใช้ทีละส่วนได้ · หมดอายุได้
+   ยกกลไกมาจากระบบฟิตเนส แต่ย้ายการคิดยอด/ตัดสิทธิ์ไปไว้ที่เซิร์ฟเวอร์      */
+const VC_KINDS = [
+  { k:'gift',   emoji:'💳', th:'บัตรกำนัลเงิน', en:'Gift card',
+    hint:{ th:'ลูกค้าซื้อบัตรมูลค่า ฿1,000 ในราคา ฿950 · ใช้ทีละส่วนได้ เหลือยอดไว้ครั้งหน้า', en:'Prepaid value, spend in parts' } },
+  { k:'coupon', emoji:'🎟️', th:'คูปองส่วนลด', en:'Discount coupon',
+    hint:{ th:'ลดเป็นบาทหรือเป็น % · ตั้งขั้นต่ำและเพดานได้ · ใช้ได้ครั้งเดียวจบ', en:'Baht or % off, single use' } },
+  { k:'pack',   emoji:'🎁', th:'บัตรแลกแพ็ก', en:'Package voucher',
+    hint:{ th:'ใช้แทนมูลค่าที่กำหนด เช่น คอร์ส 10 ครั้ง · เหมาะกับของขวัญ', en:'Fixed value redemption' } },
+];
+const VC_EXPIRY = [[0,'ไม่หมดอายุ'],[30,'30 วัน'],[90,'90 วัน'],[180,'180 วัน'],[365,'1 ปี']];
+const emptyVcDef = ()=>({ name:'', type:'gift', value:0, mode:'baht', price:0, minSpend:0, maxDisc:0, expiryDays:180, limit:0, active:true });
+
+function VoucherSheet({ onClose }){
+  const { lang } = useT(); const TH = lang!=='en';
+  const [tab,setTab]   = m2State('defs');   // defs = แม่แบบ · issued = ใบที่ออกแล้ว
+  const [defs,setDefs] = m2State(null);
+  const [list,setList] = m2State(null);
+  const [edit,setEdit] = m2State(null);
+  const [busy,setBusy] = m2State(false);
+  const [err,setErr]   = m2State('');
+  const [made,setMade] = m2State(null);     // โค้ดที่เพิ่งออก โชว์ให้ก๊อป
+
+  const load = async ()=>{
+    try{ setDefs(await window.KD_API.listVoucherDefs()||[]); }catch(e){ setDefs([]); setErr(TH?'โหลดรายการไม่สำเร็จ':'Load failed'); }
+    try{ setList(await window.KD_API.listVouchers()||[]); }catch(e){ setList([]); }
+  };
+  m2Effect(()=>{ load(); }, []);
+
+  const save = async ()=>{
+    setErr('');
+    if(!edit.name.trim()) return setErr(TH?'ตั้งชื่อก่อน':'Name required');
+    if(edit.type!=='coupon' && !(+edit.value>0)) return setErr(TH?'ใส่มูลค่าหน้าบัตรก่อน':'Enter a value');
+    if(edit.type==='coupon' && !(+edit.value>0)) return setErr(TH?'ใส่ส่วนลดก่อน':'Enter a discount');
+    setBusy(true);
+    try{
+      const r = await window.KD_API.saveVoucherDef(edit);
+      if(r && r.ok){ setEdit(null); await load(); } else setErr((r&&r.error)||(TH?'บันทึกไม่สำเร็จ':'Save failed'));
+    }catch(e){ setErr(TH?'บันทึกไม่สำเร็จ — เชื่อมต่อเซิร์ฟเวอร์ไม่ได้':'Save failed'); }
+    setBusy(false);
+  };
+  const issue = async (def)=>{
+    setErr(''); setBusy(true);
+    try{
+      const r = await window.KD_API.issueVoucher({ defId: def.id });
+      if(r && r.code){ setMade({ code:r.code, name:def.name }); await load(); }
+      else setErr((r&&r.error)||(TH?'ออกบัตรไม่สำเร็จ':'Could not issue'));
+    }catch(e){
+      setErr(/409/.test(String(e&&e.message)) ? (TH?'ออกครบจำนวนสิทธิ์แล้ว':'Sold out') : (TH?'ออกบัตรไม่สำเร็จ':'Could not issue'));
+    }
+    setBusy(false);
+  };
+  const set = (patch)=> setEdit(e=>({ ...e, ...patch }));
+  const label = { fontSize:12.5, fontWeight:700, color:'var(--ink-3)', margin:'14px 0 6px' };
+  const chip = (on)=>({ padding:'7px 13px', borderRadius:999, fontSize:12.5, fontWeight:700, cursor:'pointer',
+    border:'1.5px solid '+(on?'var(--brand)':'var(--hair)'), background:on?'var(--brand-soft)':'#fff',
+    color:on?'var(--brand-ink)':'var(--ink-2)', fontFamily:'var(--font)' });
+
+  return (
+    <Sheet open={true} onClose={onClose} height="92%">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'4px 20px 12px' }}>
+        <div>
+          <div style={{ fontSize:19, fontWeight:700 }}>{edit ? (edit.id?(TH?'แก้ไข':'Edit'):(TH?'สร้างใหม่':'New')) : (TH?'บัตรกำนัล & คูปอง':'Gift cards & coupons')}</div>
+          <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:1 }}>{TH?'ขายเป็นของขวัญ หรือแจกเป็นส่วนลดก็ได้':'Sell as gifts or hand out as discounts'}</div>
+        </div>
+        <button onClick={()=>edit?setEdit(null):onClose()} style={{ border:'none', background:'var(--bg)', width:34, height:34, borderRadius:999, cursor:'pointer' }}>{IC.x}</button>
+      </div>
+
+      <div style={{ overflowY:'auto', padding:'0 20px 20px', flex:1 }}>
+        {err && <div style={{ color:'var(--danger)', fontSize:12.5, fontWeight:700, marginBottom:10 }}>{err}</div>}
+        {made && <div className="kd-card" style={{ padding:'13px 15px', marginBottom:12, background:'var(--brand-soft)' }}>
+          <div style={{ fontSize:12.5, color:'var(--brand-ink)', fontWeight:700 }}>{TH?'ออกบัตรแล้ว — ส่งโค้ดนี้ให้ลูกค้า':'Issued — give this code to the customer'}</div>
+          <div className="num" style={{ fontSize:20, fontWeight:800, letterSpacing:'1px', margin:'6px 0 8px' }}>{made.code}</div>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={()=>{ try{ navigator.clipboard.writeText(made.code); }catch(e){} }} className="kd-btn" style={{ padding:'7px 13px', fontSize:12.5 }}>{TH?'คัดลอกโค้ด':'Copy'}</button>
+            <button onClick={()=>setMade(null)} className="kd-btn" style={{ padding:'7px 13px', fontSize:12.5, background:'var(--bg)', color:'var(--ink-2)' }}>{TH?'ปิด':'Close'}</button>
+          </div>
+        </div>}
+
+        {!edit && <>
+          <div style={{ display:'flex', gap:7, marginBottom:14 }}>
+            <button onClick={()=>setTab('defs')} style={chip(tab==='defs')}>{TH?'แบบที่ตั้งไว้':'Templates'}</button>
+            <button onClick={()=>setTab('issued')} style={chip(tab==='issued')}>{TH?'บัตรที่ออกแล้ว':'Issued'} {list?`(${list.length})`:''}</button>
+          </div>
+
+          {tab==='defs' && <>
+            {defs===null && <div style={{ textAlign:'center', color:'var(--ink-3)', fontSize:13, padding:'26px 0' }}>{TH?'กำลังโหลด…':'Loading…'}</div>}
+            {defs && !defs.length && <div style={{ textAlign:'center', color:'var(--ink-3)', fontSize:13, padding:'26px 10px', lineHeight:1.6 }}>
+              {TH?'ยังไม่มีแบบไหนเลย — กดปุ่มด้านล่างสร้างแบบแรก แล้วค่อยกดออกบัตรทีละใบให้ลูกค้า':'No templates yet'}</div>}
+            {(defs||[]).map(v=>{
+              const kind = VC_KINDS.find(x=>x.k===v.type) || VC_KINDS[0];
+              const full = (v.limit|0)>0 && (v.issued|0) >= v.limit;
+              return (
+                <div key={v.id} className="kd-card" style={{ padding:'13px 15px', marginBottom:9, opacity:(v.active&&!full)?1:.6 }}>
+                  <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                    <span style={{ fontSize:20 }}>{kind.emoji}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14.5, fontWeight:700 }}>{v.name}</div>
+                      <div style={{ fontSize:12.5, color:'var(--brand-ink)', fontWeight:700, marginTop:2 }}>
+                        {v.type==='coupon'
+                          ? (v.mode==='percent' ? (TH?`ลด ${v.value}%`:`${v.value}% off`)+(v.maxDisc?(TH?` สูงสุด ${money(v.maxDisc)}`:` max ${money(v.maxDisc)}`):'') : (TH?`ลด ${money(v.value)}`:`${money(v.value)} off`))
+                          : (TH?`มูลค่า ${money(v.value)}`:`Value ${money(v.value)}`)}
+                        {v.price>0 && <span style={{ color:'var(--ink-3)', fontWeight:400 }}>{TH?` · ขาย ${money(v.price)}`:` · sells ${money(v.price)}`}</span>}
+                      </div>
+                      <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:3 }}>
+                        {TH?`ออกไปแล้ว ${v.issued|0} ใบ`:`${v.issued|0} issued`}{(v.limit|0)>0?` / ${v.limit}`:''}
+                        {v.minSpend>0 && (TH?` · ขั้นต่ำ ${money(v.minSpend)}`:` · min ${money(v.minSpend)}`)}
+                        {(v.expiryDays|0)>0 && (TH?` · อายุ ${v.expiryDays} วัน`:` · ${v.expiryDays}d`)}
+                      </div>
+                    </div>
+                    {full && <span style={{ fontSize:10.5, fontWeight:800, color:'#8A6100', background:'#FBEEDA', borderRadius:6, padding:'3px 8px' }}>{TH?'ครบแล้ว':'Full'}</span>}
+                  </div>
+                  <div style={{ display:'flex', gap:8, marginTop:10 }}>
+                    <button onClick={()=>issue(v)} disabled={busy||full||!v.active} className="kd-btn kd-btn-primary" style={{ flex:1, padding:'9px 0', fontSize:12.5, opacity:(busy||full||!v.active)?.5:1 }}>
+                      {TH?'ออกบัตร 1 ใบ':'Issue one'}</button>
+                    <button onClick={()=>{ setErr(''); setEdit({ ...emptyVcDef(), ...v }); }} className="kd-btn" style={{ padding:'9px 14px', fontSize:12.5 }}>{TH?'แก้ไข':'Edit'}</button>
+                  </div>
+                </div>
+              );
+            })}
+          </>}
+
+          {tab==='issued' && <>
+            {list===null && <div style={{ textAlign:'center', color:'var(--ink-3)', fontSize:13, padding:'26px 0' }}>{TH?'กำลังโหลด…':'Loading…'}</div>}
+            {list && !list.length && <div style={{ textAlign:'center', color:'var(--ink-3)', fontSize:13, padding:'26px 10px' }}>{TH?'ยังไม่ได้ออกบัตรให้ใครเลย':'None issued yet'}</div>}
+            {(list||[]).map(v=>(
+              <div key={v.id} className="kd-card" style={{ padding:'12px 14px', marginBottom:8, opacity:v.status==='unused'?1:.6 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div className="num" style={{ fontSize:14, fontWeight:800, letterSpacing:'.5px' }}>{v.code}</div>
+                    <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{v.name}
+                      {v.type==='gift' && v.balance!=null && (TH?` · เหลือ ${money(v.balance)}`:` · ${money(v.balance)} left`)}
+                      {v.expiry && (TH?` · ถึง ${v.expiry}`:` · till ${v.expiry}`)}
+                    </div>
+                  </div>
+                  <span style={{ fontSize:10.5, fontWeight:800, borderRadius:6, padding:'3px 8px',
+                    color: v.status==='unused'?'#12945C':'var(--ink-3)', background: v.status==='unused'?'#E6F6EC':'var(--bg)' }}>
+                    {v.status==='unused'?(TH?'ใช้ได้':'Valid'):v.status==='used'?(TH?'ใช้แล้ว':'Used'):(TH?'ยกเลิก':'Void')}</span>
+                </div>
+              </div>
+            ))}
+          </>}
+        </>}
+
+        {edit && <>
+          <div style={label}>{TH?'แบบไหน':'Type'}</div>
+          <div style={{ display:'grid', gap:8 }}>
+            {VC_KINDS.map(k=>(
+              <button key={k.k} onClick={()=>set({type:k.k})} style={{ textAlign:'left', cursor:'pointer', fontFamily:'var(--font)',
+                border:'1.5px solid '+(edit.type===k.k?'var(--brand)':'var(--hair)'), background:edit.type===k.k?'var(--brand-soft)':'#fff',
+                borderRadius:13, padding:'11px 13px', display:'flex', gap:11, alignItems:'flex-start' }}>
+                <span style={{ fontSize:20 }}>{k.emoji}</span>
+                <div><div style={{ fontSize:14, fontWeight:700 }}>{TH?k.th:k.en}</div>
+                  <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:2, lineHeight:1.5 }}>{k.hint[TH?'th':'en']}</div></div>
+              </button>
+            ))}
+          </div>
+
+          <div style={label}>{TH?'ชื่อ (ลูกค้าเห็นชื่อนี้)':'Name'}</div>
+          <input className="kd-input" value={edit.name} onChange={e=>set({name:e.target.value})} style={{ width:'100%' }}
+            placeholder={edit.type==='gift'?(TH?'บัตรกำนัล ฿1,000':'฿1,000 gift card'):(TH?'ส่วนลดลูกค้าใหม่':'New customer discount')}/>
+
+          {edit.type==='coupon' && <>
+            <div style={label}>{TH?'ลดแบบไหน':'Discount type'}</div>
+            <div style={{ display:'flex', gap:7 }}>
+              <button onClick={()=>set({mode:'baht'})} style={chip(edit.mode!=='percent')}>{TH?'ลดเป็นบาท':'฿ off'}</button>
+              <button onClick={()=>set({mode:'percent'})} style={chip(edit.mode==='percent')}>{TH?'ลด %':'% off'}</button>
+            </div>
+          </>}
+          <div style={label}>{edit.type==='coupon' ? (edit.mode==='percent'?(TH?'ลดกี่ %':'Percent'):(TH?'ลดกี่บาท':'Baht off')) : (TH?'มูลค่าหน้าบัตร':'Face value')}</div>
+          <input className="kd-input num" inputMode="numeric" value={edit.value||''} onChange={e=>set({value:+e.target.value.replace(/\D/g,'')||0})} style={{ width:'100%' }}/>
+
+          {edit.type==='coupon' && <>
+            <div style={label}>{TH?'ยอดขั้นต่ำ (0 = ไม่กำหนด)':'Minimum spend'}</div>
+            <input className="kd-input num" inputMode="numeric" value={edit.minSpend||''} onChange={e=>set({minSpend:+e.target.value.replace(/\D/g,'')||0})} style={{ width:'100%' }}/>
+            {edit.mode==='percent' && <>
+              <div style={label}>{TH?'ลดสูงสุด (0 = ไม่จำกัด)':'Cap'}</div>
+              <input className="kd-input num" inputMode="numeric" value={edit.maxDisc||''} onChange={e=>set({maxDisc:+e.target.value.replace(/\D/g,'')||0})} style={{ width:'100%' }}/>
+            </>}
+          </>}
+
+          <div style={label}>{TH?'ราคาขาย (0 = แจกฟรี ไม่ได้ขาย)':'Selling price (0 = free)'}</div>
+          <input className="kd-input num" inputMode="numeric" value={edit.price||''} onChange={e=>set({price:+e.target.value.replace(/\D/g,'')||0})} style={{ width:'100%' }}
+            placeholder={edit.type==='gift'?(TH?'เช่น 950 — จ่าย 950 ได้บัตร 1,000':'e.g. 950'):''}/>
+
+          <div style={label}>{TH?'อายุการใช้งาน (นับจากวันออกบัตร)':'Valid for'}</div>
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+            {VC_EXPIRY.map(([n,l])=>(
+              <button key={n} onClick={()=>set({expiryDays:n})} style={chip((edit.expiryDays|0)===n)}>{l}</button>
+            ))}
+          </div>
+
+          <div style={label}>{TH?'ออกได้ทั้งหมดกี่ใบ (0 = ไม่จำกัด)':'Total issues (0 = unlimited)'}</div>
+          <input className="kd-input num" inputMode="numeric" value={edit.limit||''} onChange={e=>set({limit:+e.target.value.replace(/\D/g,'')||0})} style={{ width:'100%' }}/>
+
+          <label style={{ display:'flex', alignItems:'center', gap:9, marginTop:14, cursor:'pointer' }}>
+            <input type="checkbox" checked={edit.active!==false} onChange={e=>set({active:e.target.checked})} style={{ width:17, height:17, accentColor:'var(--brand)' }}/>
+            <span style={{ fontSize:13 }}>{TH?'เปิดใช้งาน (ออกบัตรใหม่ได้)':'Active'}</span>
+          </label>
+          <div style={{ background:'var(--bg)', borderRadius:12, padding:'11px 13px', marginTop:14, fontSize:12, color:'var(--ink-2)', lineHeight:1.6 }}>
+            {TH?'บัตรที่ออกไปแล้วจะไม่เปลี่ยนตามการแก้ตรงนี้ — เงื่อนไขถูกล็อกไว้ตั้งแต่วันที่ออกบัตร'
+               :'Already-issued cards keep the terms they were issued with.'}
+          </div>
+        </>}
+      </div>
+
+      <div style={{ flex:'0 0 auto', padding:'11px 20px calc(11px + env(safe-area-inset-bottom))', borderTop:'1px solid var(--hair)' }}>
+        {edit
+          ? <button onClick={save} disabled={busy} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:14, opacity:busy?.5:1 }}>
+              {busy?(TH?'กำลังบันทึก…':'Saving…'):(TH?'บันทึก':'Save')}</button>
+          : <button onClick={()=>{ setErr(''); setEdit(emptyVcDef()); }} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:14 }}>
+              {TH?'+ สร้างแบบใหม่':'+ New template'}</button>}
+      </div>
+    </Sheet>
   );
 }
 

@@ -243,6 +243,7 @@ const rowOrder = (r) => ({
   subtotal: r.subtotal | 0, memberDisc: r.member_disc | 0,
   promoId: r.promo_id || null, promoName: r.promo_name || '', promoDisc: r.promo_disc | 0, promoFeeDisc: r.promo_fee_disc | 0,
   riderJob: r.rider_job || null, riderJobAt: r.rider_job_at || null,
+  voucherCode: r.voucher_code || null, voucherDisc: r.voucher_disc | 0,
   callCash: !!r.call_cash, callCashAt: r.call_cash_at, payAfterConfirm: !!r.pay_after_confirm,
   acceptedBy: r.accepted_by || null, acceptedByName: r.accepted_by_name || null,
   verifiedBy: r.verified_by || null, verifiedByName: r.verified_by_name || null,
@@ -273,7 +274,10 @@ async function ensureOrderCols(env){ if(_orderColsReady) return; _orderColsReady
   try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN promo_fee_disc INTEGER DEFAULT 0').run(); }catch(e){}
   // งานไรเดอร์ที่ประกาศไว้ (อยู่คนละ worker) — เดิมเก็บแค่ในเครื่องร้าน ลูกค้าอีกเครื่องเลยติดตามไรเดอร์ไม่ได้
   try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN rider_job TEXT').run(); }catch(e){}
-  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN rider_job_at INTEGER').run(); }catch(e){} }
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN rider_job_at INTEGER').run(); }catch(e){}
+  // บัตรกำนัล/คูปองที่ใช้กับบิลนี้ — แยกจากโปร เพราะเป็น "ใบ" ที่ออกไปแล้วมีโค้ด
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN voucher_code TEXT').run(); }catch(e){}
+  try{ await env.DB.prepare('ALTER TABLE orders ADD COLUMN voucher_disc INTEGER DEFAULT 0').run(); }catch(e){} }
 // idempotent: ตาราง refunds (คืนเงินออเดอร์ที่ร้านปฏิเสธ · confirm-first) — สร้างครั้งเดียวต่อ isolate
 let _refundReady = false;
 async function ensureRefundTable(env){ if(_refundReady) return; _refundReady = true;
@@ -357,6 +361,72 @@ async function attachRatings(env, list) {
     if (!r || (r.n | 0) < 3) return { ...s, reviewCount: r ? (r.n | 0) : 0 };
     return { ...s, rating: Math.round((r.avg || 0) * 10) / 10, reviewCount: r.n | 0 };
   });
+}
+
+/* ── บัตรกำนัล / คูปอง / Voucher แพ็ก ─────────────────────────────
+   ยกมาจากระบบฟิตเนสซึ่งทำไว้ครบกว่าฝั่งร้านอาหาร (ร้านอาหารเดิมไม่มีเลย)
+   ต่างจากโปร: โปรคือเงื่อนไขที่ลดให้อัตโนมัติ · Voucher คือ "ใบ" ที่ออกแล้วมีโค้ด
+   ขายได้ (บัตรกำนัลจ่าย 950 ได้ 1,000) · ใช้ทีละส่วนได้ (เหลือยอดคงเหลือ) · หมดอายุได้
+
+   ⚠️ ของเดิมฝั่งฟิตเนสตัดยอด/ตัดสิทธิ์ในเบราว์เซอร์ = แก้ค่าเองได้
+   ตัวนี้ตรวจและตัดที่เซิร์ฟเวอร์ทั้งหมด                                        */
+let _vcReady = false;
+async function ensureVouchers(env){ if(_vcReady) return; _vcReady = true;
+  const ddl = [
+    // แม่แบบที่ร้านตั้งไว้ขาย
+    `CREATE TABLE IF NOT EXISTS voucher_defs ( shop_id TEXT NOT NULL, id TEXT NOT NULL, name TEXT, type TEXT,
+       data TEXT, issued INTEGER DEFAULT 0, active INTEGER DEFAULT 1, created_at INTEGER, updated_at INTEGER,
+       PRIMARY KEY (shop_id,id) )`,
+    // ใบที่ออกไปแล้ว (มีโค้ดจริงอยู่ในมือลูกค้า)
+    `CREATE TABLE IF NOT EXISTS vouchers ( shop_id TEXT NOT NULL, id TEXT NOT NULL, code TEXT NOT NULL, def_id TEXT,
+       name TEXT, type TEXT, value INTEGER DEFAULT 0, mode TEXT, min_spend INTEGER DEFAULT 0, max_disc INTEGER DEFAULT 0,
+       balance INTEGER, status TEXT DEFAULT 'unused', member_id TEXT, sold_amount INTEGER DEFAULT 0,
+       issued_at INTEGER, expiry TEXT, used_at INTEGER, used_amount INTEGER DEFAULT 0,
+       PRIMARY KEY (shop_id,id) )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_voucher_code ON vouchers (shop_id, code)`,
+  ];
+  for (const q of ddl) { try{ await env.DB.prepare(q).run(); }catch(e){} } }
+
+const rowVcDef = (r) => { let d = {}; try { d = JSON.parse(r.data || '{}'); } catch (e) {}
+  return { ...d, id: r.id, name: r.name, type: r.type, issued: r.issued | 0, active: !!r.active,
+           createdAt: r.created_at, updatedAt: r.updated_at }; };
+const rowVoucher = (r) => ({ id: r.id, code: r.code, defId: r.def_id, name: r.name, type: r.type,
+  value: r.value | 0, mode: r.mode || 'baht', minSpend: r.min_spend | 0, maxDisc: r.max_disc | 0,
+  balance: r.balance == null ? null : (r.balance | 0), status: r.status || 'unused', memberId: r.member_id || null,
+  soldAmount: r.sold_amount | 0, issuedAt: r.issued_at, expiry: r.expiry || null,
+  usedAt: r.used_at || null, usedAmount: r.used_amount | 0 });
+
+const vcCode = (type) => {
+  const p = { gift: 'GC', coupon: 'CP', pack: 'VP' }[type] || 'VC';
+  const s = () => Math.random().toString(36).slice(2).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return p + '-' + (s() + s()).slice(0, 6);
+};
+// ลดได้เท่าไหร่กับบิลยอด sub — บัตรกำนัลหักได้ไม่เกินยอดคงเหลือ · คูปอง % มีเพดานได้
+function vcAmount(v, sub) {
+  if (!v || sub <= 0) return 0;
+  if (v.type === 'gift') return Math.min(v.balance != null ? v.balance : v.value, sub);
+  if (v.type === 'pack') return Math.min(v.value | 0, sub);
+  if (v.type === 'coupon') {
+    if (v.minSpend && sub < v.minSpend) return 0;
+    if (v.mode === 'percent') {
+      let x = Math.round(sub * (v.value || 0) / 100);
+      if (v.maxDisc) x = Math.min(x, v.maxDisc);
+      return Math.min(x, sub);
+    }
+    return Math.min(v.value | 0, sub);
+  }
+  return 0;
+}
+// เหตุผลที่ใช้ไม่ได้ (คืน key ให้ฝั่งแอปแปล) · null = ใช้ได้
+function vcBlocker(v, sub, at) {
+  if (!v) return 'notFound';
+  if (v.status === 'used') return 'used';
+  if (v.status === 'void') return 'void';
+  const today = new Date((at || Date.now()) + BKK_MS).toISOString().slice(0, 10);
+  if (v.expiry && today > v.expiry) return 'expired';
+  if (v.type === 'coupon' && v.minSpend && sub < v.minSpend) return 'minSpend';
+  if (vcAmount(v, sub) <= 0) return 'noEffect';
+  return null;
 }
 
 /* ── โปรโมชั่นของร้าน: กติกา + การคิดส่วนลด ──────────────────────────────
@@ -1677,6 +1747,91 @@ export default {
         }
       }
 
+      /* ── VOUCHERS (บัตรกำนัล · คูปอง · Voucher แพ็ก) ── */
+      if (seg[0] === 'voucher-defs') {
+        await ensureVouchers(env);
+        if (req.method === 'GET' && !seg[1]) {
+          const { results } = await env.DB.prepare('SELECT * FROM voucher_defs WHERE shop_id=? ORDER BY created_at DESC').bind(shop).all();
+          return json((results || []).map(rowVcDef), req);
+        }
+        if (req.method === 'POST' && !seg[1]) {
+          const b = await readBody();
+          if (!b.name) return err('name required', req, 400);
+          if (!['gift', 'coupon', 'pack'].includes(b.type)) return err('bad type', req, 400);
+          const id = (b.id && /^[a-z0-9_-]{1,40}$/i.test(b.id)) ? b.id : ('vd' + now());
+          const data = { value: b.value | 0, mode: b.mode === 'percent' ? 'percent' : 'baht',
+            price: b.price | 0, minSpend: b.minSpend | 0, maxDisc: b.maxDisc | 0,
+            expiryDays: b.expiryDays | 0, limit: b.limit | 0, note: b.note || '' };
+          const t = now();
+          await env.DB.prepare(
+            `INSERT INTO voucher_defs (shop_id,id,name,type,data,issued,active,created_at,updated_at) VALUES (?,?,?,?,?,0,?,?,?)
+             ON CONFLICT(shop_id,id) DO UPDATE SET name=excluded.name, type=excluded.type, data=excluded.data,
+               active=excluded.active, updated_at=excluded.updated_at`
+          ).bind(shop, id, b.name, b.type, JSON.stringify(data), b.active === false ? 0 : 1, t, t).run();
+          return json({ ok: true, id }, req, 201);
+        }
+        if (req.method === 'DELETE' && seg[1]) {
+          await env.DB.prepare('DELETE FROM voucher_defs WHERE shop_id=? AND id=?').bind(shop, seg[1]).run();
+          return json({ ok: true }, req);
+        }
+      }
+      if (seg[0] === 'vouchers') {
+        await ensureVouchers(env);
+        // GET /vouchers — ร้านดูใบที่ออกไปแล้ว
+        if (req.method === 'GET' && !seg[1]) {
+          const st = url.searchParams.get('status');
+          let q = 'SELECT * FROM vouchers WHERE shop_id=?', bind = [shop];
+          if (st) { q += ' AND status=?'; bind.push(st); }
+          q += ' ORDER BY issued_at DESC LIMIT 500';
+          const { results } = await env.DB.prepare(q).bind(...bind).all();
+          return json((results || []).map(rowVoucher), req);
+        }
+        // POST /vouchers/issue {defId, memberId} — ออกใบใหม่ (ขายให้ลูกค้า) · ตัดโควตาที่เซิร์ฟเวอร์
+        if (req.method === 'POST' && seg[1] === 'issue') {
+          const b = await readBody();
+          const dr = await env.DB.prepare('SELECT * FROM voucher_defs WHERE shop_id=? AND id=?').bind(shop, String(b.defId || '')).first();
+          if (!dr) return err('voucher def not found', req, 404);
+          const def = rowVcDef(dr);
+          if (!def.active) return json({ ok: false, error: 'แม่แบบนี้ปิดใช้งานอยู่' }, req, 400);
+          if ((def.limit | 0) > 0 && (def.issued | 0) >= def.limit)
+            return json({ ok: false, error: 'ออกครบจำนวนสิทธิ์แล้ว' }, req, 409);
+          const t = now();
+          const expiry = (def.expiryDays | 0) > 0
+            ? new Date(t + BKK_MS + def.expiryDays * 864e5).toISOString().slice(0, 10) : null;
+          const id = 'vc' + t + Math.random().toString(36).slice(2, 6);
+          const code = String(b.code || vcCode(def.type)).toUpperCase();
+          try {
+            await env.DB.prepare(
+              `INSERT INTO vouchers (shop_id,id,code,def_id,name,type,value,mode,min_spend,max_disc,balance,status,member_id,sold_amount,issued_at,expiry,used_amount)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,'unused',?,?,?,?,0)`
+            ).bind(shop, id, code, def.id, def.name, def.type, def.value | 0, def.mode || 'baht',
+                   def.minSpend | 0, def.maxDisc | 0, def.type === 'gift' ? (def.value | 0) : null,
+                   b.memberId || null, def.price | 0, t, expiry).run();
+          } catch (e) { return err('โค้ดซ้ำ ลองใหม่อีกครั้ง', req, 409); }
+          await env.DB.prepare('UPDATE voucher_defs SET issued=issued+1, updated_at=? WHERE shop_id=? AND id=?').bind(t, shop, def.id).run();
+          return json({ ok: true, id, code, expiry }, req, 201);
+        }
+        // POST /vouchers/check {code, subtotal} — ตรวจก่อนใช้ (หน้าขาย/หน้าจ่ายเงินเรียก)
+        if (req.method === 'POST' && seg[1] === 'check') {
+          const b = await readBody();
+          const code = String(b.code || '').trim().toUpperCase();
+          const sub = b.subtotal | 0;
+          const r = await env.DB.prepare('SELECT * FROM vouchers WHERE shop_id=? AND code=?').bind(shop, code).first();
+          const v = r ? rowVoucher(r) : null;
+          const blocked = vcBlocker(v, sub, now());
+          return json({ ok: !blocked, blocked: blocked || null,
+            voucher: v ? { code: v.code, name: v.name, type: v.type, balance: v.balance, expiry: v.expiry, minSpend: v.minSpend } : null,
+            disc: blocked ? 0 : vcAmount(v, sub) }, req);
+        }
+        // PATCH /vouchers/:id {status:'void'} — ร้านยกเลิกใบ (บัตรหาย/ออกผิด)
+        if (req.method === 'PATCH' && seg[1]) {
+          const b = await readBody();
+          if (b.status !== 'void') return err('only void supported', req, 400);
+          await env.DB.prepare("UPDATE vouchers SET status='void' WHERE shop_id=? AND id=?").bind(shop, seg[1]).run();
+          return json({ ok: true }, req);
+        }
+      }
+
       /* ── PROMOS (โปร/คูปองที่ร้านสร้างเอง) ── */
       if (seg[0] === 'promos') {
         await ensurePromoTables(env);
@@ -1814,20 +1969,39 @@ export default {
           }
           // โปรที่ไม่ได้ตั้งให้ใช้ร่วมกับส่วนลดสมาชิก → ตัดส่วนลดสมาชิกออกจากบิลนี้
           const _memberDisc = (_promo && !_promo.stackable) ? 0 : Math.max(0, Math.min(b.memberDisc | 0, _memberCap));
+          // บัตรกำนัล/คูปองที่ลูกค้ายื่นโค้ดมา — ตรวจและคิดยอดที่นี่ ไม่เชื่อยอดจากแอป
+          let _vc = null, _vcDisc = 0;
+          if (b.voucherCode) {
+            await ensureVouchers(env);
+            const vr = await env.DB.prepare('SELECT * FROM vouchers WHERE shop_id=? AND code=?')
+              .bind(shop, String(b.voucherCode).trim().toUpperCase()).first();
+            const v = vr ? rowVoucher(vr) : null;
+            // หักหลังส่วนลดอื่นแล้ว — บัตรกำนัลทำหน้าที่เหมือนเงิน ควรหักจากยอดที่เหลือจริง
+            const afterOthers = Math.max(0, _subtotal - _memberDisc - _promoDisc);
+            if (v && !vcBlocker(v, afterOthers, ts)) { _vc = v; _vcDisc = vcAmount(v, afterOthers); }
+          }
           // ยอดต่ำสุดที่เป็นไปได้ = ค่าอาหารจริง − ส่วนลดที่อนุมัติแล้ว (ตัวเลือกเสริม/ค่าส่งมีแต่บวก)
-          const _floor = Math.max(0, _subtotal - _memberDisc - _promoDisc - _promoFeeDisc);
+          const _floor = Math.max(0, _subtotal - _memberDisc - _promoDisc - _promoFeeDisc - _vcDisc);
           const _total = Math.max(b.total | 0, _floor);
 
           await env.DB.prepare(
             `INSERT INTO orders (shop_id,id,no,items,channel,pay,status,paid,total,cost,fee,qnum,
                table_no,customer,addr,when_txt,line_user,line_name,pay_after_confirm,created_at,updated_at,
-               subtotal,member_disc,promo_id,promo_name,promo_disc,promo_fee_disc)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+               subtotal,member_disc,promo_id,promo_name,promo_disc,promo_fee_disc,voucher_code,voucher_disc)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
           ).bind(shop, id, no, JSON.stringify(normItems(b.items)), b.channel || 'line', b.pay || 'promptpay',
                  'new', 0, _total, b.cost | 0, b.fee | 0, b.qnum ?? null,
                  (b.table != null && b.table !== '') ? String(b.table) : null,
                  b.customer || '', b.addr || '', b.when || '', b.lineUserId || null, b.lineName || '', b.payAfterConfirm ? 1 : 0, ts, ts,
-                 _subtotal, _memberDisc, _promo ? _promo.id : null, _promo ? _promo.name : '', _promoDisc, _promoFeeDisc).run();
+                 _subtotal, _memberDisc, _promo ? _promo.id : null, _promo ? _promo.name : '', _promoDisc, _promoFeeDisc,
+                 _vc ? _vc.code : null, _vcDisc).run();
+          if (_vc && _vcDisc > 0) {
+            // บัตรกำนัลหักได้ทีละส่วน เหลือยอดไว้ใช้ครั้งหน้า · คูปอง/แพ็กใช้แล้วจบใบ
+            const left = _vc.type === 'gift' ? Math.max(0, (_vc.balance != null ? _vc.balance : _vc.value) - _vcDisc) : 0;
+            const st = (_vc.type === 'gift' && left > 0) ? 'unused' : 'used';
+            await env.DB.prepare('UPDATE vouchers SET balance=?, status=?, used_at=?, used_amount=used_amount+?, member_id=COALESCE(member_id,?) WHERE shop_id=? AND id=?')
+              .bind(_vc.type === 'gift' ? left : null, st, ts, _vcDisc, b.lineUserId || null, shop, _vc.id).run();
+          }
           if (_promo) {   // ตัดสิทธิ์หลังบันทึกออเดอร์สำเร็จ — ไม่งั้นออเดอร์พังแต่โควตาหาย
             await env.DB.prepare('UPDATE promos SET used=used+1, updated_at=? WHERE shop_id=? AND id=?').bind(ts, shop, _promo.id).run();
             await env.DB.prepare('INSERT INTO promo_uses (shop_id,promo_id,order_id,line_user,amount,at) VALUES (?,?,?,?,?,?)')
