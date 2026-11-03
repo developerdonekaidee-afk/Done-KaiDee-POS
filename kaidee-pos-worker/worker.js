@@ -299,7 +299,17 @@ async function ensureMenuConsignCols(env){ if(_menuConsignReady) return; _menuCo
   try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN recipe TEXT').run(); }catch(e){}
   try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN off INTEGER DEFAULT 0').run(); }catch(e){}
   try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN consign INTEGER DEFAULT 0').run(); }catch(e){}
-  try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN consign_id TEXT').run(); }catch(e){} }
+  try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN consign_id TEXT').run(); }catch(e){}
+  // ฟิลด์เมนูที่ไม่มีคอลัมน์ของตัวเอง (ตัวเลือก/ราคาต่อช่องทาง/รูป/ช่องทางขาย ฯลฯ) — เดิมไม่ได้เก็บเลย
+  // ลูกค้าเลยไม่เห็นตัวเลือก และโหลดเมนูใหม่แล้วตัวเลือกในเครื่องเจ้าของหายด้วย
+  try{ await env.DB.prepare('ALTER TABLE menu ADD COLUMN extra TEXT').run(); }catch(e){} }
+const MENU_EXTRA = ['options', 'priceByCh', 'img', 'costMethod', 'channels', 'bom', 'recipeByCh'];
+function menuExtraOf(b) {
+  const x = {};
+  MENU_EXTRA.forEach(k => { if (b[k] !== undefined && b[k] !== null) x[k] = b[k]; });
+  if (typeof x.img === 'string' && x.img.startsWith('data:') && x.img.length > 150000) delete x.img;   // รูปแบบเก่าที่ยัดทั้งไฟล์ — ใหญ่เกินเก็บในแถว
+  return Object.keys(x).length ? JSON.stringify(x) : null;
+}
 // idempotent: ตารางฝั่งร้านที่ไม่เคยถูกสร้างจริงบน D1 (settings/raw/purchases/cash_days/quotes)
 //   → ก่อนหน้านี้ทุก endpoint เหล่านี้ 500 เงียบๆ ข้อมูลร้านเลยอยู่แค่ในเครื่อง ย้ายเครื่อง = หาย
 let _shopTablesReady = false;
@@ -491,7 +501,8 @@ async function promoLinesFromDB(env, shop, items) {
   const ids = [...new Set((items || []).map(it => (Array.isArray(it) ? it[0] : it && it.id)).filter(Boolean))];
   if (!ids.length) return [];
   const ph = ids.map(() => '?').join(',');
-  const { results } = await env.DB.prepare(`SELECT id,cat,price FROM menu WHERE shop_id=? AND id IN (${ph})`)
+  await ensureMenuConsignCols(env);
+  const { results } = await env.DB.prepare(`SELECT id,cat,price,extra FROM menu WHERE shop_id=? AND id IN (${ph})`)
     .bind(shop, ...ids).all();
   const by = Object.fromEntries((results || []).map(r => [r.id, r]));
   return (items || []).map(it => {
@@ -499,8 +510,16 @@ async function promoLinesFromDB(env, shop, items) {
     const qty = Math.max(0, (Array.isArray(it) ? it[1] : it.qty) | 0);
     const m = by[id];
     if (!m || !qty) return null;
-    // ราคาตัวเลือกเสริม (add) ยังมาจากแอป — ไม่ได้เก็บ option ไว้ฝั่งเซิร์ฟเวอร์ จึงไม่นับเข้าฐานคิดโปร
-    return { id, cat: m.cat || '', price: m.price | 0, qty };
+    // ราคาตัวเลือกเสริม: คิดจากตัวเลือกที่เก็บในเมนู (ชื่อที่ลูกค้าเลือกมาเป็นข้อความคั่นด้วย ", ")
+    // ใช้เป็นยอดขั้นต่ำกันแอปส่ง add ต่ำกว่าจริง · ไม่นับเข้าฐานคิดโปร (โปรคิดจากราคาเมนู)
+    let optAdd = 0;
+    const picked = Array.isArray(it) ? String(it[2] || '') : String((it && it.opts) || '');
+    if (picked && m.extra) {
+      let groups = []; try { groups = (JSON.parse(m.extra).options) || []; } catch (e) {}
+      const price = {}; groups.forEach(g => (g.choices || []).forEach(c => { if (c && c.label && !(c.label in price)) price[c.label] = Number(c.price) || 0; }));
+      picked.split(', ').forEach(l => { if (l in price) optAdd += Math.max(0, price[l]); });
+    }
+    return { id, cat: m.cat || '', price: m.price | 0, qty, optAdd };
   }).filter(Boolean);
 }
 
@@ -1750,19 +1769,21 @@ export default {
         if (req.method === 'GET') {
           const { results } = await env.DB.prepare(
             'SELECT * FROM menu WHERE shop_id=? AND active=1 ORDER BY sort').bind(shop).all();
-          return json(results.map(m => ({ ...m, hot: !!m.hot, active: !!m.active, off: !!m.off, consign: !!m.consign, consignId: m.consign_id || null, recipe: m.recipe ? JSON.parse(m.recipe) : undefined })), req);
+          return json(results.map(m => { let ex = {}; try { ex = m.extra ? JSON.parse(m.extra) : {}; } catch (e) {}
+            const { extra, ...row } = m;
+            return { ...row, ...ex, hot: !!m.hot, active: !!m.active, off: !!m.off, consign: !!m.consign, consignId: m.consign_id || null, recipe: m.recipe ? JSON.parse(m.recipe) : undefined }; }), req);
         }
         if (req.method === 'POST') {
           const b = await readBody();
           await env.DB.prepare(
-            `INSERT INTO menu (shop_id,id,cat,th,en,price,cost,tone,hot,active,sort,recipe,off,consign,consign_id)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            `INSERT INTO menu (shop_id,id,cat,th,en,price,cost,tone,hot,active,sort,recipe,off,consign,consign_id,extra)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
              ON CONFLICT(shop_id,id) DO UPDATE SET cat=excluded.cat,th=excluded.th,en=excluded.en,
                price=excluded.price,cost=excluded.cost,tone=excluded.tone,hot=excluded.hot,
-               active=excluded.active,sort=excluded.sort,recipe=excluded.recipe,off=excluded.off,consign=excluded.consign,consign_id=excluded.consign_id`
+               active=excluded.active,sort=excluded.sort,recipe=excluded.recipe,off=excluded.off,consign=excluded.consign,consign_id=excluded.consign_id,extra=excluded.extra`
           ).bind(shop, b.id || 'm' + now(), b.cat, b.th, b.en || '', b.price | 0, b.cost | 0,
                  b.tone || '', b.hot ? 1 : 0, b.active === false ? 0 : 1, b.sort | 0,
-                 b.recipe ? JSON.stringify(b.recipe) : null, b.off ? 1 : 0, b.consign ? 1 : 0, b.consignId || null).run();
+                 b.recipe ? JSON.stringify(b.recipe) : null, b.off ? 1 : 0, b.consign ? 1 : 0, b.consignId || null, menuExtraOf(b)).run();
           return json({ ok: true }, req);
         }
         if (req.method === 'DELETE' && seg[1]) {
@@ -2057,7 +2078,8 @@ export default {
             if (v && !vcBlocker(v, afterOthers, ts)) { _vc = v; _vcDisc = vcAmount(v, afterOthers); }
           }
           // ยอดต่ำสุดที่เป็นไปได้ = ค่าอาหารจริง − ส่วนลดที่อนุมัติแล้ว (ตัวเลือกเสริม/ค่าส่งมีแต่บวก)
-          const _floor = Math.max(0, _subtotal - _memberDisc - _promoDisc - _promoFeeDisc - _vcDisc);
+          const _optAddAll = _lines.reduce((a, l) => a + (l.optAdd || 0) * l.qty, 0);
+          const _floor = Math.max(0, _subtotal + _optAddAll - _memberDisc - _promoDisc - _promoFeeDisc - _vcDisc);
           const _total = Math.max(b.total | 0, _floor);
 
           await env.DB.prepare(

@@ -918,6 +918,23 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
   const [pinSheet,setPinSheet] = m2State(false);
   const [promoSheet,setPromoSheet] = m2State(false);
   const [vcSheet,setVcSheet] = m2State(false);
+  const [optSetsOpen,setOptSetsOpen] = m2State(false);
+  // ชุดตัวเลือกของร้าน (pay.optionSets) — บันทึกชุด = อัปเดตทุกเมนูที่ผูก + ผูก/ถอดตามที่ติ๊ก
+  const optionSets = (pay && pay.optionSets) || [];
+  const copySet = (x)=> ({ name:x.name, multi:!!x.multi, choices:(x.choices||[]).map(c=>({ ...c })) });
+  const saveOptionSet = (set, pickedIds)=>{
+    setPay(p=>{ const cur=(p.optionSets||[]); return { ...p, optionSets: cur.some(x=>x.id===set.id) ? cur.map(x=>x.id===set.id?set:x) : [...cur, set] }; });
+    setMenu(prev=>prev.map(m=>{ const opts=m.options||[]; const has=opts.some(g=>g.setId===set.id); const want=pickedIds.includes(m.id);
+      if(has&&want) return { ...m, options:opts.map(g=>g.setId===set.id?{ ...g, ...copySet(set) }:g) };
+      if(want) return { ...m, options:[...opts, modLinkedGroup(set)] };
+      if(has) return { ...m, options:opts.filter(g=>g.setId!==set.id) };
+      return m; }));
+  };
+  const deleteOptionSet = (id)=>{   // เมนูยังเก็บตัวเลือกไว้ แค่ไม่ผูกกับชุดแล้ว
+    setPay(p=>({ ...p, optionSets:(p.optionSets||[]).filter(x=>x.id!==id) }));
+    setMenu(prev=>prev.map(m=>(m.options||[]).some(g=>g.setId===id) ? { ...m, options:m.options.map(g=>{ if(g.setId!==id) return g; const { setId, ...rest }=g; return rest; }) } : m));
+  };
+  const saveGroupAsSet = (g)=>{ const set={ id:'os'+Date.now(), ...copySet(g) }; setPay(p=>({ ...p, optionSets:[...(p.optionSets||[]), set] })); return set; };
   // มาจาก "ตั้งเวลาเปิด-ปิดร้านก่อน" (กดจากหน้าเงินสด) → เปิดชีตตั้งค่าร้านให้เลย
   React.useEffect(()=>{ try{ if(window.__kdOpenHours){ window.__kdOpenHours=false; setShopSheet(true); } }catch(e){} }, []);
   const grouped = cats.map(c=>({ cat:c, items:menu.filter(m=>m.cat===c.id) }));
@@ -925,7 +942,8 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
   const subDaysLeft = sub ? Math.max(0, Math.ceil((new Date(sub.expiry)-new Date())/86400000)) : 0;
   const SUB_PLANS = { trial:{th:'ทดลองใช้ฟรี',en:'Free trial'}, monthly:{th:'รายเดือน',en:'Monthly'}, yearly:{th:'รายปี',en:'Yearly'} };
 
-  const save = (item)=>{
+  const save = (item0)=>{
+    const item = { ...item0, options:(item0.options||[]).map(g=>{ if(!g.setId) return g; const x=optionSets.find(o=>o.id===g.setId); if(x) return { ...g, ...copySet(x) }; const { setId, ...rest }=g; return rest; }) };
     setMenu(prev=>{
       const exists = prev.some(m=>m.id===item.id);
       return exists ? prev.map(m=>m.id===item.id?item:m) : [...prev, item];
@@ -980,6 +998,8 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
         <SetGroup title={TH?'เมนูและการขาย':'Menu & selling'}>
           <SetRow icon="🍽️" tint="var(--brand-soft)" color="var(--brand)" title={TH?'เมนูและสินค้า':'Menu & items'}
             sub={TH?`${menu.length} เมนู · ${cats.length} หมวด · เพิ่ม/แก้ราคา/ปิดของหมด`:`${menu.length} items · ${cats.length} categories`} onClick={()=>setMenuMgrOpen(true)}/>
+          <SetRow icon="🧩" tint="#EEF0FF" color="#4A54B8" title={TH?'ชุดตัวเลือก':'Option sets'}
+            sub={optionSets.length?(TH?`${optionSets.length} ชุด · ตั้งครั้งเดียว ใช้ได้หลายเมนู`:`${optionSets.length} sets · reuse across items`):(TH?'เช่น ความเผ็ด ท็อปปิ้ง · ตั้งครั้งเดียว ใช้ได้หลายเมนู':'e.g. spice, toppings · set once, use on many items')} onClick={()=>setOptSetsOpen(true)}/>
           <SetRow icon={ico(IC.moto)} tint="var(--brand-soft)" color="var(--brand)" title={TH?'ช่องทางขาย':'Sale channels'}
             sub={TH?`หน้าร้าน · Grab · LINE MAN ฯลฯ — เปิดอยู่ ${nSale} ช่องทาง`:`In-store · Grab · LINE MAN — ${nSale} active`} onClick={()=>setSaleModeOpen(true)}/>
           <SetRow icon={ico(IC.box)} tint="var(--brand-soft)" color="var(--brand)" title={TH?'ต้นทุนและสต๊อก':'Costs & stock'}
@@ -1047,9 +1067,14 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
             </div>
             <div style={{ fontSize:13, color:'var(--ink-3)', fontWeight:600, margin:'0 4px 10px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <span>{lang==='th'?`${menu.length} เมนู · ${cats.length} หมวด`:`${menu.length} items · ${cats.length} categories`}</span>
+              <span style={{ display:'inline-flex', gap:6 }}>
+              <button onClick={()=>setOptSetsOpen(true)} style={{ border:'none', cursor:'pointer', background:'#EEF0FF', color:'#4A54B8',
+                fontFamily:'var(--font)', fontWeight:700, fontSize:12.5, padding:'6px 11px', borderRadius:999, display:'inline-flex', alignItems:'center', gap:4 }}>
+                🧩 {lang==='th'?'ชุดตัวเลือก':'Option sets'}</button>
               {addCat && <button onClick={()=>setAddCatOpen(true)} style={{ border:'none', cursor:'pointer', background:'var(--brand-soft)', color:'var(--brand-ink)',
                 fontFamily:'var(--font)', fontWeight:700, fontSize:12.5, padding:'6px 11px', borderRadius:999, display:'inline-flex', alignItems:'center', gap:4 }}>
                 {React.cloneElement(IC.plus,{size:14})} {lang==='th'?'หมวด':'Category'}</button>}
+              </span>
             </div>
             {menu.length===0 && <div style={{ textAlign:'center', color:'var(--ink-3)', padding:'28px 20px 6px', fontSize:13.5, lineHeight:1.6 }}>{lang==='th'?'ยังไม่มีเมนู — แตะ “เพิ่มเมนู” เพื่อสร้างรายการแรกที่จะโชว์บนหน้าขาย':'No items yet — tap “Add” to create your first item.'}</div>}
 
@@ -1125,7 +1150,8 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
         </div>}
       </div>
 
-      {editing && <ItemEditor item={editing} onSave={save} onClose={()=>setEditing(null)} costMode={costMode} raw={raw} addRaw={addRaw} chanCfg={chanCfg} addSaleMode={addSaleMode} toggleSaleMode={toggleSaleMode} removeSaleMode={removeSaleMode}
+      {optSetsOpen && <OptionSetsSheet sets={optionSets} menu={menu} onSave={saveOptionSet} onDelete={deleteOptionSet} onClose={()=>setOptSetsOpen(false)}/>}
+      {editing && <ItemEditor item={editing} onSave={save} optionSets={optionSets} onSaveAsSet={saveGroupAsSet} onClose={()=>setEditing(null)} costMode={costMode} raw={raw} addRaw={addRaw} chanCfg={chanCfg} addSaleMode={addSaleMode} toggleSaleMode={toggleSaleMode} removeSaleMode={removeSaleMode}
         onDelete={()=>{ const delId=editing.id; setMenu(prev=>prev.filter(m=>m.id!==delId)); setEditing(null);
           // ลบบนเซิร์ฟเวอร์ด้วย (push เมนูเป็น upsert อย่างเดียว — ไม่ลบให้) ไม่งั้นเมนูที่ลบจะกลับมาตอนโหลดใหม่/เปิดอีกเครื่อง
           try{ if(window.KD_LIVE && window.KD_API && window.KD_API.deleteMenuItem) window.KD_API.deleteMenuItem(delId).catch(()=>{}); }catch(e){} }} />}
@@ -3014,51 +3040,177 @@ const MOD_PRESETS = [
   { name:'ขนาด', nameEn:'Size', multi:false, choices:[['ธรรมดา','Regular',0],['พิเศษ','Large',10]] },
   { name:'ท็อปปิ้ง', nameEn:'Topping', multi:true, choices:[['เพิ่มไข่ดาว','Fried egg',10],['ชีส','Cheese',15],['ไข่เค็ม','Salted egg',10]] },
 ];
-function ModifiersEditor({ options, onChange, lang }){
-  const TH = lang==='th';
-  const groups = options||[];
-  const addGroup = (preset)=>{ const g = preset
-    ? { id:'g'+Date.now(), name: TH?preset.name:preset.nameEn, multi:!!preset.multi, choices:preset.choices.map(c=>({ label: TH?c[0]:(c[1]||c[0]), price: c[2]||0 })) }
-    : { id:'g'+Date.now(), name:'', multi:false, choices:[{ label:'', price:0 }] };
-    onChange([...groups, g]); };
-  const updGroup = (gi, patch)=> onChange(groups.map((g,i)=>i===gi?{...g,...patch}:g));
-  const delGroup = (gi)=> onChange(groups.filter((_,i)=>i!==gi));
-  const addChoice = (gi)=> updGroup(gi, { choices:[...groups[gi].choices, { label:'', price:0 }] });
-  const updChoice = (gi, ci, patch)=> updGroup(gi, { choices:groups[gi].choices.map((c,i)=>i===ci?{...c,...patch}:c) });
-  const delChoice = (gi, ci)=> updGroup(gi, { choices:groups[gi].choices.filter((_,i)=>i!==ci) });
-  const usedNames = groups.map(g=>g.name);
+/* กลุ่มตัวเลือก 1 กลุ่ม (ชื่อ · เลือก 1/หลาย · รายการ + ราคาเพิ่ม) — ใช้ทั้งในหน้าแก้เมนูและหน้าชุดตัวเลือก */
+function ModGroupCard({ g, onChange, onDelete, TH, extra }){
+  const upd = (patch)=> onChange({ ...g, ...patch });
+  const updChoice = (ci, patch)=> upd({ choices:g.choices.map((c,i)=>i===ci?{...c,...patch}:c) });
   return (
-    <div className="kd-card" style={{ padding:'13px 15px', boxShadow:'none', background:'var(--bg)', marginBottom:14 }}>
-      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>🧩 {TH?'ตัวเลือกสินค้า':'Options'}</div>
-      <div style={{ fontSize:12, color:'var(--ink-3)', marginBottom:11, lineHeight:1.5 }}>{TH?'เช่น ความเผ็ด · หวาน · ไซซ์ · ท็อปปิ้ง (ใส่ราคาเพิ่มได้) — ลูกค้าเลือกตอนสั่ง':'e.g. spice · sweetness · size · toppings (with extra price) — chosen at order time'}</div>
-      {groups.map((g,gi)=>(
-        <div key={g.id||gi} style={{ background:'#fff', borderRadius:12, padding:'11px 12px', marginBottom:9, boxShadow:'var(--shadow)' }}>
-          <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:9 }}>
-            <input className="kd-input" style={{ flex:1, padding:'8px 11px', fontWeight:700 }} value={g.name} onChange={e=>updGroup(gi,{name:e.target.value})} placeholder={TH?'ชื่อกลุ่ม เช่น ความเผ็ด':'Group e.g. Spice'}/>
-            <button onClick={()=>updGroup(gi,{multi:!g.multi})} title={TH?'เลือกหลายอย่าง':'Multi-select'} style={{ border:'none', cursor:'pointer', borderRadius:9, padding:'7px 10px', fontFamily:'var(--font)', fontWeight:700, fontSize:11.5, background:g.multi?'var(--brand-soft)':'var(--bg)', color:g.multi?'var(--brand-ink)':'var(--ink-3)' }}>{g.multi?(TH?'เลือกได้หลาย':'Multi'):(TH?'เลือก 1':'Single')}</button>
-            <button onClick={()=>delGroup(gi)} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--ink-3)', padding:4 }}>{React.cloneElement(IC.x,{size:16})}</button>
+    <div style={{ background:'#fff', borderRadius:12, padding:'11px 12px', marginBottom:9, boxShadow:'var(--shadow)' }}>
+      <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:9 }}>
+        <input className="kd-input" style={{ flex:1, padding:'8px 11px', fontWeight:700 }} value={g.name} onChange={e=>upd({name:e.target.value})} placeholder={TH?'ชื่อกลุ่ม เช่น ความเผ็ด':'Group e.g. Spice'}/>
+        <button onClick={()=>upd({multi:!g.multi})} title={TH?'เลือกหลายอย่าง':'Multi-select'} style={{ border:'none', cursor:'pointer', borderRadius:9, padding:'7px 10px', fontFamily:'var(--font)', fontWeight:700, fontSize:11.5, background:g.multi?'var(--brand-soft)':'var(--bg)', color:g.multi?'var(--brand-ink)':'var(--ink-3)' }}>{g.multi?(TH?'เลือกได้หลายอย่าง':'Pick many'):(TH?'เลือกได้ 1 อย่าง':'Pick one')}</button>
+        {onDelete && <button onClick={onDelete} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--ink-3)', padding:4 }}>{React.cloneElement(IC.x,{size:16})}</button>}
+      </div>
+      {g.choices.map((c,ci)=>(
+        <div key={ci} style={{ display:'flex', gap:7, alignItems:'center', marginBottom:6 }}>
+          <input className="kd-input" style={{ flex:1, padding:'7px 10px' }} value={c.label} onChange={e=>updChoice(ci,{label:e.target.value})} placeholder={TH?'เช่น เผ็ดน้อย / ไข่ดาว':'e.g. Mild / Fried egg'}/>
+          <div style={{ position:'relative', width:92 }}>
+            <span style={{ position:'absolute', left:9, top:'50%', transform:'translateY(-50%)', color:'var(--ink-3)', fontSize:12 }}>+฿</span>
+            <input className="kd-input num" style={{ padding:'7px 8px 7px 26px' }} type="number" value={c.price||''} onChange={e=>updChoice(ci,{price:Number(e.target.value)||0})} placeholder="0"/>
           </div>
-          {g.choices.map((c,ci)=>(
-            <div key={ci} style={{ display:'flex', gap:7, alignItems:'center', marginBottom:6 }}>
-              <input className="kd-input" style={{ flex:1, padding:'7px 10px' }} value={c.label} onChange={e=>updChoice(gi,ci,{label:e.target.value})} placeholder={TH?'ตัวเลือก':'Choice'}/>
-              <div style={{ position:'relative', width:92 }}>
-                <span style={{ position:'absolute', left:9, top:'50%', transform:'translateY(-50%)', color:'var(--ink-3)', fontSize:12 }}>+฿</span>
-                <input className="kd-input num" style={{ padding:'7px 8px 7px 26px' }} type="number" value={c.price||''} onChange={e=>updChoice(gi,ci,{price:Number(e.target.value)||0})} placeholder="0"/>
-              </div>
-              <button onClick={()=>delChoice(gi,ci)} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--ink-3)', padding:3 }}>{React.cloneElement(IC.x,{size:14})}</button>
-            </div>
-          ))}
-          <button onClick={()=>addChoice(gi)} style={{ border:'none', cursor:'pointer', background:'var(--brand-soft)', color:'var(--brand-ink)', fontFamily:'var(--font)', fontWeight:700, fontSize:12, padding:'5px 10px', borderRadius:999, marginTop:2 }}>+ {TH?'ตัวเลือก':'Choice'}</button>
+          <button onClick={()=>upd({ choices:g.choices.filter((_,i)=>i!==ci) })} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--ink-3)', padding:3 }}>{React.cloneElement(IC.x,{size:14})}</button>
         </div>
       ))}
+      <div style={{ display:'flex', gap:8, alignItems:'center', marginTop:2, flexWrap:'wrap' }}>
+        <button onClick={()=>upd({ choices:[...g.choices, { label:'', price:0 }] })} style={{ border:'none', cursor:'pointer', background:'var(--brand-soft)', color:'var(--brand-ink)', fontFamily:'var(--font)', fontWeight:700, fontSize:12, padding:'5px 10px', borderRadius:999 }}>+ {TH?'ตัวเลือก':'Choice'}</button>
+        {extra}
+      </div>
+    </div>
+  );
+}
+const modGroupFromPreset = (preset, TH)=> ({ name: TH?preset.name:preset.nameEn, multi:!!preset.multi, choices:preset.choices.map(c=>({ label: TH?c[0]:(c[1]||c[0]), price: c[2]||0 })) });
+// กลุ่มในเมนูที่ผูกกับชุดกลาง = สำเนาของชุด + setId (หน้าขาย/ลูกค้าอ่านเหมือนกลุ่มปกติ)
+const modLinkedGroup = (set)=> ({ id:'g'+Date.now()+Math.random().toString(36).slice(2,5), setId:set.id, name:set.name, multi:!!set.multi, choices:(set.choices||[]).map(c=>({ ...c })) });
+
+function ModifiersEditor({ options, onChange, lang, sets, onSaveAsSet, itemName, price }){
+  const TH = lang==='th';
+  const groups = options||[];
+  const lib = sets||[];
+  const addGroup = (preset)=>{ const g = preset ? { id:'g'+Date.now(), ...modGroupFromPreset(preset, TH) } : { id:'g'+Date.now(), name:'', multi:false, choices:[{ label:'', price:0 }] };
+    onChange([...groups, g]); };
+  const updGroup = (gi, g)=> onChange(groups.map((x,i)=>i===gi?g:x));
+  const delGroup = (gi)=> onChange(groups.filter((_,i)=>i!==gi));
+  const linkedIds = groups.map(g=>g.setId).filter(Boolean);
+  const usedNames = groups.map(g=>g.name).concat(lib.map(x=>x.name));
+  const freeSets = lib.filter(x=>!linkedIds.includes(x.id));
+  return (
+    <div className="kd-card" style={{ padding:'13px 15px', boxShadow:'none', background:'var(--bg)', marginBottom:14 }}>
+      <div style={{ fontSize:14, fontWeight:700, marginBottom:4 }}>🧩 {TH?'ตัวเลือกให้ลูกค้าเลือก':'Choices for the customer'} <span style={{ fontSize:12, fontWeight:600, color:'var(--ink-3)' }}>{TH?'(ไม่บังคับ)':'(optional)'}</span></div>
+      <div style={{ fontSize:12, color:'var(--ink-3)', marginBottom:11, lineHeight:1.5 }}>{TH?'เช่น ข้าวผัด → ความเผ็ด (เลือกได้ 1 อย่าง) · เพิ่มไข่ดาว +฿10 (เลือกได้หลายอย่าง) · แตะปุ่มด้านล่างเพื่อเริ่ม':'e.g. Fried rice → Spice (pick one) · Add fried egg +฿10 (pick many) · tap a button below to start'}</div>
+      {groups.map((g,gi)=> g.setId ? (
+        <div key={g.id||gi} style={{ background:'#fff', borderRadius:12, padding:'11px 12px', marginBottom:9, boxShadow:'var(--shadow)', display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontWeight:700, fontSize:14, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>{g.name}
+              <span style={{ fontSize:10.5, fontWeight:700, padding:'2px 8px', borderRadius:999, background:'#EEF0FF', color:'#4A54B8' }}>{TH?'ชุดของร้าน':'Shared set'}</span></div>
+            <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:3, lineHeight:1.45 }}>{(g.choices||[]).map(c=>c.label+(c.price?` +฿${c.price}`:'')).join(' · ')}</div>
+            <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:4 }}>{TH?'แก้รายการ/ราคาได้ที่ หน้าเมนู › ชุดตัวเลือก':'Edit choices in Menu › Option sets'}</div>
+          </div>
+          <button onClick={()=>delGroup(gi)} title={TH?'เอาออกจากเมนูนี้':'Remove from this item'} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--ink-3)', padding:4 }}>{React.cloneElement(IC.x,{size:16})}</button>
+        </div>
+      ) : (
+        <ModGroupCard key={g.id||gi} g={g} TH={TH} onChange={(ng)=>updGroup(gi,ng)} onDelete={()=>delGroup(gi)}
+          extra={onSaveAsSet && g.name && g.choices.some(c=>c.label) ? <button onClick={()=>{ const set=onSaveAsSet(g); if(set) updGroup(gi, { ...g, setId:set.id }); }} style={{ border:'1.5px solid var(--hair-2)', cursor:'pointer', background:'#fff', color:'var(--ink-2)', fontFamily:'var(--font)', fontWeight:700, fontSize:12, padding:'4px 10px', borderRadius:999 }}>{TH?'💾 เก็บเป็นชุด ใช้กับเมนูอื่น':'💾 Save as shared set'}</button> : null}/>
+      ))}
+      {freeSets.length>0 && <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-2)', margin:'6px 2px 6px' }}>{TH?'ชุดตัวเลือกของร้าน':'Your option sets'}</div>}
+      {freeSets.length>0 && <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:8 }}>
+        {freeSets.map(x=>(<button key={x.id} onClick={()=>onChange([...groups, modLinkedGroup(x)])} style={{ border:'1.5px solid #C9CEF5', cursor:'pointer', background:'#EEF0FF', color:'#4A54B8', fontFamily:'var(--font)', fontWeight:700, fontSize:12.5, padding:'7px 12px', borderRadius:999 }}>+ {x.name}</button>))}
+      </div>}
       <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginTop:4 }}>
         {MOD_PRESETS.filter(p=>!usedNames.includes(TH?p.name:p.nameEn)).map((p,i)=>(
           <button key={i} onClick={()=>addGroup(p)} style={{ border:'1.5px dashed var(--hair-2)', cursor:'pointer', background:'#fff', color:'var(--ink-2)', fontFamily:'var(--font)', fontWeight:600, fontSize:12.5, padding:'7px 12px', borderRadius:999 }}>+ {TH?p.name:p.nameEn}</button>
         ))}
-        <button onClick={()=>addGroup(null)} style={{ border:'none', cursor:'pointer', background:'var(--ink)', color:'#fff', fontFamily:'var(--font)', fontWeight:700, fontSize:12.5, padding:'7px 12px', borderRadius:999 }}>+ {TH?'กลุ่มเอง':'Custom'}</button>
+        <button onClick={()=>addGroup(null)} style={{ border:'none', cursor:'pointer', background:'var(--ink)', color:'#fff', fontFamily:'var(--font)', fontWeight:700, fontSize:12.5, padding:'7px 12px', borderRadius:999 }}>+ {TH?'ตั้งชื่อกลุ่มเอง':'Custom group'}</button>
       </div>
+      {groups.some(g=>g.name && (g.choices||[]).some(c=>c.label)) && <div style={{ marginTop:14 }}>
+        <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-2)', marginBottom:6 }}>👀 {TH?'ลูกค้าจะเห็นแบบนี้ตอนสั่ง':'What the customer sees'}</div>
+        <div style={{ background:'#fff', borderRadius:12, padding:'12px 13px', border:'1px solid var(--hair)' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', fontWeight:700, fontSize:14, marginBottom:8 }}><span>{itemName||(TH?'(ชื่อเมนู)':'(item)')}</span><span className="num">{money(Number(price)||0)}</span></div>
+          {groups.filter(g=>g.name && (g.choices||[]).some(c=>c.label)).map((g,gi)=>(
+            <div key={gi} style={{ marginTop:gi?9:0 }}>
+              <div style={{ fontSize:12.5, fontWeight:700 }}>{g.name} <span style={{ fontWeight:500, color:'var(--ink-3)' }}>· {g.multi?(TH?'เลือกได้หลายอย่าง':'pick many'):(TH?'เลือก 1':'pick one')}</span></div>
+              <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginTop:5 }}>
+                {g.choices.filter(c=>c.label).map((c,ci)=>(<span key={ci} style={{ fontSize:12, padding:'5px 10px', borderRadius:g.multi?8:999, border:'1.5px solid '+((!g.multi&&ci===0)?'var(--brand)':'var(--hair-2)'), background:(!g.multi&&ci===0)?'var(--brand-soft)':'#fff', color:'var(--ink)' }}>{c.label}{c.price?<b style={{ color:'var(--brand-ink)' }}> +฿{c.price}</b>:null}</span>))}
+              </div>
+            </div>))}
+        </div>
+      </div>}
     </div>
   );
+}
+
+/* ══════════════ ชุดตัวเลือกของร้าน — ตั้งครั้งเดียว ใช้ได้หลายเมนู ══════════════
+   เก็บใน pay.optionSets (sync ขึ้น settings) · แต่ละเมนูเก็บสำเนา + setId → แก้ชุด = อัปเดตทุกเมนูที่ผูก */
+function OptionSetsSheet({ sets, menu, onSave, onDelete, onClose }){
+  const { lang } = useT(); const TH = lang==='th';
+  const cats = useCats();
+  const [edit,setEdit] = m2State(null);   // { set, picked:[menuIds], isNew }
+  const usedBy = (id)=> menu.filter(m=>(m.options||[]).some(g=>g.setId===id));
+  const startNew = (preset)=> setEdit({ isNew:true, picked:[], set:{ id:'os'+Date.now(), ...(preset ? modGroupFromPreset(preset, TH) : { name:'', multi:false, choices:[{ label:'', price:0 }] }) } });
+  const startEdit = (x)=> setEdit({ isNew:false, picked:usedBy(x.id).map(m=>m.id), set:{ ...x, choices:(x.choices||[]).map(c=>({ ...c })) } });
+  const [confirmDel,setConfirmDel] = m2State(false);
+  const valid = edit && edit.set.name.trim() && edit.set.choices.some(c=>c.label.trim());
+  const togglePick = (id)=> setEdit(e=>({ ...e, picked: e.picked.includes(id) ? e.picked.filter(x=>x!==id) : [...e.picked, id] }));
+  const toggleCat = (ids, on)=> setEdit(e=>({ ...e, picked: on ? Array.from(new Set([...e.picked, ...ids])) : e.picked.filter(x=>!ids.includes(x)) }));
+  const save = ()=>{ if(!valid) return; const clean = { ...edit.set, name:edit.set.name.trim(), choices:edit.set.choices.filter(c=>c.label.trim()).map(c=>({ label:c.label.trim(), price:Number(c.price)||0 })) };
+    onSave(clean, edit.picked); setEdit(null); setConfirmDel(false); };
+  const head = (title, back)=>(
+    <div style={{ display:'flex', alignItems:'center', gap:10, padding:'4px 18px 10px' }}>
+      {back && <button onClick={back} style={{ border:'none', background:'var(--bg)', width:34, height:34, borderRadius:999, cursor:'pointer', fontSize:17, fontFamily:'var(--font)' }}>‹</button>}
+      <div style={{ flex:1, fontSize:19, fontWeight:800 }}>{title}</div>
+      <button onClick={onClose} style={{ border:'none', background:'var(--bg)', width:36, height:36, borderRadius:999, cursor:'pointer' }}>{IC.x}</button>
+    </div>);
+
+  if(edit) return (
+    <Sheet open={true} onClose={onClose} height="94%">
+      {head(edit.isNew?(TH?'ชุดตัวเลือกใหม่':'New option set'):(TH?'แก้ชุดตัวเลือก':'Edit option set'), ()=>{ setEdit(null); setConfirmDel(false); })}
+      <div style={{ overflowY:'auto', padding:'0 16px', flex:1 }}>
+        <ModGroupCard g={edit.set} TH={TH} onChange={(g)=>setEdit(e=>({ ...e, set:g }))}/>
+        <div style={{ fontSize:14, fontWeight:700, margin:'14px 2px 4px' }}>{TH?'ใช้กับเมนูไหนบ้าง':'Use on which items'} <span style={{ color:'var(--ink-3)', fontWeight:600 }}>· {edit.picked.length}</span></div>
+        <div style={{ fontSize:12, color:'var(--ink-3)', margin:'0 2px 10px', lineHeight:1.5 }}>{TH?'ติ๊กเมนูที่ลูกค้าต้องเลือกตัวเลือกนี้ · แก้ชุดทีหลัง ทุกเมนูที่ติ๊กเปลี่ยนตามเอง':'Tick the items that use this set · later edits update all of them'}</div>
+        {menu.length===0 && <div style={{ fontSize:13, color:'var(--ink-3)', padding:'10px 2px' }}>{TH?'ยังไม่มีเมนู':'No items yet'}</div>}
+        {cats.map(c=>{ const items=menu.filter(m=>m.cat===c.id); if(!items.length) return null; const ids=items.map(m=>m.id); const all=ids.every(id=>edit.picked.includes(id)); return (
+          <div key={c.id} className="kd-card" style={{ padding:'4px 0', marginBottom:10, overflow:'hidden' }}>
+            <button onClick={()=>toggleCat(ids, !all)} style={{ width:'100%', border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:10, padding:'10px 14px', fontFamily:'var(--font)', textAlign:'left' }}>
+              <span style={{ flex:1, fontWeight:700, fontSize:13.5 }}>{c.emoji} {c[lang]||c.th}</span>
+              <span style={{ fontSize:12, fontWeight:700, color:'var(--brand-ink)' }}>{all?(TH?'เอาออกทั้งหมวด':'Untick all'):(TH?'เลือกทั้งหมวด':'Tick all')}</span>
+            </button>
+            {items.map(m=>{ const on=edit.picked.includes(m.id); return (
+              <button key={m.id} onClick={()=>togglePick(m.id)} style={{ width:'100%', border:'none', borderTop:'1px solid var(--hair)', background:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:11, padding:'10px 14px', fontFamily:'var(--font)', textAlign:'left' }}>
+                <span style={{ width:20, height:20, borderRadius:6, flexShrink:0, border:on?'none':'2px solid var(--hair-2)', background:on?'var(--brand)':'#fff', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center' }}>{on && React.cloneElement(IC.check,{size:14, stroke:3})}</span>
+                <span style={{ flex:1, fontSize:13.5 }}>{m[lang]||m.th||(TH?'(เมนูใหม่)':'(new item)')}</span>
+                <span className="num" style={{ fontSize:12.5, color:'var(--ink-3)' }}>{money(m.price)}</span>
+              </button>); })}
+          </div>); })}
+        {!edit.isNew && (confirmDel
+          ? <div style={{ background:'#FCECE8', borderRadius:12, padding:'12px 14px', margin:'6px 0 12px' }}>
+              <div style={{ fontSize:13, color:'var(--ink)', lineHeight:1.5, marginBottom:10 }}>{TH?'ลบชุดนี้? เมนูที่ใช้อยู่จะยังเก็บตัวเลือกไว้ แต่แก้แยกทีละเมนู':'Delete this set? Items keep their options, but they become per-item copies.'}</div>
+              <div style={{ display:'flex', gap:8 }}>
+                <button onClick={()=>setConfirmDel(false)} className="kd-btn" style={{ flex:1, padding:10, background:'#fff', color:'var(--ink-2)' }}>{TH?'ยกเลิก':'Cancel'}</button>
+                <button onClick={()=>{ onDelete(edit.set.id); setEdit(null); setConfirmDel(false); }} className="kd-btn" style={{ flex:1, padding:10, background:'var(--danger)', color:'#fff', fontWeight:700 }}>{TH?'ลบชุด':'Delete set'}</button>
+              </div></div>
+          : <button onClick={()=>setConfirmDel(true)} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--danger)', fontFamily:'var(--font)', fontWeight:700, fontSize:13, padding:'8px 2px 14px' }}>{TH?'ลบชุดตัวเลือกนี้':'Delete this set'}</button>)}
+      </div>
+      <div style={{ padding:'10px 16px 0' }}>
+        <button onClick={save} disabled={!valid} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:14, opacity:valid?1:.5 }}>{TH?`บันทึก · ใช้กับ ${edit.picked.length} เมนู`:`Save · ${edit.picked.length} items`}</button>
+      </div>
+    </Sheet>);
+
+  return (
+    <Sheet open={true} onClose={onClose} height="94%">
+      {head(TH?'ชุดตัวเลือก':'Option sets')}
+      <div style={{ overflowY:'auto', padding:'0 16px', flex:1 }}>
+        <div style={{ display:'flex', gap:10, alignItems:'flex-start', background:'#EEF0FF', borderRadius:12, padding:'11px 13px', marginBottom:14 }}>
+          <span style={{ fontSize:18, lineHeight:1, flexShrink:0 }}>🧩</span>
+          <div style={{ fontSize:12.5, color:'#3A438F', lineHeight:1.5 }}>{TH?'ตั้งตัวเลือกครั้งเดียว เช่น ความเผ็ด หรือ ท็อปปิ้ง แล้วติ๊กให้หลายเมนูพร้อมกัน · แก้ราคาหรือรายการที่ชุด ทุกเมนูเปลี่ยนตาม':'Set up options once (e.g. spice, toppings) and tick many items at once · edit the set and every item updates'}</div>
+        </div>
+        {sets.map(x=>{ const n=usedBy(x.id).length; return (
+          <button key={x.id} onClick={()=>startEdit(x)} className="kd-card" style={{ width:'100%', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:12, padding:'13px 15px', marginBottom:9, fontFamily:'var(--font)', textAlign:'left' }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontWeight:700, fontSize:14.5 }}>{x.name} <span style={{ fontSize:11.5, color:'var(--ink-3)', fontWeight:600 }}>· {x.multi?(TH?'เลือกได้หลาย':'multi'):(TH?'เลือก 1':'single')}</span></div>
+              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{(x.choices||[]).map(c=>c.label+(c.price?` +฿${c.price}`:'')).join(' · ')}</div>
+            </div>
+            <span style={{ fontSize:11.5, fontWeight:700, color: n?'var(--brand-ink)':'var(--ink-3)', background: n?'var(--brand-soft)':'var(--bg)', padding:'4px 9px', borderRadius:999, whiteSpace:'nowrap' }}>{TH?`${n} เมนู`:`${n} items`}</span>
+            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
+          </button>); })}
+        {sets.length===0 && <div style={{ textAlign:'center', color:'var(--ink-3)', fontSize:13, padding:'14px 10px 6px' }}>{TH?'ยังไม่มีชุดตัวเลือก — เริ่มจากแบบสำเร็จรูปด้านล่างได้เลย':'No sets yet — start from a preset below'}</div>}
+        <div style={{ fontSize:12.5, fontWeight:700, color:'var(--ink-2)', margin:'14px 2px 8px' }}>{TH?'สร้างชุดใหม่':'New set'}</div>
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:16 }}>
+          {MOD_PRESETS.filter(p=>!sets.some(x=>x.name===(TH?p.name:p.nameEn))).map((p,i)=>(
+            <button key={i} onClick={()=>startNew(p)} style={{ border:'1.5px dashed var(--hair-2)', cursor:'pointer', background:'#fff', color:'var(--ink-2)', fontFamily:'var(--font)', fontWeight:600, fontSize:12.5, padding:'7px 12px', borderRadius:999 }}>+ {TH?p.name:p.nameEn}</button>))}
+          <button onClick={()=>startNew(null)} style={{ border:'none', cursor:'pointer', background:'var(--ink)', color:'#fff', fontFamily:'var(--font)', fontWeight:700, fontSize:12.5, padding:'7px 12px', borderRadius:999 }}>+ {TH?'ตั้งชื่อเอง':'Custom'}</button>
+        </div>
+      </div>
+    </Sheet>);
 }
 
 /* ══════════════ SALE MODE MASTER (แหล่งเดียว — ใช้ทุกเมนู/หน้าขาย/สรุป) ══════════════ */
@@ -3202,7 +3354,7 @@ function AddSaleModeSheet({ onClose, onAdd }){
   );
 }
 
-function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, chanCfg, addSaleMode, toggleSaleMode, removeSaleMode }){
+function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, chanCfg, addSaleMode, toggleSaleMode, removeSaleMode, optionSets, onSaveAsSet }){
   const { t, lang } = useT();
   const TH = lang==='th';
   const [addModeOpen,setAddModeOpen] = m2State(false);
@@ -3333,6 +3485,8 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
           </div>
         </div>
 
+        {/* ตัวเลือกให้ลูกค้าเลือก — อยู่ต่อจากชื่อ/ราคา (เดิมอยู่ท้ายสุดหลังต้นทุน หาไม่เจอ) */}
+        <ModifiersEditor options={f.options||[]} onChange={(o)=>setF(p=>({...p, options:o}))} lang={lang} sets={optionSets} onSaveAsSet={onSaveAsSet} itemName={f[lang]||f.th} price={f.price}/>
         {/* costing method chooser (per item) */}
         <div style={{ marginBottom:14 }}>
           <Lbl>{TH?'วิธีคิดต้นทุนของเมนูนี้':'How to cost this item'}</Lbl>
@@ -3433,8 +3587,6 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
             <span style={{ fontSize:13, color:'var(--brand)', fontWeight:700, marginLeft:8 }}>{mg}%</span>
           </div>
         </div>
-        {/* per-item modifiers (spice/sweet/size/topping) */}
-        <ModifiersEditor options={f.options||[]} onChange={(o)=>setF(p=>({...p, options:o}))} lang={lang}/>
 
         <div className="kd-card" style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 15px', boxShadow:'none', background:'var(--bg)', marginBottom:14, cursor:'pointer' }}
           onClick={()=>upd('off',!f.off)}>

@@ -484,7 +484,10 @@ function KaiDeeApp(){
         ]);
         if(!alive) return;
         if(pk){ try{ localStorage.setItem('kaidee_pkg_v1', JSON.stringify(pk)); }catch(e){} }   // ให้ทุกจุด (Launcher/เงื่อนไข/สมัคร) โชว์วันทดลองตาม Back Office
-        if(mn && mn.length) setMenu(mn);
+        // เมนูจากเซิร์ฟ — ถ้าเซิร์ฟยังไม่มีฟิลด์เสริม (ตัวเลือก/รูป/ราคาต่อช่องทาง ก่อนเซิร์ฟเริ่มเก็บ) ใช้ของในเครื่องไว้ แล้วรอบ push ถัดไปจะอัปขึ้นให้เอง
+        if(mn && mn.length) setMenu(prev=>mn.map(m=>{ const l=(prev||[]).find(x=>x.id===m.id); if(!l) return m;
+          const keep={}; ['options','priceByCh','img','costMethod','channels','bom','recipeByCh'].forEach(k=>{ if(m[k]===undefined && l[k]!==undefined) keep[k]=l[k]; });
+          return { ...m, ...keep }; }));
         if(od){ setOrders(od); lastTs = Math.max(0, ...od.map(o=>o.updatedAt||0)); }
         if(sh){
           // โมดูลตามแพ็กเกจ (แอดมินคุมจาก Back Office) — ทดลอง=เปิดครบ · จ่ายแล้วจับแพ็กจาก seats
@@ -514,6 +517,7 @@ function KaiDeeApp(){
           if(stg.register) setRegister(stg.register);
           if(stg.week || stg.holidayNote) setShop(s=>({ ...s, week: stg.week||s.week, holidayNote: stg.holidayNote!=null?stg.holidayNote:s.holidayNote }));
           if(stg.voidPin!=null) setPay(p=>({ ...p, voidPin: stg.voidPin }));
+          if(Array.isArray(stg.optionSets)) setPay(p=>({ ...p, optionSets: stg.optionSets }));
           if(stg.slipReq!=null) setPay(p=>({ ...p, slipReq: stg.slipReq }));
           if(stg.custNameReq!=null) setPay(p=>({ ...p, custNameReq: stg.custNameReq }));
           if(stg.platPick!=null) setPay(p=>({ ...p, platPick: stg.platPick }));
@@ -739,10 +743,10 @@ function KaiDeeApp(){
     if(!pushedNew.current){ pushedNew.current = true; return; }
     const id = setTimeout(()=>{
       if(window.KD_API.putRaw) window.KD_API.putRaw(raw).catch(()=>{});
-      if(window.KD_API.putSettings) window.KD_API.putSettings({ costMode, register, chanCfg, week: shop.week, holidayNote: shop.holidayNote, voidPin: pay.voidPin||'', voidApproval: !!pay.voidApproval, voidApprover: pay.voidApprover||'owner', collectGate: pay.collectGate||'anytime', voidApprover: pay.voidApprover||'owner', mgrManageStaff: !!pay.mgrManageStaff, slipReq: pay.slipReq||'optional', custNameReq: pay.custNameReq||'optional', platPick: pay.platPick||'dropdown', instantPay: !!pay.instantPay, preorderOn: pay.preorderOn!==false, preorderNote: pay.preorderNote||'', staffCanOpen: !!pay.staffCanOpen, verifyDuringDay: pay.verifyDuringDay!==false, payWorkflow: pay.payWorkflow||'payFirst', payMode: pay.payMode||'manual', payTiming: pay.payTiming||null, print: pay.print||null, closeGate: pay.closeGate||'warn', staffList, vatMode: pay.vatMode||'off', vatRate: pay.vatRate!=null?pay.vatRate:7, taxId: pay.taxId||'', taxAddr: pay.taxAddr||'', taxBranch: pay.taxBranch||'', loyalty: pay.loyalty||null }).catch(()=>{});
+      if(window.KD_API.putSettings) window.KD_API.putSettings({ costMode, register, chanCfg, ...(Array.isArray(pay.optionSets)?{ optionSets: pay.optionSets }:{}), week: shop.week, holidayNote: shop.holidayNote, voidPin: pay.voidPin||'', voidApproval: !!pay.voidApproval, voidApprover: pay.voidApprover||'owner', collectGate: pay.collectGate||'anytime', voidApprover: pay.voidApprover||'owner', mgrManageStaff: !!pay.mgrManageStaff, slipReq: pay.slipReq||'optional', custNameReq: pay.custNameReq||'optional', platPick: pay.platPick||'dropdown', instantPay: !!pay.instantPay, preorderOn: pay.preorderOn!==false, preorderNote: pay.preorderNote||'', staffCanOpen: !!pay.staffCanOpen, verifyDuringDay: pay.verifyDuringDay!==false, payWorkflow: pay.payWorkflow||'payFirst', payMode: pay.payMode||'manual', payTiming: pay.payTiming||null, print: pay.print||null, closeGate: pay.closeGate||'warn', staffList, vatMode: pay.vatMode||'off', vatRate: pay.vatRate!=null?pay.vatRate:7, taxId: pay.taxId||'', taxAddr: pay.taxAddr||'', taxBranch: pay.taxBranch||'', loyalty: pay.loyalty||null }).catch(()=>{});
     }, 800);
     return ()=> clearTimeout(id);
-  }, [raw, costMode, register, chanCfg, shop.week, shop.holidayNote, pay.voidPin, pay.voidApproval, pay.voidApprover, pay.mgrManageStaff, pay.slipReq, pay.custNameReq, pay.platPick, pay.instantPay, pay.preorderOn, pay.preorderNote, pay.staffCanOpen, pay.verifyDuringDay, pay.payWorkflow, pay.payMode, pay.payTiming, pay.collectGate, pay.print, pay.closeGate, staffList, pay.vatMode, pay.vatRate, pay.taxId, pay.taxAddr, pay.taxBranch, pay.loyalty]);
+  }, [raw, costMode, register, chanCfg, pay.optionSets, shop.week, shop.holidayNote, pay.voidPin, pay.voidApproval, pay.voidApprover, pay.mgrManageStaff, pay.slipReq, pay.custNameReq, pay.platPick, pay.instantPay, pay.preorderOn, pay.preorderNote, pay.staffCanOpen, pay.verifyDuringDay, pay.payWorkflow, pay.payMode, pay.payTiming, pay.collectGate, pay.print, pay.closeGate, staffList, pay.vatMode, pay.vatRate, pay.taxId, pay.taxAddr, pay.taxBranch, pay.loyalty]);
 
   // ── LIVE: push เมนู (รวม recipe/off) → D1 ──
   const menuPushed = React.useRef(false);
