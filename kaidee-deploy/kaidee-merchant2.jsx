@@ -935,7 +935,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
 
   return (
     <div className="kd-screen">
-      <TopBar title={t('store')} sub={lang==='th'?'ตั้งค่าร้าน · จัดการการใช้งานส่วนต่างๆ ของแอป':'Store & app settings'}
+      <TopBar title={t('store')} sub={lang==='th'?'แตะการ์ดร้านเพื่อแก้ชื่อ เวลาเปิด-ปิด ที่อยู่':'Tap your shop card to edit name, hours, address'}
         right={<button onClick={()=>setMenuMgrOpen(true)}
           className="kd-btn kd-btn-primary" style={{ padding:'9px 13px', fontSize:14 }}>{React.cloneElement(IC.plus,{size:16})} {lang==='th'?'เมนู':'Item'}</button>}/>
       <div className="kd-body" style={{ padding:'0 16px 24px' }}>
@@ -972,170 +972,62 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
             background: op?'var(--brand-soft)':'var(--bg)', padding:'4px 10px', borderRadius:999, whiteSpace:'nowrap' }}>
             {op?(lang==='th'?'เปิดอยู่':'Open'):(lang==='th'?'ปิดอยู่':'Closed')}</span>
           ); })()}
+          <span style={{ color:'var(--ink-3)', flexShrink:0 }}>{IC.chev}</span>
         </button>
 
-        {/* settings rows */}
-        <div style={{ display:'flex', flexDirection:'column', gap:9, marginBottom:18 }}>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'2px 4px 0' }}>{lang==='th'?'ขายออนไลน์ · ให้ลูกค้าสั่งเอง':'Online · customer ordering'}</div>
-          <div style={{ fontSize:11, color:'var(--ink-3)', margin:'-2px 4px 2px', lineHeight:1.45 }}>{lang==='th'?'เปิด/ปิดการให้ลูกค้าสั่งเอง (QR/ลิงก์ — ไม่ต้องมี LINE OA · หรือผ่าน LINE OA) · เดลิเวอรี · จอคิว/จอครัวแชร์ที่หน้า “จัดการร้าน”':'Turn customer self-ordering (QR/link — no LINE OA needed, or via LINE OA), delivery & channels on/off'}</div>
-          <button onClick={()=>setTypeSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#EEF0FF', color:'#4A54B8', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🏪</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'เปิด/ปิดโมดูล · ประเภทร้าน':'Modules · shop type'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{(shop.typeLabel)||(lang==='th'?'ให้ลูกค้าสั่งเอง · เดลิเวอรี · ไรเดอร์':'Self-ordering · delivery · riders')}{shop.features&&shop.features.delivery===false?(lang==='th'?' · ไม่ส่ง':' · no delivery'):''}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'เมนู & สินค้าที่ขาย':'Menu & items'}</div>
-          <button onClick={()=>setMenuMgrOpen(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'var(--brand-soft)', color:'var(--brand)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🍽️</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'จัดการเมนู · สินค้าที่โชว์หน้าขาย':'Manage menu · items on Sell'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?`${menu.length} เมนู · ${cats.length} หมวด — เพิ่ม/แก้ราคา ต้นทุน แล้วโชว์หน้าขาย`:`${menu.length} items · ${cats.length} categories`}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ขายบนแพลตฟอร์ม :Done KaiDee':'Sell on :Done KaiDee'}</div>
-          <div style={{ fontSize:11, color:'var(--ink-3)', margin:'-2px 4px 2px', lineHeight:1.45 }}>{lang==='th'?'เปิดแล้วร้านคุณจะขึ้นหน้า “ร้านทั้งหมด” ให้ลูกค้าทั่วไปกดสั่งได้ — ไม่หัก GP ลูกค้าจ่ายเงินเข้าร้านตรง':'Your shop appears in the customer directory — no commission, customers pay you directly'}</div>
-          <button onClick={()=>setMarketSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'var(--brand-soft)', color:'var(--brand)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🏬</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ตลาด/ทำเลของร้าน · เปิดขายบนแพลตฟอร์ม':'Market & platform listing'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{shop.market
-                ? (shop.marketOpen===false ? (lang==='th'?`⏸️ ปิดรับออเดอร์ชั่วคราว · ${shop.market}`:`Paused · ${shop.market}`)
-                                           : (lang==='th'?`🟢 เปิดขายอยู่ · ${shop.market}`:`Listed · ${shop.market}`))
-                : (lang==='th'?'ยังไม่เปิด — แตะเพื่อเลือกตลาด':'Not listed — tap to choose a market')}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'รับเงิน & ลูกค้า':'Payments & customers'}</div>
-          <button onClick={()=>setPaySheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'var(--brand-soft)', color:'var(--brand)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.qr,{size:20})}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ตั้งค่ารับเงิน · QR พร้อมเพย์':'Payment & QR settings'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{pay.promptpay} · {lang==='th'?`รับ ${acceptCount} ช่องทาง`:`${acceptCount} methods`}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <button onClick={()=>setMemSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'var(--accent-soft)', color:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.star,{size:20})}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'สมาชิก · สะสมแต้ม':'Members · loyalty'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?`${members.length} สมาชิก · แต้มทุก ฿25 = 1 คะแนน`:`${members.length} members · 1 pt / ฿25`}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ช่องทางการขาย':'Sale channels'}</div>
-          <div style={{ fontSize:11, color:'var(--ink-3)', margin:'-2px 4px 2px', lineHeight:1.45 }}>{lang==='th'?'เลือกเปิด/ปิดช่องทางที่จะให้โชว์บนหน้า “ขาย” — หน้าร้าน · เดลิเวอรี · แพลตฟอร์มต่าง ๆ':'Toggle which channels show on the Sell screen — in-store, delivery, platforms'}</div>
-          <button onClick={()=>setSaleModeOpen(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'var(--brand-soft)', color:'var(--brand)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.moto,{size:20})}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ช่องทางขาย · แพลตฟอร์มเดลิเวอรี':'Sale channels · platforms'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?`Grab / LINE MAN / ShopeeFood / หน้าร้าน · เปิดอยู่ ${activeSaleModes(chanCfg).length} ช่องทาง`:`Add/toggle once · ${activeSaleModes(chanCfg).length} active`}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ต้นทุน & สต๊อก':'Costs & stock'}</div>
-          <button onClick={()=>setModeSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'var(--brand-soft)', color:'var(--brand)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.box,{size:20})}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'สต๊อก / วิธีคิดต้นทุน':'Stock / costing'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?'คิดต่อเมนู: ต้นทุน/จาน หรือ สูตร+ตัดสต๊อก':'Per item: flat or recipe + stock'}</div>
-            </div>
-            <span style={{ fontSize:11, fontWeight:700, color:'var(--brand-ink)', background:'var(--brand-soft)', padding:'4px 10px', borderRadius:999 }}>{lang==='th'?'ผสม':'Hybrid'}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'การตลาด':'Marketing'}</div>
-          <button onClick={()=>setPromoSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#FFF0E6', color:'#B4531A', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🎟️</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'โปรโมชั่น & คูปอง':'Promos & coupons'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{lang==='th'?'ลด % · ลดบาท · ส่งฟรี · ซื้อ 1 แถม 1 — ตั้งขั้นต่ำ วัน-เวลา และจำนวนสิทธิ์ได้':'% off · ฿ off · free delivery · buy 1 get 1'}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <button onClick={()=>setVcSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#EDF3FF', color:'#2E5AA8', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>💳</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'บัตรกำนัล & คูปอง':'Gift cards & coupons'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{lang==='th'?'ขายเป็นของขวัญ (จ่าย ฿950 ได้บัตร ฿1,000) หรือแจกเป็นโค้ดส่วนลด · ใช้ทีละส่วนได้':'Sell gift cards or hand out discount codes'}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ความปลอดภัย':'Security'}</div>
-          <button onClick={()=>setPinSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#FFF7E8', color:'#8A6100', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🔑</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'PIN เจ้าของร้าน':'Owner PIN'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.45 }}>{lang==='th'?'ใช้ดึงร้านกลับเมื่อเปลี่ยนเครื่อง/ล้างแคช และเข้าหลังบ้านบนคอม — ตั้งไว้ก่อนจะปลอดภัยกว่า':'Recover your shop on a new device · Backoffice login'}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ทีมงาน':'Team'}</div>
-          <button onClick={()=>setRiderSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#ECEEED', color:'var(--ink)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.moto,{size:20})}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ทีมส่ง · ไรเดอร์ร้าน':'Delivery team · riders'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{(pay&&pay.ridersComingSoon!==false)?(lang==='th'?'ระบบไรเดอร์ในตัว · กำลังจะเปิดให้ใช้':'Built-in rider system · launching soon'):(lang==='th'?`${(riders||[]).filter(r=>r.active!==false).length} คนพร้อมส่ง · แชร์ลิงก์ไรเดอร์`:`${(riders||[]).filter(r=>r.active!==false).length} active · share rider link`)}</div>
-            </div>
-            {(pay&&pay.ridersComingSoon!==false)
-              ? <span style={{ fontSize:11, fontWeight:700, color:'#8A6100', background:'#FBEEDA', padding:'4px 10px', borderRadius:999 }}>{lang==='th'?'เร็วๆ นี้':'Soon'}</span>
-              : <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>}
-          </button>
-          <button onClick={()=>setStaffSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#E6EEF6', color:'#2E6FB0', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🧑‍🍳</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ทะเบียนพนักงาน · ผู้ทำรายการ':'Staff registry'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?`${(staffList||[]).length} คน · แชร์ลิงก์พนักงาน (ขาย/ออเดอร์)`:`${(staffList||[]).length} staff · share staff link`}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'เครื่องมือหน้าร้าน':'Shop tools'}</div>
-          <button onClick={()=>setToolsOpen(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#EEF0FF', color:'#4A54B8', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🧩</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'โมดูล & เครื่องมือหน้าร้าน':'Modules & shop tools'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?'Mobile Order · LINE OA · จอคิว · จอครัว — เปิด/ปิด + ลิงก์/QR':'Mobile Order · LINE OA · queue · KDS — toggle + links/QR'}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ marginTop:8 }}>
-            {typeof window!=='undefined' && window.HomeLinks && React.createElement(window.HomeLinks,{ shop, lang })}
-          </div>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'เอกสาร':'Documents'}</div>
-          <button onClick={()=>setQuoteOpen(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'var(--accent-soft)', color:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.receipt,{size:20})}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'ใบเสนอราคา':'Quotation'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?'สร้างใบเสนอราคาให้ลูกค้า/องค์กร (งานจัดเลี้ยง · ออเดอร์ใหญ่) · คิด/ไม่คิด VAT · พิมพ์/ส่ง PDF':'Quotes for customers/companies (catering · bulk) · VAT optional · print/PDF'}</div>
-            </div>
-            <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-          </button>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-3)', margin:'10px 4px 0' }}>{lang==='th'?'ตั้งค่า & ระบบ':'Settings & system'}</div>
-          <button onClick={()=>setSubSheet(true)} className="kd-card" style={{ border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left' }}>
-            <span style={{ width:38, height:38, borderRadius:11, background:'#EAF0FA', color:'var(--blue)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.wallet,{size:20})}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14.5, fontWeight:700 }}>{lang==='th'?'แพ็กเกจ · ต่ออายุการใช้งาน':'Plan · renew app'}</div>
-              <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{(SUB_PLANS[sub?.plan]?.[lang])||''} · {lang==='th'?`เหลือ ${subDaysLeft} วัน`:`${subDaysLeft} days left`}</div>
-            </div>
-            <span style={{ fontSize:11, fontWeight:700, color: subDaysLeft<=7?'var(--danger)':'var(--brand-ink)', background: subDaysLeft<=7?'#FCECE8':'var(--brand-soft)', padding:'4px 10px', borderRadius:999 }}>{subDaysLeft}{lang==='th'?' วัน':'d'}</span>
-          </button>
+        {/* settings — จัดเป็นกลุ่มตามงานที่เจ้าของร้านทำ แต่ละกลุ่มเป็นการ์ดเดียว แถวคั่นด้วยเส้น */}
+        {(()=>{ const TH=lang==='th'; const riderSoon=(pay&&pay.ridersComingSoon!==false); const nSale=activeSaleModes(chanCfg).length; const ico=(ic)=>React.cloneElement(ic,{size:19}); return (<>
+        <SetGroup title={TH?'เมนูและการขาย':'Menu & selling'}>
+          <SetRow icon="🍽️" tint="var(--brand-soft)" color="var(--brand)" title={TH?'เมนูและสินค้า':'Menu & items'}
+            sub={TH?`${menu.length} เมนู · ${cats.length} หมวด · เพิ่ม/แก้ราคา/ปิดของหมด`:`${menu.length} items · ${cats.length} categories`} onClick={()=>setMenuMgrOpen(true)}/>
+          <SetRow icon={ico(IC.moto)} tint="var(--brand-soft)" color="var(--brand)" title={TH?'ช่องทางขาย':'Sale channels'}
+            sub={TH?`หน้าร้าน · Grab · LINE MAN ฯลฯ — เปิดอยู่ ${nSale} ช่องทาง`:`In-store · Grab · LINE MAN — ${nSale} active`} onClick={()=>setSaleModeOpen(true)}/>
+          <SetRow icon={ico(IC.box)} tint="var(--brand-soft)" color="var(--brand)" title={TH?'ต้นทุนและสต๊อก':'Costs & stock'}
+            sub={TH?'คิดต้นทุนต่อจาน หรือคิดจากสูตรแล้วตัดสต๊อก':'Flat cost per item or recipe + stock'} onClick={()=>setModeSheet(true)}/>
+          <SetRow icon={ico(IC.receipt)} tint="var(--accent-soft)" color="var(--accent)" title={TH?'ใบเสนอราคา':'Quotations'}
+            sub={TH?'งานจัดเลี้ยง/ออเดอร์ใหญ่ · พิมพ์หรือส่ง PDF':'Catering & bulk orders · print/PDF'} onClick={()=>setQuoteOpen(true)}/>
+        </SetGroup>
+
+        <SetGroup title={TH?'ให้ลูกค้าสั่งเอง':'Customer self-ordering'} hint={TH?'ลูกค้าสแกน QR หรือกดลิงก์แล้วสั่งได้เอง ไม่ต้องมี LINE OA ก็ได้':'Customers order from a QR or link — LINE OA optional'}>
+          <SetRow icon="🏪" tint="#EEF0FF" color="#4A54B8" title={TH?'ประเภทร้านและการจัดส่ง':'Shop type & delivery'}
+            sub={((shop.typeLabel)||(TH?'ยังไม่เลือกประเภทร้าน':'No shop type yet'))+(shop.features&&shop.features.delivery===false?(TH?' · รับที่ร้านอย่างเดียว':' · pickup only'):(TH?' · มีเดลิเวอรี':' · delivery on'))} onClick={()=>setTypeSheet(true)}/>
+          <SetRow icon="📱" tint="#EEF0FF" color="#4A54B8" title={TH?'QR สั่งอาหาร · จอคิว · จอครัว':'Order QR · queue · kitchen screens'}
+            sub={TH?'เปิด/ปิดแต่ละอย่าง แล้วเอาลิงก์หรือ QR ไปใช้':'Turn each on/off and get links/QR'} onClick={()=>setToolsOpen(true)}/>
+          <SetRow icon="🏬" tint="var(--brand-soft)" color="var(--brand)" title={TH?'ขึ้นร้านบนแอป :Done KaiDee':'List on :Done KaiDee'}
+            sub={shop.market ? (shop.marketOpen===false ? (TH?`พักรับออเดอร์ · ${shop.market}`:`Paused · ${shop.market}`) : (TH?`ขายอยู่ · ${shop.market}`:`Listed · ${shop.market}`)) : (TH?'ลูกค้าทั่วไปเห็นร้านและสั่งได้ · ไม่หัก GP':'Customers find & order · no commission')}
+            right={<><SetPill on={!!shop.market&&shop.marketOpen!==false} text={shop.market?(shop.marketOpen===false?(TH?'พัก':'Paused'):(TH?'เปิด':'On')):(TH?'ยังไม่เปิด':'Off')}/><span style={{ color:'var(--ink-3)' }}>{IC.chev}</span></>} onClick={()=>setMarketSheet(true)}/>
+        </SetGroup>
+        {typeof window!=='undefined' && window.HomeLinks && React.createElement(window.HomeLinks,{ shop, lang })}
+
+        <SetGroup title={TH?'รับเงินและลูกค้า':'Payments & customers'}>
+          <SetRow icon={ico(IC.qr)} tint="var(--brand-soft)" color="var(--brand)" title={TH?'รับเงิน · QR พร้อมเพย์':'Payments · PromptPay QR'}
+            sub={(pay.promptpay?pay.promptpay+' · ':'')+(TH?`รับ ${acceptCount} ช่องทาง`:`${acceptCount} methods`)}
+            right={!pay.promptpay ? <><SetPill warn text={TH?'ยังไม่ตั้ง':'Not set'}/><span style={{ color:'var(--ink-3)' }}>{IC.chev}</span></> : undefined} onClick={()=>setPaySheet(true)}/>
+          <SetRow icon={ico(IC.star)} tint="var(--accent-soft)" color="var(--accent)" title={TH?'สมาชิกและสะสมแต้ม':'Members & points'}
+            sub={TH?`${members.length} สมาชิก`:`${members.length} members`} onClick={()=>setMemSheet(true)}/>
+          <SetRow icon="🎟️" tint="#FFF0E6" color="#B4531A" title={TH?'โปรโมชั่นส่วนลด':'Promotions'}
+            sub={TH?'ลด % · ลดบาท · ส่งฟรี · ซื้อ 1 แถม 1':'% off · ฿ off · free delivery · B1G1'} onClick={()=>setPromoSheet(true)}/>
+          <SetRow icon="💳" tint="#EDF3FF" color="#2E5AA8" title={TH?'บัตรกำนัล':'Gift cards'}
+            sub={TH?'ขายเป็นของขวัญ หรือแจกเป็นโค้ด · ใช้ทีละส่วนได้':'Sell as gifts or hand out codes'} onClick={()=>setVcSheet(true)}/>
+        </SetGroup>
+
+        <SetGroup title={TH?'พนักงาน':'Team'}>
+          <SetRow icon="🧑‍🍳" tint="#E6EEF6" color="#2E6FB0" title={TH?'พนักงาน':'Staff'}
+            sub={TH?`${(staffList||[]).length} คน · ส่งลิงก์ให้พนักงานเข้าขาย/รับออเดอร์`:`${(staffList||[]).length} staff · share staff link`} onClick={()=>setStaffSheet(true)}/>
+          <SetRow icon={ico(IC.moto)} tint="#ECEEED" color="var(--ink)" title={TH?'ไรเดอร์ของร้าน':'Shop riders'}
+            sub={riderSoon?(TH?'ระบบไรเดอร์ในตัว':'Built-in rider system'):(TH?`${(riders||[]).filter(r=>r.active!==false).length} คนพร้อมส่ง`:`${(riders||[]).filter(r=>r.active!==false).length} active`)}
+            right={riderSoon ? <SetPill warn text={TH?'เร็วๆ นี้':'Soon'}/> : undefined} onClick={()=>setRiderSheet(true)}/>
+        </SetGroup>
+
+        <SetGroup title={TH?'บัญชีร้าน':'Account'}>
+          <SetRow icon={ico(IC.wallet)} tint="#EAF0FA" color="var(--blue)" title={TH?'แพ็กเกจและต่ออายุ':'Plan & renewal'}
+            sub={(SUB_PLANS[sub?.plan]?.[lang])||''}
+            right={<><SetPill on={subDaysLeft>7} warn={subDaysLeft<=7} text={TH?`เหลือ ${subDaysLeft} วัน`:`${subDaysLeft}d left`}/><span style={{ color:'var(--ink-3)' }}>{IC.chev}</span></>} onClick={()=>setSubSheet(true)}/>
+          <SetRow icon="🔑" tint="#FFF7E8" color="#8A6100" title={TH?'PIN เจ้าของร้าน':'Owner PIN'}
+            sub={TH?'ใช้ย้ายร้านไปเครื่องใหม่ และเข้าหลังบ้านบนคอม':'Move to a new device · Backoffice login'} onClick={()=>setPinSheet(true)}/>
           <FabToggleCard lang={lang}/>
-        </div>
+        </SetGroup>
+        </>); })()}
 
         {menuMgrOpen && <Sheet open={true} onClose={()=>setMenuMgrOpen(false)} height="94%">
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'4px 18px 10px' }}>
@@ -1200,15 +1092,12 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
           </div>
         </Sheet>}
 
-        <button onClick={openReset} className="kd-card" style={{ border:'none', cursor:'pointer', width:'100%', display:'flex', alignItems:'center', gap:13, padding:'14px 16px', fontFamily:'var(--font)', textAlign:'left', marginTop:9 }}>
-          <span style={{ width:38, height:38, borderRadius:11, background:'#FCECE8', color:'var(--danger)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.x,{size:18})}</span>
-          <div style={{ flex:1 }}>
-            <div style={{ fontSize:14.5, fontWeight:700, color:'var(--danger)' }}>{lang==='th'?'ลบร้าน · สมัครใหม่ด้วย LINE อื่น':'Delete shop · re-register with another LINE'}</div>
-            <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2 }}>{lang==='th'?'ล้างร้านนี้ออกจากระบบ — แพ็กเดิมถือเป็นโมฆะ ไม่มีการคืนเงิน':'Release this shop — old package is void, no refund'}</div>
-          </div>
-          <span style={{ color:'var(--ink-3)' }}>{IC.chev}</span>
-        </button>
-        {typeof window!=='undefined' && window.ReferFriend && <div style={{ marginTop:16 }}>{React.createElement(window.ReferFriend,{ shop, lang })}</div>}
+        {typeof window!=='undefined' && window.ReferFriend && <div style={{ marginBottom:18 }}>{React.createElement(window.ReferFriend,{ shop, lang })}</div>}
+        {/* ลบร้าน — แยกไว้ล่างสุด กันกดโดนตอนไล่หาตั้งค่าอื่น */}
+        <SetGroup title={lang==='th'?'ลบร้าน':'Delete shop'}>
+          <SetRow danger icon={React.cloneElement(IC.x,{size:18})} tint="#FCECE8" color="var(--danger)" title={lang==='th'?'ลบร้าน · สมัครใหม่ด้วย LINE อื่น':'Delete shop · re-register with another LINE'}
+            sub={lang==='th'?'ข้อมูลทั้งหมดหายถาวร · แพ็กเดิมไม่คืนเงิน':'All data erased · package not refunded'} onClick={openReset}/>
+        </SetGroup>
         {resetSheet && <div onClick={()=>setResetSheet(false)} style={{ position:'absolute', inset:0, zIndex:95, background:'rgba(10,20,15,.55)', display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
           <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:440, background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px 20px calc(96px + env(safe-area-inset-bottom))', maxHeight:'90vh', overflowY:'auto', fontFamily:'var(--font)' }}>
             <div style={{ fontSize:19, fontWeight:800, color:'var(--danger)', marginBottom:6 }}>{lang==='th'?'ลบร้าน · สมัครใหม่ด้วย LINE อื่น':'Delete shop · re-register with another LINE'}</div>
@@ -2288,18 +2177,39 @@ function kdPlans(){ const list=_kdPkgList(KD_PKG_CACHE); const n=v=>Number(v)||0
   }
   return PLANS.map(p=>({...p}));
 }
+/* ── หน้าตั้งค่าร้าน: กลุ่ม (การ์ดเดียว แถวคั่นเส้น) + แถว + ป้ายสถานะ ── */
+function SetGroup({ title, hint, children }){
+  const rows = React.Children.toArray(children).filter(Boolean);
+  return (<div style={{ marginBottom:18 }}>
+    <div style={{ fontSize:13.5, fontWeight:800, color:'var(--ink-2)', margin:'0 4px 6px' }}>{title}</div>
+    {hint && <div style={{ fontSize:12, color:'var(--ink-3)', margin:'-2px 4px 8px', lineHeight:1.45 }}>{hint}</div>}
+    <div className="kd-card" style={{ padding:0, overflow:'hidden' }}>
+      {rows.map((r,i)=><div key={i} style={{ borderTop: i?'1px solid var(--hair)':'none' }}>{r}</div>)}
+    </div>
+  </div>);
+}
+function SetRow({ icon, tint, color, title, sub, right, onClick, danger }){
+  const Tag = onClick ? 'button' : 'div';
+  return (<Tag onClick={onClick} style={{ border:'none', background:'none', cursor:onClick?'pointer':'default', width:'100%', display:'flex', alignItems:'center', gap:12, padding:'13px 15px', fontFamily:'var(--font)', textAlign:'left', color:'inherit' }}>
+    <span style={{ width:36, height:36, borderRadius:10, background:tint, color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>{icon}</span>
+    <div style={{ flex:1, minWidth:0 }}>
+      <div style={{ fontSize:14.5, fontWeight:700, color:danger?'var(--danger)':'var(--ink)' }}>{title}</div>
+      {sub && <div style={{ fontSize:12.5, color:'var(--ink-3)', marginTop:2, lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{sub}</div>}
+    </div>
+    {right!==undefined ? <span style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>{right}</span> : <span style={{ color:'var(--ink-3)', flexShrink:0 }}>{IC.chev}</span>}
+  </Tag>);
+}
+function SetPill({ text, on, warn }){
+  const c = warn ? ['#8A6100','#FBEEDA'] : on ? ['var(--brand-ink)','var(--brand-soft)'] : ['var(--ink-3)','var(--bg)'];
+  return <span style={{ fontSize:11, fontWeight:700, color:c[0], background:c[1], padding:'4px 9px', borderRadius:999, whiteSpace:'nowrap' }}>{text}</span>;
+}
 function FabToggleCard({ lang }){
   const TH=lang!=='en';
   const [on,setOn]=m2State(()=>{ try{ return localStorage.getItem('kd_fab_on')!=='0'; }catch(e){ return true; } });
   const toggle=()=>{ const nv=!on; setOn(nv); try{ localStorage.setItem('kd_fab_on', nv?'1':'0'); }catch(e){} try{ window.dispatchEvent(new Event('kd-fab')); }catch(e){} };
-  return (<div className="kd-card" style={{ border:'none', display:'flex', alignItems:'center', gap:13, padding:'14px 16px' }}>
-    <span style={{ width:38, height:38, borderRadius:11, background:'#F0ECFF', color:'#6A54C8', display:'flex', alignItems:'center', justifyContent:'center', fontSize:19 }}>🔘</span>
-    <div style={{ flex:1 }}>
-      <div style={{ fontSize:14.5, fontWeight:700 }}>{TH?'ปุ่มลัดลอย (เมนูด่วน)':'Floating shortcut'}</div>
-      <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:2, lineHeight:1.4 }}>{TH?'ปุ่มกลมลากได้ · แตะเปิดเมนูลัด/คู่มือ · ปิดได้ถ้าไม่ชอบ':'Draggable quick menu · turn off if you prefer'}</div>
-    </div>
-    <button onClick={toggle} aria-label="toggle" style={{ border:'none', background:'none', cursor:'pointer', padding:0, flexShrink:0 }}><Toggle on={on}/></button>
-  </div>);
+  return <SetRow icon="🔘" tint="#F0ECFF" color="#6A54C8" title={TH?'ปุ่มลัดลอยบนจอ':'Floating shortcut'}
+    sub={TH?'ปุ่มกลมลากได้ แตะเปิดเมนูลัด/คู่มือ':'Draggable quick menu'}
+    right={<button onClick={toggle} aria-label="toggle" style={{ border:'none', background:'none', cursor:'pointer', padding:0 }}><Toggle on={on}/></button>}/>;
 }
 function kdDeviceAddon(){ try{ const b=(typeof KD_PKG_CACHE!=='undefined'&&KD_PKG_CACHE)||JSON.parse(localStorage.getItem('kaidee_pkg_v1')||'{}'); const list=_kdPkgList(b)||[]; const maxSeats=Math.max(3,...list.map(p=>Number(p.seats)||1)); return { monthly:Number(b.deviceAddon)||0, maxSeats, freeDays:b.addonFreeDays==null?30:Number(b.addonFreeDays) }; }catch(e){ return { monthly:0, maxSeats:3, freeDays:30 }; } }
 /* ══ กระเป๋าเงินร้าน — ใช้ตัวกลาง window.KDW (ยอด+ประวัติอยู่ที่ backend) ══
