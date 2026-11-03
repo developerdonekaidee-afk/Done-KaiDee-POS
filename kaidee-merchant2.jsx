@@ -2291,24 +2291,42 @@ function SubscriptionSheet({ sub, setSub, onClose }){
     if(!res.ok){ setTopMsg(res.error||(TH?'ส่งคำขอไม่สำเร็จ':'Failed')); return; }
     setTopSlip(null); pullWal();
     setTopMsg(res.status==='done'
-      ? (TH?`ตรวจยอดกับธนาคารผ่าน · เงินเข้ากระเป๋า ${money(a)}`:`Verified · ${money(a)} credited`)
-      : (TH?`ส่งคำขอเติมเงิน ${money(a)} แล้ว · รอตรวจยอด เข้ากระเป๋าอัตโนมัติ${res.ref?' (อ้างอิง '+res.ref+')':''}`:`Top-up request sent`)); };
+      ? (TH?`เงินเข้ากระเป๋าแล้ว ${money(a)}`:`${money(a)} credited`)
+      : (TH?`ส่งคำขอเติมเงิน ${money(a)} แล้ว · ทีมงานตรวจยอดแล้วเงินจะเข้ากระเป๋า${res.ref?' (อ้างอิง '+res.ref+')':''}`:`Top-up request sent · credited after review`)); };
+  const shopId = (typeof window!=='undefined'&&window.KD_SHOP)||'';
+  const [ppSlip,setPpSlip] = m2State(null);
+  const [actMsg,setActMsg] = m2State('');
+  const [sentReq,setSentReq] = m2State(false);
+  const pickPpSlip = (e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
+    kdSlipResize(f).then(d=>{ setPpSlip(d); setActMsg(''); }).catch(()=>{}); };
+  const hasSysAcct = !!(sysAcct && (sysAcct.promptpay || sysAcct.acctNo));
   const renew = async ()=>{
+    setActMsg('');
+    // กระเป๋า: เซิร์ฟหักเงิน + ต่อวันหมด + ตั้งจำนวนเครื่อง ในคำสั่งเดียว (ราคาคิดฝั่งเซิร์ฟ)
     if(method==='wallet'){
-      if(!window.KDW){ setTopMsg(TH?'กระเป๋าเงินยังไม่พร้อม':'Wallet not ready'); return; }
+      if(short>0) return;
+      if(!(window.KD_API&&window.KD_API.renewShop) || !shopId){ setActMsg(kdPayReqErr(shopId?'offline':'noshop',TH)); return; }
       setBusy(true);
-      const res=await window.KDW.charge(wBiz,plan.price,{ who:sub.shopName||'ร้าน',
-        sub:(TH?'ค่าบริการระบบ · ':'Subscription · ')+((plan[lang]||plan.th)||''), type:'renew',
-        idem:'posrenew:'+curPick+':'+new Date(sub.expiry).toISOString().slice(0,10) });
+      let res; try{ res=await window.KD_API.renewShop(shopId,{ planId:curPick, idem:'renew:'+curPick+':'+String(sub.expiry||'').slice(0,10) }); }catch(e){ res={ ok:false }; }
       setBusy(false); pullWal();
-      if(!res.ok){ setTopMsg(res.short>0?(TH?`ยอดกระเป๋าไม่พอ — ขาดอีก ${money(res.short)} กรุณาเติมเงินก่อน`:`Not enough balance — short ${money(res.short)}`):(res.error||'')); return; }
+      if(!res.ok){ setActMsg(res.short>0?(TH?`ยอดกระเป๋าไม่พอ — ขาดอีก ${money(res.short)} กรุณาเติมเงินก่อน`:`Not enough balance — short ${money(res.short)}`):(res.error||(TH?'ต่ออายุไม่สำเร็จ · ยังไม่ได้หักเงิน':'Renewal failed · not charged'))); return; }
+      const s=res.shop||{};
+      setSub({ ...sub, plan:s.plan||'paid', expiry:s.expiry||sub.expiry, status:s.status||'active', _posActive:true });
+      setOkMsg(TH?`ต่ออายุแล้ว +${plan.days} วัน`:`Renewed +${plan.days} days`);
+      return;
     }
-    const base = new Date(sub.expiry) > new Date() ? new Date(sub.expiry) : new Date();
-    base.setDate(base.getDate() + plan.days);
-    // แจ้ง admin ให้รู้: ทุกการต่ออายุผ่านพร้อมเพย์ → สร้างคำขอเข้า Back Office
-    if(method==='promptpay'){ try{ kdSubmitPayRequest({ shopId:(typeof window!=='undefined'&&window.KD_SHOP)||'', shopName:sub.shopName||'', plan:curPick, months:Math.max(1,Math.round(plan.days/30)), amount:plan.price, slip:null, note:TH?'ต่ออายุในแอป':'In-app renewal' }); }catch(e){} }
-    setSub({ ...sub, plan: curPick, expiry: base.toISOString(), auto: method==='card', card: method==='card'?'•••• 4242':sub.card });
-    setOkMsg(TH?`ต่ออายุแล้ว +${plan.days} วัน`:`Renewed +${plan.days} days`);
+    // โอน/พร้อมเพย์: ส่งสลิปเข้าคิว Back Office · วันใช้งานเพิ่มเมื่อทีมงานยืนยัน (ไม่ต่อในเครื่องเองแล้ว)
+    if(method==='promptpay'){
+      if(!ppSlip){ setActMsg(TH?'แนบสลิปโอนเงินก่อนส่ง':'Attach the transfer slip first'); return; }
+      setBusy(true);
+      const r=await kdSubmitPayRequest({ shopId, plan:curPick, months:plan.days>=365?12:1, amount:plan.price, slip:ppSlip, note:TH?'ต่ออายุในแอป':'In-app renewal' });
+      setBusy(false);
+      if(!r.ok){ setActMsg(kdPayReqErr(r.code,TH)); return; }
+      setPpSlip(null); setSentReq(true);
+      setOkMsg(TH?'ส่งแจ้งชำระแล้ว':'Payment submitted');
+      return;
+    }
+    setActMsg(TH?'ตัดบัตรอัตโนมัติยังไม่เปิดใช้':'Card auto-debit is not available yet');
   };
 
   if(okMsg) return (
@@ -2316,7 +2334,9 @@ function SubscriptionSheet({ sub, setSub, onClose }){
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:26, gap:12, textAlign:'center' }}>
         <div className="kd-pop" style={{ width:80, height:80, borderRadius:999, background:'var(--brand-soft)', display:'flex', alignItems:'center', justifyContent:'center' }}>{React.cloneElement(IC.check,{size:42, color:'var(--brand)', stroke:2.6})}</div>
         <div style={{ fontSize:20, fontWeight:700 }}>{okMsg}</div>
-        <div style={{ color:'var(--ink-2)', fontSize:14 }}>{TH?'โปรแกรมใช้งานได้ถึง':'Active until'} {new Date(sub.expiry).toLocaleDateString(TH?'th-TH':'en-US',{day:'numeric',month:'short',year:'numeric'})}</div>
+        {sentReq
+          ? <div style={{ color:'var(--ink-2)', fontSize:14, lineHeight:1.55, maxWidth:300 }}>{TH?'ทีมงานกำลังตรวจสลิป เมื่อยืนยันแล้ววันใช้งานจะเพิ่มเอง · ปิดแอปแล้วเปิดใหม่เพื่อดูวันล่าสุด':'We are checking your slip. Days are added once confirmed — reopen the app to refresh.'}</div>
+          : <div style={{ color:'var(--ink-2)', fontSize:14 }}>{TH?'โปรแกรมใช้งานได้ถึง':'Active until'} {new Date(sub.expiry).toLocaleDateString(TH?'th-TH':'en-US',{day:'numeric',month:'short',year:'numeric'})}</div>}
         {method==='card' && <div className="kd-chip" style={{ background:'#EAF0FA', color:'var(--blue)' }}>{React.cloneElement(IC.check,{size:12})} {TH?'ตัดเงินอัตโนมัติเปิดอยู่':'Auto-renew on'}</div>}
       </div>
       <div style={{ padding:'0 20px' }}><button onClick={onClose} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:15 }}>{TH?'เสร็จสิ้น':'Done'}</button></div>
@@ -2384,7 +2404,7 @@ function SubscriptionSheet({ sub, setSub, onClose }){
         <button onClick={()=>setMethod('promptpay')} className="kd-card" style={{ border: method==='promptpay'?'2px solid var(--brand)':'2px solid transparent', cursor:'pointer', width:'100%', display:'flex', alignItems:'center', gap:13, padding:'14px 15px', fontFamily:'var(--font)', textAlign:'left', marginBottom:10 }}>
           <span style={{ color: method==='promptpay'?'var(--brand)':'var(--ink-3)' }}>{React.cloneElement(IC.qr,{size:22})}</span>
           <div style={{ flex:1 }}><div style={{ fontSize:14.5, fontWeight:600 }}>{TH?'เติมเอง · โอน / พร้อมเพย์':'Manual · transfer / QR'}</div>
-            <div style={{ fontSize:12, color:'var(--ink-3)' }}>{TH?'สแกนจ่ายแล้วต่ออายุทันที':'Scan to pay & renew instantly'}</div></div>
+            <div style={{ fontSize:12, color:'var(--ink-3)' }}>{TH?'โอนแล้วแนบสลิป · ทีมงานตรวจแล้วต่ออายุให้':'Transfer, attach slip · renewed after review'}</div></div>
         </button>
         {cardOn ? <button onClick={()=>setMethod('card')} className="kd-card" style={{ border: method==='card'?'2px solid var(--brand)':'2px solid transparent', cursor:'pointer', width:'100%', display:'flex', alignItems:'center', gap:13, padding:'14px 15px', fontFamily:'var(--font)', textAlign:'left', marginBottom:16 }}>
           <span style={{ color: method==='card'?'var(--brand)':'var(--ink-3)' }}>{React.cloneElement(IC.wallet,{size:22})}</span>
@@ -2416,11 +2436,11 @@ function SubscriptionSheet({ sub, setSub, onClose }){
             <div className="num" style={{ fontWeight:700, marginTop:6 }}>{money(payAmt||Number(topAmt)||0)}</div>
             <div style={{ fontSize:12, color:'var(--ink-3)', lineHeight:1.55 }}>{TH?'สแกนพร้อมเพย์เพื่อโอนเข้าบัญชีระบบ · ยอดถูกใส่มาให้แล้ว':'Scan PromptPay to top up'}</div>
             <AcctRows amount={payAmt}/>
-            <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:6, lineHeight:1.55, textAlign:'left' }}>{TH?<>โอน <b>{money(payAmt)}</b> เป๊ะ — เศษสตางค์ท้ายคือเลขอ้างอิงของคำขอนี้ ระบบใช้จับคู่ยอดที่เข้าบัญชีให้อัตโนมัติ</>:'Transfer the exact amount — the cents are this request\u2019s reference'}</div></div>
+            <div style={{ fontSize:11.5, color:'var(--ink-3)', marginTop:6, lineHeight:1.55, textAlign:'left' }}>{TH?<>โอน <b>{money(payAmt)}</b> ให้ตรงยอดนี้ — เศษสตางค์ท้ายช่วยให้ทีมงานรู้ว่าเป็นยอดของร้านคุณ</>:'Transfer the exact amount — the cents are this request\u2019s reference'}</div></div>
           <label style={{ display:'block', marginTop:11, padding:'12px 13px', borderRadius:12, border:'1.5px dashed var(--hair)', cursor:'pointer', background:'#fff' }}>
             <input type="file" accept="image/*" onChange={pickTopSlip} style={{ display:'none' }}/>
-            <span style={{ fontSize:13, fontWeight:700, color:'var(--brand-ink)' }}>{topSlip?(TH?'✓ แนบสลิปแล้ว · แตะเพื่อเปลี่ยน':'✓ Slip attached'):(TH?'แนบสลิปโอนเงิน (ระบบตรวจยอดกับธนาคารให้ทันที)':'Attach transfer slip')}</span>
-            <span style={{ display:'block', fontSize:12, color:'var(--ink-3)', marginTop:3, lineHeight:1.5 }}>{TH?'ไม่แนบก็ได้ · ระบบจะจับยอดที่เข้าบัญชี หรือรอผู้ดูแลยืนยัน':'Optional'}</span>
+            <span style={{ fontSize:13, fontWeight:700, color:'var(--brand-ink)' }}>{topSlip?(TH?'✓ แนบสลิปแล้ว · แตะเพื่อเปลี่ยน':'✓ Slip attached'):(TH?'แนบสลิปโอนเงิน':'Attach transfer slip')}</span>
+            <span style={{ display:'block', fontSize:12, color:'var(--ink-3)', marginTop:3, lineHeight:1.5 }}>{TH?'ช่วยให้ทีมงานตรวจได้เร็วขึ้น':'Helps us verify faster'}</span>
           </label>
           {topSlip?<img src={topSlip} alt="slip" style={{ width:'100%', maxHeight:190, objectFit:'contain', marginTop:9, borderRadius:11, background:'#fff' }}/>:null}
           <button onClick={topup} disabled={busy} className="kd-btn kd-btn-block" style={{ marginTop:12, background:'#fff', border:'1.6px solid var(--brand)', color:'var(--brand-ink)', padding:13, fontWeight:700, opacity:busy?.6:1 }}>{busy?(TH?'กำลังส่งคำขอ…':'Sending…'):(TH?`แจ้งเติมเงิน ${money(payAmt||Number(topAmt)||0)}`:`Request top-up ${money(payAmt||Number(topAmt)||0)}`)}</button>
@@ -2433,13 +2453,24 @@ function SubscriptionSheet({ sub, setSub, onClose }){
           {(sysAcct&&sysAcct.promptpay) ? <div style={{ display:'inline-block', padding:12, background:'#fff', borderRadius:16 }}><QRBlock payload={window.KDW.promptpayPayload(sysAcct.promptpay,plan.price)} size={186}/></div> : null}
           <div className="num" style={{ fontWeight:700, marginTop:6 }}>{money(plan.price)}</div>
           <div style={{ fontSize:12, color:'var(--ink-3)' }}>{TH?'สแกนพร้อมเพย์จ่ายค่าบริการระบบ':'PromptPay'}</div>
-          <AcctRows amount={plan.price}/></div>}
+          <AcctRows amount={plan.price}/>
+          {hasSysAcct && <label style={{ display:'block', marginTop:11, padding:'12px 13px', borderRadius:12, border:'1.5px dashed var(--hair)', cursor:'pointer', background:'#fff', textAlign:'left' }}>
+            <input type="file" accept="image/*" onChange={pickPpSlip} style={{ display:'none' }}/>
+            <span style={{ fontSize:13, fontWeight:700, color:'var(--brand-ink)' }}>{ppSlip?(TH?'✓ แนบสลิปแล้ว · แตะเพื่อเปลี่ยน':'✓ Slip attached'):(TH?'แนบสลิปโอนเงิน (ต้องแนบ)':'Attach transfer slip (required)')}</span>
+            <span style={{ display:'block', fontSize:12, color:'var(--ink-3)', marginTop:3, lineHeight:1.5 }}>{TH?'ทีมงานตรวจยอดแล้วต่ออายุให้ ปกติภายในไม่กี่ชั่วโมง':'We review and renew, usually within a few hours'}</span>
+          </label>}
+          {ppSlip?<img src={ppSlip} alt="slip" style={{ width:'100%', maxHeight:190, objectFit:'contain', marginTop:9, borderRadius:11, background:'#fff' }}/>:null}
+        </div>}
       </div>
       <div style={{ padding:'12px 20px 0' }}>
-        <button onClick={renew} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:15, opacity:(method==='wallet'&&short>0)?.55:1 }}>
-          {method==='card'?(TH?'ผูกบัตร & เปิดต่ออายุอัตโนมัติ':'Link card & enable auto-renew')
+        {actMsg && <div style={{ marginBottom:10, fontSize:12.5, fontWeight:600, color:'var(--danger)', background:'#FCECE8', borderRadius:11, padding:'10px 12px', lineHeight:1.5 }}>{actMsg}</div>}
+        {(()=>{ const off = busy || (method==='wallet'&&short>0) || (method==='promptpay'&&(!hasSysAcct||!ppSlip)) || method==='card'; return (
+        <button onClick={renew} disabled={busy||(method==='promptpay'&&!hasSysAcct)} className="kd-btn kd-btn-primary kd-btn-block" style={{ padding:15, opacity:off?.55:1 }}>
+          {busy?(TH?'กำลังดำเนินการ…':'Working…')
+            :method==='card'?(TH?'ตัดบัตรอัตโนมัติ · ยังไม่เปิดใช้':'Card auto-debit · not available')
             :method==='wallet'?(short>0?(TH?`เติมเงินอีก ${money(short)} ก่อนต่ออายุ`:`Top up ${money(short)} first`):(TH?`หักจากกระเป๋า ${money(plan.price)}`:`Pay ${money(plan.price)} from wallet`))
-            :(TH?`ยืนยันชำระ ${money(plan.price)}`:`Pay ${money(plan.price)}`)}</button>
+            :!hasSysAcct?(TH?'ยังไม่เปิดรับโอน · ติดต่อทีมงาน':'Transfers not open yet · contact us')
+            :(TH?`ส่งแจ้งชำระ ${money(plan.price)}`:`Submit payment ${money(plan.price)}`)}</button>); })()}
       </div>
     </Sheet>
   );
@@ -3477,12 +3508,18 @@ function CostModeSheet({ costMode, setCostMode, onClose }){
 /* ══════════════ LOCKED FEATURE (Free tier) ══════════════ */
 // ส่งคำขอชำระเงิน: มิเรอร์ลง localStorage ร่วม (เดโมข้ามแอป) + ยิง API เมื่อ live
 const PAYREQ_LS = 'kaidee_pay_requests_v1';
-function kdSubmitPayRequest(payload){
+// ส่งแจ้งชำระเข้า Back Office — รอผลจริง (เดิม .catch เงียบ: ส่งไม่ถึงแต่ร้านเห็นว่าส่งแล้ว) · คืน {ok, code}
+async function kdSubmitPayRequest(payload){
   try{ const a=JSON.parse(localStorage.getItem(PAYREQ_LS)||'[]');
     a.unshift({ ...payload, id:'pr'+Date.now(), status:'pending', created_at:Date.now() });
     localStorage.setItem(PAYREQ_LS, JSON.stringify(a.slice(0,200))); }catch(e){}
-  if(window.KD_LIVE && window.KD_API && window.KD_API.createPayRequest) window.KD_API.createPayRequest(payload).catch(()=>{});
+  if(!(window.KD_LIVE && window.KD_API && window.KD_API.createPayRequest)) return { ok:false, code:'offline' };
+  if(!payload.shopId) return { ok:false, code:'noshop' };
+  try{ const r=await window.KD_API.createPayRequest(payload); return { ok:true, id:r&&r.id }; }catch(e){ return { ok:false, code:'net' }; }
 }
+const kdPayReqErr = (code, TH)=> code==='noshop' ? (TH?'ไม่พบรหัสร้าน · ปิดแอปแล้วเปิดใหม่':'Shop ID missing · reopen the app')
+  : code==='offline' ? (TH?'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์ · ปิดแอปแล้วเปิดใหม่':'Not connected · reopen the app')
+  : (TH?'ส่งไม่สำเร็จ · ตรวจอินเทอร์เน็ตแล้วลองใหม่':'Could not send · check your connection');
 function kdSlipResize(file){
   return new Promise((res,rej)=>{ const rd=new FileReader(); rd.onerror=()=>rej();
     rd.onload=()=>{ const img=new Image(); img.onerror=()=>rej();
@@ -3494,6 +3531,23 @@ function kdSlipResize(file){
 // ราคา add-on จากแพ็ก (แอดมินตั้งได้) — fallback ฿129/ด. · ฿1,290/ปี
 function kdAddonPrice(id){ try{ const p=JSON.parse(localStorage.getItem('kaidee_pkg_v1')||'{}'); const a=p.addon&&p.addon[id]; if(a) return { monthly:(+a.monthly||129), yearly:(+a.yearly||1290), name:a.name||'ขายฝาก' }; }catch(e){} return { monthly:129, yearly:1290, name:'ขายฝาก' }; }
 /* ── ซื้อ add-on ขายฝากเอง (โอนพร้อมเพย์ + แนบสลิป → แอดมินอนุมัติเปิดให้) ── */
+/* บัญชีรับเงินของ "ระบบ" (ตั้งที่ Back Office › กระเป๋าเงิน) + QR พร้อมเพย์ตามยอด — ห้ามโชว์พร้อมเพย์ของร้านเอง */
+function kdUseSysAcct(){
+  const [a,setA] = m2State(()=>(window.KDW&&window.KDW.acctCached)?window.KDW.acctCached():{});
+  React.useEffect(()=>{ if(window.KDW&&window.KDW.account) window.KDW.account().then(x=>x&&setA(x)).catch(()=>{}); },[]);
+  const sa = a || {};
+  return { acct:sa, ready:!!(sa.promptpay || sa.acctNo) };
+}
+function KdSysAcctBox({ acct, amount, lang }){
+  const TH = lang!=='en'; const sa = acct || {};
+  if(!(sa.promptpay || sa.acctNo)) return (<div className="kd-card" style={{ padding:'14px 16px', marginTop:14, fontSize:13, color:'var(--danger)', lineHeight:1.55 }}>{TH?'ระบบยังไม่เปิดรับโอน · ติดต่อทีมงานทาง LINE เพื่อขอเลขบัญชี':'Transfers are not open yet · contact us on LINE'}</div>);
+  return (<div className="kd-card" style={{ padding:'14px 16px', marginTop:14, textAlign:'center' }}>
+    {sa.promptpay && window.KDW && window.KDW.promptpayPayload ? <div style={{ display:'inline-block', padding:10, background:'#fff', borderRadius:14 }}><QRBlock payload={window.KDW.promptpayPayload(sa.promptpay, amount)} size={170}/></div> : null}
+    <div style={{ textAlign:'left', marginTop:8 }}>
+      {[[TH?'พร้อมเพย์':'PromptPay', sa.promptpay],[sa.bank||(TH?'เลขบัญชี':'Account'), sa.acctNo],[TH?'ชื่อบัญชี':'Name', sa.acctName],[TH?'ยอดที่ต้องโอน':'Amount', money(amount)]].filter(x=>x[1]).map(([k,v])=>(
+        <div key={k} style={{ display:'flex', justifyContent:'space-between', gap:10, padding:'4px 0', fontSize:13 }}><span style={{ color:'var(--ink-3)' }}>{k}</span><b className="num">{v}</b></div>))}
+    </div></div>);
+}
 function AddonConsignSheet({ store, lang, onClose }){
   const TH = lang!=='en';
   const pr = kdAddonPrice('consign');
@@ -3501,10 +3555,17 @@ function AddonConsignSheet({ store, lang, onClose }){
   const [slip,setSlip] = m2State(null);
   const [note,setNote] = m2State('');
   const [sent,setSent] = m2State(false);
+  const [busy,setBusy] = m2State(false);
+  const [errMsg,setErrMsg] = m2State('');
+  const sys = kdUseSysAcct();
   const amount = period==='yearly' ? (pr.yearly || pr.monthly*10) : pr.monthly;
   const months = period==='yearly' ? 12 : 1;
-  const submit = ()=>{ kdSubmitPayRequest({ shopId: store.shop.shopId || store.shop.name || 'shop',
-    shopName: store.shop.name, amount, months, kind:'addon', addon:'consign', plan:'addon-consign', slip, note }); setSent(true); };
+  const submit = async ()=>{ setErrMsg(''); setBusy(true);
+    const r = await kdSubmitPayRequest({ shopId: (window.KD_SHOP || store.shop.shopId || ''),
+      shopName: store.shop.name, amount, months, kind:'addon', addon:'consign', slip, note });
+    setBusy(false);
+    if(!r.ok){ setErrMsg(kdPayReqErr(r.code,TH)); return; }
+    setSent(true); };
   return (
     <div onClick={onClose} style={{ position:'absolute', inset:0, zIndex:120, background:'rgba(10,20,15,.55)', display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
       <div onClick={e=>e.stopPropagation()} className="kd-slideup" style={{ width:'100%', maxWidth:440, background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px 20px calc(20px + env(safe-area-inset-bottom))', maxHeight:'92%', overflowY:'auto' }}>
@@ -3526,11 +3587,7 @@ function AddonConsignSheet({ store, lang, onClose }){
                 <div style={{ fontWeight:700, fontSize:13.5, color:period===k?'var(--brand-ink)':'var(--ink)' }}>{l}</div>
                 <div style={{ fontSize:12.5, color:'var(--ink-3)', marginTop:3 }}>฿{Number(p).toLocaleString()}{k==='yearly'?(TH?'/ปี':'/yr'):(TH?'/ด.':'/mo')}</div></button>))}
           </div>
-          <div className="kd-card" style={{ padding:'14px 16px', marginTop:14 }}>
-            <div style={{ fontSize:12.5, color:'var(--ink-3)' }}>{TH?'โอนมาที่พร้อมเพย์':'Transfer to PromptPay'}</div>
-            <div style={{ fontWeight:700, fontSize:17, marginTop:3 }} className="num">{store.pay.promptpay || '—'}</div>
-            <div style={{ fontSize:12.5, color:'var(--ink-3)', marginTop:2 }}>{store.pay.shopName||store.shop.name} · {TH?'ยอด':'Amount'} ฿{amount.toLocaleString()}</div>
-          </div>
+          <KdSysAcctBox acct={sys.acct} amount={amount} lang={lang}/>
           <div style={{ marginTop:14 }}>
             <div style={{ fontSize:13, fontWeight:700, color:'var(--ink-2)', marginBottom:7 }}>{TH?'แนบสลิปโอนเงิน':'Attach slip'}</div>
             {slip ? <div style={{ position:'relative' }}><img src={slip} style={{ width:'100%', maxHeight:200, objectFit:'contain', borderRadius:12, border:'1px solid var(--hair-2)', background:'#fff' }}/>
@@ -3540,7 +3597,8 @@ function AddonConsignSheet({ store, lang, onClose }){
                 <input type="file" accept="image/*" onChange={async e=>{ const f=e.target.files&&e.target.files[0]; if(f){ try{ setSlip(await kdSlipResize(f)); }catch(_){}}}} style={{ position:'absolute', opacity:0, width:0, height:0 }}/></label>}
           </div>
           <input className="kd-input" placeholder={TH?'หมายเหตุ (ไม่บังคับ)':'Note (optional)'} value={note} onChange={e=>setNote(e.target.value)} style={{ marginTop:12 }}/>
-          <button className="kd-btn kd-btn-primary kd-btn-block" style={{ marginTop:18, opacity:slip?1:.5 }} disabled={!slip} onClick={submit}>{TH?'ส่งแจ้งชำระ':'Submit'}</button>
+          {errMsg && <div style={{ marginTop:12, fontSize:12.5, fontWeight:600, color:'var(--danger)', background:'#FCECE8', borderRadius:11, padding:'10px 12px', lineHeight:1.5 }}>{errMsg}</div>}
+          <button className="kd-btn kd-btn-primary kd-btn-block" style={{ marginTop:18, opacity:(slip&&!busy&&sys.ready)?1:.5 }} disabled={!slip||busy||!sys.ready} onClick={submit}>{busy?(TH?'กำลังส่ง…':'Sending…'):(TH?`ส่งแจ้งชำระ ${money(amount)}`:`Submit ${money(amount)}`)}</button>
           <button className="kd-btn kd-btn-block" style={{ marginTop:9, background:'none', color:'var(--ink-3)' }} onClick={onClose}>{TH?'ยกเลิก':'Cancel'}</button>
         </>}
       </div>
@@ -3550,7 +3608,6 @@ function AddonConsignSheet({ store, lang, onClose }){
 function LockedFeature({ tabKey, store, lang, onStore }){
   const TH = lang!=='en';
   const [view,setView] = m2State('lock');   // lock | notify | sent
-  const [months,setMonths] = m2State(1);
   const [slip,setSlip] = m2State(null);
   const [note,setNote] = m2State('');
   const info = {
@@ -3559,9 +3616,22 @@ function LockedFeature({ tabKey, store, lang, onStore }){
     reports: { ic:'📊', t:TH?'รายงานกำไร-ต้นทุน':'Profit reports', s:TH?'ดูยอดขาย ต้นทุน กำไรย้อนหลัง และสรุปรายวัน — เปิดใช้เมื่ออัปเกรด':'Full sales/cost/profit reports — paid plan.' },
     stock:   { ic:'📦', t:TH?'สต๊อกวัตถุดิบ':'Ingredient stock', s:TH?'ตัดสต๊อกอัตโนมัติตามสูตร เตือนของใกล้หมด — เปิดใช้เมื่ออัปเกรด':'Auto stock deduction — paid plan.' },
   }[tabKey] || { ic:'🔒', t:TH?'ฟีเจอร์นี้ต้องอัปเกรด':'Upgrade required', s:'' };
-  const price = { 1:199, 3:597, 12:1990 }[months];
-  const submit = ()=>{ kdSubmitPayRequest({ shopId: store.shop.shopId || store.shop.name || 'shop',
-    shopName: store.shop.name, amount: price, months, slip, note }); setView('sent'); };
+  // แพ็ก/ราคาจาก Back Office (เดิมฮาร์ดโค้ด ฿199/597/1990) · โอนเข้าบัญชีของระบบ (เดิมโชว์พร้อมเพย์ของร้านเอง)
+  const [plans,setPlans] = m2State(()=>kdPlans().filter(p=>p.id!=='trial'));
+  const [pick,setPick] = m2State(null);
+  const [busy,setBusy] = m2State(false);
+  const [errMsg,setErrMsg] = m2State('');
+  const sys = kdUseSysAcct();
+  React.useEffect(()=>{ kdLoadPackages().then(b=>{ if(b) setPlans(kdPlans().filter(p=>p.id!=='trial')); }); },[]);
+  const plan = plans.find(p=>p.id===pick) || plans.find(p=>p.best) || plans[0] || { id:'monthly', price:199, days:30, th:'ร้านค้า · รายเดือน', en:'Shop · Monthly' };
+  const fromPrice = plans.length ? Math.min(...plans.filter(p=>p.days<365).map(p=>p.price).concat(plans[0].price)) : 199;
+  const hasAcct = sys.ready;
+  const shopId = (typeof window!=='undefined'&&window.KD_SHOP) || store.shop.shopId || '';
+  const submit = async ()=>{ setErrMsg(''); setBusy(true);
+    const r = await kdSubmitPayRequest({ shopId, shopName: store.shop.name, plan: plan.id, amount: plan.price, months: plan.days>=365?12:1, slip, note });
+    setBusy(false);
+    if(!r.ok){ setErrMsg(kdPayReqErr(r.code,TH)); return; }
+    setView('sent'); };
 
   if(view==='sent') return (
     <div className="kd-screen" style={{ background:'var(--bg)' }}><div className="kd-body"><div style={{ padding:'70px 26px', textAlign:'center' }}>
@@ -3574,18 +3644,14 @@ function LockedFeature({ tabKey, store, lang, onStore }){
   if(view==='notify') return (
     <div className="kd-screen" style={{ background:'var(--bg)' }}><div className="kd-body"><div style={{ padding:'46px 22px 30px' }}>
       <div style={{ fontSize:19, fontWeight:700 }}>{TH?'แจ้งชำระเงิน':'Notify payment'}</div>
-      <div style={{ fontSize:13, color:'var(--ink-2)', marginTop:6, lineHeight:1.5 }}>{TH?'เลือกระยะเวลา → โอนพร้อมเพย์ → แนบสลิป ทีมงานยืนยันให้':'Pick a period, transfer, attach the slip.'}</div>
-      <div style={{ display:'flex', gap:9, marginTop:16 }}>
-        {[[1,'1 เดือน','฿199'],[3,'3 เดือน','฿597'],[12,'1 ปี','฿1,990']].map(([m,l,p])=>(
-          <button key={m} onClick={()=>setMonths(m)} style={{ flex:1, border:'2px solid '+(months===m?'var(--brand)':'var(--hair-2)'), background:months===m?'var(--brand-soft)':'#fff', borderRadius:14, padding:'12px 6px', cursor:'pointer', fontFamily:'var(--font)' }}>
-            <div style={{ fontWeight:700, fontSize:13.5, color:months===m?'var(--brand-ink)':'var(--ink)' }}>{l}</div>
-            <div style={{ fontSize:12.5, color:'var(--ink-3)', marginTop:3 }}>{p}</div></button>))}
+      <div style={{ fontSize:13, color:'var(--ink-2)', marginTop:6, lineHeight:1.5 }}>{TH?'เลือกแพ็ก → โอนเข้าบัญชีระบบ → แนบสลิป ทีมงานยืนยันให้':'Pick a plan, transfer, attach the slip.'}</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:16 }}>
+        {plans.map(p=>{ const on=plan.id===p.id; return (
+          <button key={p.id} onClick={()=>setPick(p.id)} style={{ display:'flex', alignItems:'center', gap:10, border:'2px solid '+(on?'var(--brand)':'var(--hair-2)'), background:on?'var(--brand-soft)':'#fff', borderRadius:14, padding:'11px 14px', cursor:'pointer', fontFamily:'var(--font)', textAlign:'left' }}>
+            <div style={{ flex:1, fontWeight:700, fontSize:13.5, color:on?'var(--brand-ink)':'var(--ink)' }}>{p[lang]||p.th}</div>
+            <div className="num" style={{ fontWeight:700, fontSize:14 }}>{money(p.price)}</div></button>); })}
       </div>
-      <div className="kd-card" style={{ padding:'14px 16px', marginTop:16 }}>
-        <div style={{ fontSize:12.5, color:'var(--ink-3)' }}>{TH?'โอนมาที่พร้อมเพย์':'Transfer to PromptPay'}</div>
-        <div style={{ fontWeight:700, fontSize:17, marginTop:3 }} className="num">{store.pay.promptpay || '—'}</div>
-        <div style={{ fontSize:12.5, color:'var(--ink-3)', marginTop:2 }}>{store.pay.shopName||store.shop.name} · {TH?'ยอด':'Amount'} ฿{price.toLocaleString()}</div>
-      </div>
+      <KdSysAcctBox acct={sys.acct} amount={plan.price} lang={lang}/>
       <label style={{ display:'block', marginTop:16 }}>
         <div style={{ fontSize:13, fontWeight:700, color:'var(--ink-2)', marginBottom:7 }}>{TH?'แนบสลิปโอนเงิน':'Attach slip'}</div>
         {slip ? <div style={{ position:'relative' }}><img src={slip} style={{ width:'100%', maxHeight:200, objectFit:'contain', borderRadius:12, border:'1px solid var(--hair-2)', background:'#fff' }}/>
@@ -3595,7 +3661,8 @@ function LockedFeature({ tabKey, store, lang, onStore }){
             <input type="file" accept="image/*" onChange={async e=>{ const f=e.target.files&&e.target.files[0]; if(f){ try{ setSlip(await kdSlipResize(f)); }catch(_){}}}} style={{ position:'absolute', opacity:0, width:0, height:0 }}/></div>}
       </label>
       <input className="kd-input" placeholder={TH?'หมายเหตุ (ไม่บังคับ)':'Note (optional)'} value={note} onChange={e=>setNote(e.target.value)} style={{ marginTop:12 }}/>
-      <button className="kd-btn kd-btn-primary kd-btn-block" style={{ marginTop:18, opacity:slip?1:.5 }} disabled={!slip} onClick={submit}>{TH?'ส่งแจ้งชำระ':'Submit'}</button>
+      {errMsg && <div style={{ marginTop:12, fontSize:12.5, fontWeight:600, color:'var(--danger)', background:'#FCECE8', borderRadius:11, padding:'10px 12px', lineHeight:1.5 }}>{errMsg}</div>}
+      <button className="kd-btn kd-btn-primary kd-btn-block" style={{ marginTop:18, opacity:(slip&&!busy&&hasAcct)?1:.5 }} disabled={!slip||busy||!hasAcct} onClick={submit}>{busy?(TH?'กำลังส่ง…':'Sending…'):(TH?`ส่งแจ้งชำระ ${money(plan.price)}`:`Submit ${money(plan.price)}`)}</button>
       <button className="kd-btn kd-btn-block" style={{ marginTop:9, background:'none', color:'var(--ink-3)' }} onClick={()=>setView('lock')}>{TH?'ยกเลิก':'Cancel'}</button>
     </div></div></div>
   );
@@ -3610,7 +3677,7 @@ function LockedFeature({ tabKey, store, lang, onStore }){
         <div className="kd-card" style={{ padding:'18px 20px', marginTop:22, border:'2px solid var(--brand)', textAlign:'left' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
             <div style={{ fontWeight:700, fontSize:16 }}>{TH?'แพ็กเกจร้านค้า':'Shop plan'}</div>
-            <div style={{ fontSize:22, fontWeight:700 }}>฿199<span style={{ fontSize:13, color:'var(--ink-3)', fontWeight:500 }}>{TH?'/เดือน':'/mo'}</span></div>
+            <div style={{ fontSize:22, fontWeight:700 }}>{money(fromPrice)}<span style={{ fontSize:13, color:'var(--ink-3)', fontWeight:500 }}>{TH?'/เดือน':'/mo'}</span></div>
           </div>
           <div style={{ fontSize:13, color:'var(--ink-2)', marginTop:8, lineHeight:1.7 }}>
             {(TH?['ออเดอร์ LINE + เดลิเวอรี ไม่จำกัด','รายงานกำไร-ต้นทุน-เงินสด','สต๊อกวัตถุดิบ + ใบเสนอราคา']:['Unlimited LINE + delivery','Full reports','Stock + quotations']).map((f,i)=>(<div key={i}>✓ {f}</div>))}
@@ -3717,7 +3784,9 @@ function MerchantApp({ store }){
   if(!devOk) return <DeviceLimitScreen lang={lang} info={devInfo} store={store}/>;
   // เชื่อผลจากเซิร์ฟเวอร์ (_licActive) ก่อนเสมอถ้าเคยเช็คสำเร็จแล้ว — กันแก้ sub.plan/expiry ใน localStorage เพื่อปลดล็อกเอง
   // ยังไม่เคยเช็ค (_licActive undefined) → fallback วันหมดอายุจาก local ไปก่อน กันแอปสะดุดตอนโหลดครั้งแรก/ออฟไลน์
-  const freeTier = sub._licActive === true ? false : sub._licActive === false ? true : (sub.plan!=='paid' && expDays < 0);
+  // เซิร์ฟเวอร์มี 2 ที่: ระบบสิทธิ์ร้าน (_licActive) และฐานข้อมูลร้าน (_posActive — ต่ออายุผ่านกระเป๋า/แอดมินยืนยันจะขยับที่นี่) · ที่ไหนบอกว่าใช้ได้ = ปลดล็อก
+  const srvActive = (sub._licActive === true || sub._posActive === true) ? true : sub._licActive === false ? false : undefined;
+  const freeTier = srvActive === true ? false : srvActive === false ? true : (sub.plan!=='paid' && expDays < 0);
   const LOCKED = freeTier ? ['sell','orders','reports','stock'] : [];
   const isLocked = (k)=> LOCKED.includes(k);
   const TH = lang!=='en';

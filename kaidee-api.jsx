@@ -94,6 +94,12 @@ const KD_API = {
   getPackages: () => _req('GET', '/packages', null, false),
   // คำขอชำระเงิน (manual billing)
   createPayRequest:  (info)      => _req('POST', '/pay-requests', info, false),
+  // ต่ออายุด้วยกระเป๋าเงิน {planId, idem} — เซิร์ฟหักเงิน+ต่อวันเอง · คืน body แม้ไม่สำเร็จ (ยอดไม่พอ = short)
+  renewShop: async (id, body) => {
+    const r = await fetch(kdApiBase() + '/shops/' + encodeURIComponent(id) + '/renew', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body || {}) });
+    let j = {}; try { j = await r.json(); } catch (e) {}
+    return r.ok ? j : { ...j, ok: false, status: r.status };
+  },
   listPayRequests:   (status)    => _req('GET', '/pay-requests' + (status ? '?status=' + status : ''), null, false),
   handlePayRequest:  (id, patch) => _req('PATCH', '/pay-requests/' + id, patch, false),
   // คำขอรหัส Office (เปิดวันย้อนหลัง) — ร้านขอ · Back Office ออกรหัส

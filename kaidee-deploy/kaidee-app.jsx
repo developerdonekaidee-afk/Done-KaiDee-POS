@@ -189,7 +189,9 @@ function KaiDeeApp(){
     let alive = true;
     window.KD_LICENSE.check(shopId).then(lic=>{
       if(!alive || !lic) return;
-      setSub(su=>({ ...su, plan: lic.plan||su.plan, expiry: lic.expiry||su.expiry, status: lic.status||su.status, _licSource: lic.source, _licActive: lic.active }));
+      // ระบบสิทธิ์ร้านกับฐานข้อมูลร้านอาจต่างกัน (แอดมินยืนยัน/ต่อด้วยกระเป๋า ขยับที่ฐานข้อมูลร้าน) → ถือวันหมดที่ไกลกว่า
+      setSub(su=>{ const later = (lic.expiry && su.expiry && su._posActive && new Date(su.expiry) > new Date(lic.expiry)) ? su.expiry : (lic.expiry||su.expiry);
+        return { ...su, plan: (later===su.expiry && su._posActive) ? su.plan : (lic.plan||su.plan), expiry: later, status: lic.status||su.status, _licSource: lic.source, _licActive: lic.active }; });
     }).catch(()=>{});
     return ()=>{ alive=false; };
   }, []);
@@ -495,7 +497,13 @@ function KaiDeeApp(){
               address:sh.address||s.address, open:sh.open||s.open, close:sh.close||s.close, isOpen:sh.isOpen, seats:sh.seats,
               market:(sh.market!=null?sh.market:s.market), features:f }; });
           setPay(p=>({ ...p, shopName:sh.name, promptpay: sh.promptpayId || p.promptpay }));
-          if(sh.plan || sh.expiry) setSub(su=>({ ...su, plan: sh.plan||su.plan, expiry: sh.expiry||su.expiry, status: sh.status||su.status }));
+          if(sh.plan || sh.expiry){
+            // ฐานข้อมูลร้าน = ที่ที่การต่ออายุ (กระเป๋า/แอดมินยืนยัน) เขียนจริง → ใช้ปลดล็อกได้ ไม่ต้องรอระบบสิทธิ์ร้าน
+            // ใช้เป็นสัญญาณ "ปลดล็อก" อย่างเดียว (true/undefined) — ไม่ล็อกร้านเพิ่มจากที่ระบบสิทธิ์ร้านตัดสิน
+            const posActive = (sh.status!=='suspended' && !!sh.expiry && new Date(sh.expiry) > new Date()) ? true : undefined;
+            setSub(su=>{ const keepLic = su._licActive===true && su.expiry && sh.expiry && new Date(su.expiry) > new Date(sh.expiry);
+              return { ...su, plan: keepLic ? su.plan : (sh.plan||su.plan), expiry: keepLic ? su.expiry : (sh.expiry||su.expiry), status: sh.status||su.status, _posActive: posActive }; });
+          }
         }
         if(rw && rw.length) setRaw(rw);
         if(pc && pc.length) setPurchases(pc);

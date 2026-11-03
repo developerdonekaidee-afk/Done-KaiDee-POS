@@ -574,7 +574,33 @@ async function ensurePayReqCols(env){ if(_payReqColsReady) return; _payReqColsRe
   try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN addon TEXT').run(); }catch(e){}
   // audit: ใครอนุมัติ/ปฏิเสธคำขอชำระ + เมื่อไหร่ — PATCH ใช้สองคอลัมน์นี้อยู่แล้วแต่ไม่เคย ALTER ให้มาก่อน (500 ทุกครั้งที่กดอนุมัติ)
   try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN handled_at INTEGER').run(); }catch(e){}
-  try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN handled_by TEXT').run(); }catch(e){} }
+  try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN handled_by TEXT').run(); }catch(e){}
+  // แพ็กที่ร้านเลือก (เช่น pro_y) — ไม่มีคอลัมน์นี้ แอดมินต้องเดาแพ็กจากยอดเงิน และยืนยันแล้วไม่ได้จำนวนเครื่องตามแพ็ก
+  try{ await env.DB.prepare('ALTER TABLE pay_requests ADD COLUMN plan_id TEXT').run(); }catch(e){} }
+
+/* ── แพ็กเกจ → ราคา/วัน/เครื่อง (คิดฝั่งเซิร์ฟเท่านั้น ไม่เชื่อราคาที่แอปส่งมา) ──
+   planId มาจาก kdPlans() ฝั่งแอป = '<id แพ็ก>_m' | '<id แพ็ก>_y' · id เก่าก่อนมี Back Office: monthly / plus / yearly */
+const PKG_DEFAULT = [ { id:'shop', name:'ร้านค้า', seats:1, monthly:199, yearly:1990 }, { id:'pro', name:'ร้านค้า พลัส', seats:3, monthly:299, yearly:2990 } ];
+const PLAN_LEGACY = { monthly:'shop_m', plus:'pro_m', yearly:'shop_y' };
+async function pkgPlan(env, planId) {
+  if (!planId) return null;
+  const pid = PLAN_LEGACY[planId] || String(planId);
+  const cut = pid.lastIndexOf('_'); if (cut < 1) return null;
+  const pkId = pid.slice(0, cut), per = pid.slice(cut + 1);
+  if (per !== 'm' && per !== 'y') return null;
+  let cfg = {};
+  try { const r = await env.DB.prepare("SELECT v FROM app_config WHERE k='packages'").first(); cfg = r ? JSON.parse(r.v || '{}') : {}; } catch (e) {}
+  const list = (Array.isArray(cfg.packages) && cfg.packages.length) ? cfg.packages
+    : cfg.shop ? [ { id:'shop', name:cfg.shop.name, seats:cfg.shop.seats||1, monthly:cfg.shop.price||199, yearly:cfg.shop.yearly||1990 },
+                   { id:'pro', name:(cfg.pro&&cfg.pro.name), seats:(cfg.pro&&cfg.pro.seats)||3, monthly:(cfg.pro&&cfg.pro.price)||299, yearly:(cfg.pro&&cfg.pro.yearly)||2990 } ]
+    : PKG_DEFAULT;
+  const p = list.find(x => String(x.id) === pkId); if (!p) return null;
+  const price = Number(per === 'y' ? p.yearly : p.monthly) || 0;
+  if (!(price > 0)) return null;
+  return { id: pid, price, days: per === 'y' ? 365 : 30, seats: Number(p.seats) || 1, name: p.name || pkId };
+}
+// วันหมดใหม่ = นับต่อจากวันหมดเดิม (หรือวันนี้ถ้าเลยมาแล้ว)
+const extendFrom = (expiry, days) => new Date(Math.max(Date.now(), expiry ? new Date(expiry).getTime() || 0 : 0) + days * 864e5).toISOString();
 // idempotent: ตาราง wallets/wallet_txns/wallet_accounts (กระเป๋าเงินปิด — จ่ายค่าบริการระบบเท่านั้น, ยอด/ประวัติเป็นความจริงที่ฝั่งเซิร์ฟเท่านั้น)
 let _walletReady = false;
 async function ensureWallet(env){ if(_walletReady) return; _walletReady = true;
@@ -1105,8 +1131,48 @@ export default {
           const idx = ids.indexOf(dev);
           return json({ allowed: idx >= 0 && idx < limit, count: ids.length, limit }, req);
         }
+        // POST /shops/:id/renew {planId, idem} — ร้านต่ออายุด้วยกระเป๋าเงิน: หักเงิน + ต่อวันหมด + ตั้งจำนวนเครื่อง ในที่เดียว
+        // (เดิมแอปหักเงินแล้วต่อวันในเครื่องเอง → เงินหายแต่เซิร์ฟเวอร์ไม่รู้ ร้านยังถูกล็อก)
+        if (req.method === 'POST' && seg[1] && seg[2] === 'renew') {
+          const b = await readBody();
+          const s = await getShop(env, seg[1]);
+          if (!s) return err('shop not found', req, 404);
+          const pk = await pkgPlan(env, b.planId);
+          if (!pk) return json({ ok: false, error: 'ไม่พบแพ็กเกจนี้' }, req, 400);
+          await ensureWallet(env);
+          const biz = 'pos:' + seg[1];
+          const idem = b.idem ? String(b.idem).slice(0, 120) : null;
+          if (idem) {
+            const dup = await env.DB.prepare('SELECT id FROM wallet_txns WHERE biz_id=? AND idem=?').bind(biz, idem).first();
+            if (dup) { const w = await walletRow(env, biz); return json({ ok: true, dedup: true, ref: dup.id, balance: w.balance, shop: rowShop(s) }, req); }
+          }
+          // หักแบบมีเงื่อนไข — ยอดไม่พอ/กดพร้อมกันสองครั้ง จะไม่ติดลบ
+          const ded = await env.DB.prepare('UPDATE wallets SET balance=ROUND(balance-?,2), updated_at=? WHERE biz_id=? AND balance>=?')
+            .bind(pk.price, now(), biz, pk.price).run();
+          if (!(ded.meta && ded.meta.changes)) {
+            const w = await walletRow(env, biz);
+            return json({ ok: false, error: 'ยอดกระเป๋าไม่พอ', balance: w.balance, short: Math.round((pk.price - w.balance) * 100) / 100 }, req, 402);
+          }
+          const w = await walletRow(env, biz);
+          const id = 'wc' + now() + Math.random().toString(36).slice(2, 5);
+          const exp = extendFrom(s.expiry, pk.days);
+          try {
+            await env.DB.batch([
+              env.DB.prepare(`INSERT INTO wallet_txns (id,biz_id,type,amount,balance_after,note,method,status,who,ref,idem,created_at)
+                VALUES (?,?,'renew',?,?,?,'wallet','done',?,?,?,?)`)
+                .bind(id, biz, -pk.price, w.balance, 'ต่ออายุ ' + pk.name + (pk.days >= 365 ? ' · รายปี' : ' · รายเดือน'), s.name || '', pk.id, idem, now()),
+              env.DB.prepare('UPDATE shops SET plan=?,status=?,expiry=?,seats=?,updated_at=? WHERE id=?')
+                .bind('paid', 'active', exp, pk.seats, now(), seg[1]),
+            ]);
+          } catch (e) {   // บันทึกไม่ผ่าน → คืนเงินที่หักไป
+            await env.DB.prepare('UPDATE wallets SET balance=ROUND(balance+?,2), updated_at=? WHERE biz_id=?').bind(pk.price, now(), biz).run();
+            return json({ ok: false, error: 'ต่ออายุไม่สำเร็จ ไม่ได้หักเงิน' }, req, 500);
+          }
+          return json({ ok: true, ref: id, balance: w.balance, shop: rowShop(await getShop(env, seg[1])) }, req);
+        }
         // PATCH /shops/:id/plan — จัดการแพ็กเกจ (แอดมิน): อัปเกรด/ต่ออายุ/ระงับ
         if (req.method === 'PATCH' && seg[1] && seg[2] === 'plan') {
+          if (!(await verifyToken(env, req.headers.get('X-Admin-Token')))) return err('admin only', req, 403);
           const b = await readBody();
           const cur = await getShop(env, seg[1]);
           if (!cur) return err('shop not found', req, 404);
@@ -1217,10 +1283,13 @@ export default {
               slip = `${url.origin}/img/${key}`;
             } catch (e) {} }
           }
+          const pk = b.kind === 'addon' ? null : await pkgPlan(env, b.plan);
+          let shopName = b.shopName || '';
+          if (!shopName) { const s = await getShop(env, b.shopId); if (s) shopName = s.name || ''; }
           await env.DB.prepare(
-            `INSERT INTO pay_requests (id,shop_id,shop_name,amount,months,slip,note,kind,addon,status,created_at)
-             VALUES (?,?,?,?,?,?,?,?,?, 'pending', ?)`
-          ).bind(id, b.shopId, b.shopName || '', b.amount || 199, b.months || 1, slip, b.note || '', b.kind || null, b.addon || null, now()).run();
+            `INSERT INTO pay_requests (id,shop_id,shop_name,amount,months,slip,note,kind,addon,plan_id,status,created_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?, 'pending', ?)`
+          ).bind(id, b.shopId, shopName, b.amount || (pk ? pk.price : 199), b.months || (pk && pk.days >= 365 ? 12 : 1), slip, b.note || '', b.kind || null, b.addon || null, pk ? pk.id : null, now()).run();
           // แจ้ง admin ให้รู้เร็ว: push LINE ไปยัง ADMIN_LINE (ตั้งเป็น secret; ไม่ตั้ง = ข้าม)
           if (env.ADMIN_LINE) {
             const mL = (b.months || 1) >= 12 ? '1 ปี' : (b.months || 1) + ' เดือน';
@@ -1232,6 +1301,7 @@ export default {
         }
         // GET /pay-requests?status=pending — แอดมินดูรายการ
         if (req.method === 'GET' && !seg[1]) {
+          if (!(await verifyToken(env, req.headers.get('X-Admin-Token')))) return err('admin only', req, 403);
           const st = url.searchParams.get('status');
           const q = st
             ? env.DB.prepare('SELECT * FROM pay_requests WHERE status=? ORDER BY created_at DESC LIMIT 300').bind(st)
@@ -1241,12 +1311,15 @@ export default {
         }
         // PATCH /pay-requests/:id — ยืนยัน/ปฏิเสธ (+ ต่ออายุร้านให้อัตโนมัติเมื่อยืนยัน)
         if (req.method === 'PATCH' && seg[1]) {
+          if (!(await verifyToken(env, req.headers.get('X-Admin-Token')))) return err('admin only', req, 403);
           const b = await readBody();
           const cur = await env.DB.prepare('SELECT * FROM pay_requests WHERE id=?').bind(seg[1]).first();
           if (!cur) return err('request not found', req, 404);
           const st = b.status === 'rejected' ? 'rejected' : 'confirmed';
-          await env.DB.prepare('UPDATE pay_requests SET status=?,handled_at=?,handled_by=? WHERE id=?')
+          // จัดการได้ครั้งเดียว — กดยืนยันซ้ำ (หรือสองแอดมินกดพร้อมกัน) ต้องไม่ต่ออายุซ้ำ
+          const upd = await env.DB.prepare("UPDATE pay_requests SET status=?,handled_at=?,handled_by=? WHERE id=? AND status='pending'")
             .bind(st, now(), b.by || 'admin', seg[1]).run();
+          if (!(upd.meta && upd.meta.changes)) return json({ ok: false, error: 'คำขอนี้ถูกจัดการไปแล้ว', status: cur.status }, req, 409);
           if (st === 'confirmed') {
             const s = await getShop(env, cur.shop_id);
             if (s) {
@@ -1255,11 +1328,13 @@ export default {
                 extra.addons = { ...(extra.addons || {}), [cur.addon]: true };
                 await env.DB.prepare('UPDATE shops SET extra=?,updated_at=? WHERE id=?')
                   .bind(JSON.stringify(extra), now(), cur.shop_id).run();
-              } else {   // ต่ออายุร้าน = months × 30 วัน จากวันหมดเดิม
-                const base = Math.max(Date.now(), s.expiry ? new Date(s.expiry).getTime() : 0);
-                const exp = new Date(base + (cur.months || 1) * 30 * 864e5).toISOString();
-                await env.DB.prepare('UPDATE shops SET plan=?,status=?,expiry=?,updated_at=? WHERE id=?')
-                  .bind('paid', 'active', exp, now(), cur.shop_id).run();
+              } else {   // ต่ออายุร้านตามแพ็กที่เลือก (รายปี = 365 วัน + จำนวนเครื่องตามแพ็ก) · คำขอเก่าที่ไม่มีแพ็ก = เดือนละ 30 วัน
+                const pk = await pkgPlan(env, cur.plan_id);
+                const days = pk ? pk.days : ((cur.months || 1) >= 12 ? 365 : (cur.months || 1) * 30);
+                const exp = extendFrom(s.expiry, days);
+                await env.DB.prepare('UPDATE shops SET plan=?,status=?,expiry=?,seats=?,updated_at=? WHERE id=?')
+                  .bind('paid', 'active', exp, pk ? pk.seats : (s.seats || 1), now(), cur.shop_id).run();
+                return json({ ok: true, status: st, shop: rowShop(await getShop(env, cur.shop_id)) }, req);
               }
             }
           }
@@ -1531,6 +1606,7 @@ export default {
           return json(r ? JSON.parse(r.v || '{}') : {}, req);
         }
         if (req.method === 'PUT' || req.method === 'POST') {
+          if (!(await verifyToken(env, req.headers.get('X-Admin-Token')))) return err('admin only', req, 403);
           const b = await readBody(); const v = JSON.stringify(b);
           await env.DB.prepare("INSERT INTO app_config (k,v) VALUES ('packages',?) ON CONFLICT(k) DO UPDATE SET v=?").bind(v, v).run();
           return json({ ok: true }, req);

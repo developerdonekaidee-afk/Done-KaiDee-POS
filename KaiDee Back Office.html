@@ -135,6 +135,13 @@ async function ensureAdminTok(){
     if(r.ok){ const j=await r.json(); if(j.ok&&j.token){ try{ sessionStorage.setItem('kd_admin_tok',j.token); }catch(e){} return j.token; } } }catch(e){}
   return '';
 }
+// เรียก API ส่วนที่ต้องเป็นแอดมิน (คำขอชำระ/แพ็กเกจ/แพ็กร้าน) — แนบรหัสแอดมินเสมอ · คืน {ok,status,body}
+async function admFetch(path,opt){ const o=opt||{}; const tok=await ensureAdminTok();
+  try{ const r=await fetch(KD_API_BASE+path,{method:o.method||'GET',headers:{'content-type':'application/json',...(tok?{'X-Admin-Token':tok}:{})},body:o.body?JSON.stringify(o.body):undefined});
+    let j=null; try{ j=await r.json(); }catch(e){}
+    if(r.status===403){ try{ sessionStorage.removeItem('kd_admin_tok'); }catch(e){} }
+    return { ok:r.ok, status:r.status, body:j }; }catch(e){ return { ok:false, status:0, body:null }; } }
+const admErr = (res)=> res.status===403 ? 'ไม่มีสิทธิ์ — ออกจากระบบ แล้วล็อกอินใหม่ด้วยรหัสแอดมิน (ออนไลน์)' : res.status===0 ? 'เชื่อมต่อ backend ไม่ได้' : ((res.body&&res.body.error)||('HTTP '+res.status));
 const SHOPCATS_LS = 'kaidee_shop_cats_v1';
 const DEFAULT_SHOP_CATS = ['อาหารตามสั่ง','เครื่องดื่ม/คาเฟ่','ก๋วยเตี๋ยว','ของหวาน','ตามสั่ง+เดลิเวอรี'];
 const loadShopCats = ()=>{ try{ const a=JSON.parse(localStorage.getItem(SHOPCATS_LS)); if(Array.isArray(a)) return a; }catch(e){} return DEFAULT_SHOP_CATS.slice(); };
@@ -268,14 +275,14 @@ function App(){
   const patchShop = (id,patch)=>{ update(d=>{ const s=d.shops.find(x=>x.id===id); if(s) Object.assign(s,patch); return d; });
     if(liveRef.current){
       if(patch.plan!==undefined||patch.status!==undefined||patch.expiry!==undefined||patch.seats!==undefined)
-        fetch(KD_API_BASE+'/shops/'+id+'/plan',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({plan:patch.plan,status:patch.status,expiry:patch.expiry,seats:patch.seats})}).catch(()=>{});
+        admFetch('/shops/'+id+'/plan',{method:'PATCH',body:{plan:patch.plan,status:patch.status,expiry:patch.expiry,seats:patch.seats}}).then(res=>{ if(!res.ok) kdToast('บันทึกแพ็กร้านไม่สำเร็จ: '+admErr(res)); });
       if(patch.name!==undefined||patch.emoji!==undefined||patch.cat!==undefined||patch.owner)
         fetch(KD_API_BASE+'/shops/'+id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name:patch.name,emoji:patch.emoji,cat:patch.cat,phone:patch.owner&&patch.owner.phone})}).catch(()=>{});
     } };
   // ―― นับคำขอชำระที่รอยืนยัน (badge) → admin เห็นทันทีที่โหลด ――
   useEffect(()=>{ if(!authed) return; let alive=true;
-    (async()=>{ try{ const r=await fetch(KD_API_BASE+'/pay-requests'); if(!r.ok) return; const rows=await r.json();
-      if(alive&&Array.isArray(rows)) setPendingPay(rows.filter(x=>x.status==='pending').length); }catch(e){} })();
+    (async()=>{ const res=await admFetch('/pay-requests?status=pending'); const rows=res.body;
+      if(alive&&res.ok&&Array.isArray(rows)) setPendingPay(rows.length); })();
     return ()=>{ alive=false; }; },[authed]);
   // ―― ดึงร้านจริงจาก backend (ถ้า API ตอบ → แทนข้อมูลเดโม) + ยอดรวมต่อร้าน ――
   useEffect(()=>{ if(!authed) return; let alive=true;
@@ -1128,7 +1135,7 @@ function PackagesSettings(){
   const save=()=>{ const n0=(x,d)=>{ const v=parseInt(x,10); return isNaN(v)?d:Math.max(0,v); };
     const pp={...p, trialDays:n0(p.trialDays,30), trialQuota:n0(p.trialQuota,1), deviceAddon:n0(p.deviceAddon,79), addonFreeDays:n0(p.addonFreeDays,30),
       packages:(p.packages||[]).map(pk=>({...pk, monthly:n0(pk.monthly,0), yearly:n0(pk.yearly,0), seats:Math.max(1,n0(pk.seats,1))})) };
-    setMsg(''); setP(pp); savePkg(pp); fetch(KD_API_BASE+'/packages',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(pp)}).then(()=>setMsg('บันทึกแล้ว ✓')).catch(()=>setMsg('บันทึกในเครื่อง')); };
+    setMsg(''); setP(pp); savePkg(pp); admFetch('/packages',{method:'PUT',body:pp}).then(res=>setMsg(res.ok?'บันทึกแล้ว ✓':('บันทึกขึ้นเซิร์ฟไม่สำเร็จ: '+admErr(res)))); };
   return (<div>
     <div style={{display:'flex',alignItems:'center',gap:10,padding:'11px 0',borderBottom:'1px solid var(--hair)'}}>
       <div style={{flex:1,fontWeight:700,fontSize:14.5}}>ทดลองใช้ (ฟรี)</div>
@@ -1205,25 +1212,35 @@ function PayRequests({db,update,onPending}){
   const [reqs,setReqs] = useState(loadPayReqs);
   const [big,setBig] = useState(null);
   useEffect(()=>{ if(onPending) onPending(reqs.filter(r=>r.status==='pending').length); },[reqs]);
-  useEffect(()=>{ (async()=>{ try{ const r=await fetch(KD_API_BASE+'/pay-requests'); if(!r.ok) return; const rows=await r.json();
-    if(Array.isArray(rows)&&rows.length){ const mapped=rows.map(x=>({ id:x.id, shopId:x.shop_id, shopName:x.shop_name, amount:x.amount, months:x.months, slip:x.slip, note:x.note, kind:x.kind, addon:x.addon, status:x.status, created_at:x.created_at }));
+  const [loadErr,setLoadErr] = useState('');
+  useEffect(()=>{ (async()=>{ try{ const res=await admFetch('/pay-requests'); if(!res.ok){ setLoadErr(admErr(res)); return; } const rows=res.body;
+    if(Array.isArray(rows)&&rows.length){ const mapped=rows.map(x=>({ id:x.id, shopId:x.shop_id, shopName:x.shop_name, amount:x.amount, months:x.months, slip:x.slip, note:x.note, kind:x.kind, addon:x.addon, planId:x.plan_id, status:x.status, created_at:x.created_at }));
       setReqs(prev=>{ const m=new Map(prev.map(x=>[x.id,x])); mapped.forEach(x=>m.set(x.id,{...m.get(x.id),...x})); return Array.from(m.values()).sort((a,b)=>(b.created_at||0)-(a.created_at||0)); }); } }catch(e){} })(); },[]);
   const pending = reqs.filter(r=>r.status==='pending');
   const handled = reqs.filter(r=>r.status!=='pending');
   const persist = (next)=>{ savePayReqs(next); setReqs(next); };
-  const extendShop = (r)=> update(d=>{ const s=d.shops.find(x=>x.id===r.shopId||x.name===r.shopName);
-    if(s){ const base=Math.max(Date.now(), new Date(s.expiry).getTime()||0); const e=new Date(base+(r.months||1)*30*864e5);
-      s.plan='paid'; s.status='active'; s.expiry=e.toISOString(); s.mrr=199;
+  const extendShop = (r,srv)=> update(d=>{ const s=d.shops.find(x=>x.id===r.shopId||x.name===r.shopName);
+    if(s){ const base=Math.max(Date.now(), new Date(s.expiry).getTime()||0); const e=new Date(base+((r.months||1)>=12?365:(r.months||1)*30)*864e5);
+      s.plan='paid'; s.status='active'; s.expiry=(srv&&srv.expiry)||e.toISOString(); if(srv&&srv.seats) s.seats=srv.seats; s.mrr=199;
       s.pays.unshift({d:new Date().toISOString().slice(0,10),amt:r.amount,via:'พร้อมเพย์ (แจ้งชำระ)'}); } return d; });
-  const confirm = (r)=>{ persist(reqs.map(x=>x.id===r.id?{...x,status:'confirmed',handled_at:Date.now()}:x)); (r.kind==='addon'&&r.addon)?addonShop(r):extendShop(r);
-    fetch(KD_API_BASE+'/pay-requests/'+r.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status:'confirmed'})}).catch(()=>{}); syncLicenseApprove(r); };
-  const reject = (r)=>{ persist(reqs.map(x=>x.id===r.id?{...x,status:'rejected',handled_at:Date.now()}:x));
-    fetch(KD_API_BASE+'/pay-requests/'+r.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status:'rejected'})}).catch(()=>{}); };
+  const [busyId,setBusyId] = useState('');
+  // ยืนยัน/ปฏิเสธ: รอเซิร์ฟตอบก่อน (เดิมเปลี่ยนในจอทันทีแม้ส่งไม่ถึง) · เซิร์ฟต่ออายุ+ตั้งจำนวนเครื่องตามแพ็กเอง และกันกดซ้ำ
+  const handle = async (r,status)=>{ if(busyId) return; setBusyId(r.id);
+    const res=await admFetch('/pay-requests/'+r.id,{method:'PATCH',body:{status}}); setBusyId('');
+    if(res.status===409){ const st=(res.body&&res.body.status)||'confirmed';
+      kdToast('คำขอนี้ถูกจัดการไปแล้ว ('+(st==='rejected'?'ปฏิเสธ':'ยืนยัน')+') · ไม่ได้ต่ออายุซ้ำ');
+      persist(reqs.map(x=>x.id===r.id?{...x,status:st}:x)); return; }
+    if(!res.ok){ kdToast((status==='confirmed'?'ยืนยัน':'ปฏิเสธ')+'ไม่สำเร็จ: '+admErr(res)); return; }
+    persist(reqs.map(x=>x.id===r.id?{...x,status,handled_at:Date.now()}:x));
+    if(status==='confirmed'){ (r.kind==='addon'&&r.addon)?addonShop(r):extendShop(r,res.body&&res.body.shop); syncLicenseApprove(r); } };
+  const confirm = (r)=>handle(r,'confirmed');
+  const reject = (r)=>handle(r,'rejected');
   const monthLbl = m=> m>=12?'1 ปี':m+' เดือน';
   const ADDON_LBL = { consign:'ขายฝาก' };
   const addonShop = (r)=> update(d=>{ const s=d.shops.find(x=>x.id===r.shopId||x.name===r.shopName);
     if(s){ s.addons={...(s.addons||{}),[r.addon]:true}; s.pays=s.pays||[]; s.pays.unshift({d:new Date().toISOString().slice(0,10),amt:r.amount,via:'Add-on '+((ADDON_LBL[r.addon])||r.addon)+' (แจ้งชำระ)'}); } return d; });
-  const reqLine = (r)=> (r.kind==='addon'&&r.addon) ? ('Add-on: '+((ADDON_LBL[r.addon])||r.addon)+' · '+monthLbl(r.months)) : monthLbl(r.months);
+  const PLAN_LBL = { shop_m:'ร้านค้า · รายเดือน', shop_y:'ร้านค้า · รายปี', pro_m:'ร้านค้า พลัส · รายเดือน', pro_y:'ร้านค้า พลัส · รายปี' };
+  const reqLine = (r)=> (r.kind==='addon'&&r.addon) ? ('Add-on: '+((ADDON_LBL[r.addon])||r.addon)+' · '+monthLbl(r.months)) : (r.planId ? (PLAN_LBL[r.planId]||r.planId) : monthLbl(r.months));
   return (<div>
     <div className="kpis" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
       <Kpi lbl="รอยืนยัน" val={pending.length} delta="ตรวจสลิป" down={pending.length>0} ic="🧾"/>
@@ -1232,6 +1249,7 @@ function PayRequests({db,update,onPending}){
     </div>
     <div className="card" style={{overflow:'hidden',marginTop:16}}>
       <div style={{padding:'16px 18px',fontWeight:700,fontSize:15.5,borderBottom:'1px solid var(--hair)'}}>รอยืนยัน ({pending.length})</div>
+      {loadErr && <div style={{padding:'12px 18px',background:'#FCECE8',color:'#B4321A',fontSize:13,fontWeight:600}}>โหลดคำขอจากเซิร์ฟไม่ได้: {loadErr}</div>}
       {pending.length===0 && <div style={{padding:'30px',textAlign:'center',color:'var(--ink-3)',fontSize:13.5}}>ไม่มีคำขอรอยืนยัน · คำขอจะมาจากปุ่ม "แจ้งชำระเงิน" ในแอปร้าน</div>}
       {pending.map(r=>(<div key={r.id} style={{display:'flex',alignItems:'center',gap:14,padding:'14px 18px',borderBottom:'1px solid var(--hair)'}}>
         <div className="shopmk">🏪</div>
@@ -1240,8 +1258,8 @@ function PayRequests({db,update,onPending}){
           <div style={{fontSize:12.5,color:'var(--ink-3)'}}>{money(r.amount)} · {reqLine(r)} {r.note?'· '+r.note:''}</div>
         </div>
         {r.slip ? <img src={r.slip} onClick={()=>setBig(r.slip)} style={{width:46,height:46,objectFit:'cover',borderRadius:9,border:'1px solid var(--hair-2)',cursor:'zoom-in'}}/> : <span style={{fontSize:11.5,color:'var(--ink-3)'}}>ไม่มีสลิป</span>}
-        <button className="btn danger sm" onClick={()=>reject(r)}>ปฏิเสธ</button>
-        <button className="btn pri sm" onClick={()=>confirm(r)}>{(r.kind==='addon')?'ยืนยัน + เปิด add-on':'ยืนยัน + ต่ออายุ'}</button>
+        <button className="btn danger sm" disabled={!!busyId} onClick={()=>reject(r)}>ปฏิเสธ</button>
+        <button className="btn pri sm" disabled={!!busyId} onClick={()=>confirm(r)}>{busyId===r.id?'กำลังบันทึก…':(r.kind==='addon')?'ยืนยัน + เปิด add-on':'ยืนยัน + ต่ออายุ'}</button>
       </div>))}
     </div>
     {handled.length>0 && <div className="card" style={{overflow:'hidden',marginTop:16}}>
