@@ -2,12 +2,53 @@
 
 แอป POS ผ่าน LINE สำหรับร้านอาหาร + ระบบตลาด/แรงงาน (Labor Win) ในเครือเดียวกัน
 Deploy: Cloudflare Workers (git-integrated, auto-deploy on push to `main`)
-- Frontend: `kaidee-git` worker (serves `./kaidee-deploy`) — auto-deploy ผ่าน Cloudflare's native git integration
-- Backend: `kaidee-pos-worker/`, `license-worker/`, `platform-worker/` — auto-deploy ผ่าน `.github/workflows/deploy-worker.yml` (GitHub Actions)
+- Frontend: `kaidee-git` worker (serves `./kaidee-deploy`) — ⚠️ **auto-deploy พังตั้งแต่ 3 พ.ย. 2569** ต้อง deploy มือ (ดูหัวข้อ Session 2026-11-03)
+- Backend: `kaidee-pos-worker/`, `license-worker/`, `platform-worker/` — auto-deploy ผ่าน `.github/workflows/deploy-worker.yml` (GitHub Actions) · ยังทำงานปกติ
 
 ---
 
-# 📌 อ่านตรงนี้ก่อน (สถานะล่าสุด 2026-08-03)
+# 🗓️ Session 2026-11-03 → 04 (หน้าตั้งค่าร้าน · ต่ออายุแพ็กเกจ · ตัวเลือกเมนู · ราคา Grab/LINE MAN)
+
+## วิธี deploy ตอนนี้ (สำคัญ)
+- **หน้าเว็บ:** Cloudflare Workers Builds ของ `kaidee-git` ไม่ทำงาน (push `cf91e2e` build ล้ม · push หลังจากนั้นไม่ trigger เลย · ดู log ได้แค่ที่ dashboard)
+  → deploy มือที่ root repo: `CLOUDFLARE_ACCOUNT_ID=<id บัญชี oneday-pos> npx wrangler@3 deploy` (ต้อง `wrangler login` ก่อน)
+  → ถ้าจะให้กลับมาอัตโนมัติ: Cloudflare › Workers & Pages › kaidee-git › Settings › Builds แล้วเชื่อม GitHub ใหม่
+- **หลังบ้าน:** push แล้ว GitHub Actions deploy ให้เหมือนเดิม
+- ขั้นตอนเดิมยังต้องทำครบ: sync ไฟล์ไป `kaidee-deploy/` · bump `?v=` ใน index.html ทั้ง 2 ที่ · bump `sw.js`
+- เครื่องนี้มี gh 4 บัญชี — push repo นี้ต้อง `gh auth switch -u developerdonekaidee-afk` ก่อน
+- เช็กว่าขึ้นจริง: `gh api repos/developerdonekaidee-afk/Done-KaiDee-POS/commits/<sha>/check-runs` + curl ไฟล์จากเว็บมาเทียบกับ `kaidee-deploy/`
+
+## ✅ ทำเสร็จ + ขึ้น production แล้ว
+1. **หน้าตั้งค่าร้านจัดใหม่** (`cf91e2e`) — 11 หัวข้อเหลือ 5 กลุ่ม · การ์ดเดียวต่อกลุ่ม (`SetGroup`/`SetRow`/`SetPill` ใน `kaidee-merchant2.jsx`) · ลบร้านย้ายไปล่างสุด
+2. **ต่ออายุแพ็กเกจใช้ได้จริง** (`02c4aff`)
+   - `GET/PATCH /pay-requests`, `PATCH /shops/:id/plan`, `PUT /packages` **ต้องมี X-Admin-Token แล้ว** (เดิมใครก็ยืนยันต่ออายุให้ตัวเองได้)
+   - ยืนยันคำขอได้ครั้งเดียว (409 ถ้าซ้ำ) · เก็บ `plan_id` ในคำขอ → ให้วัน (รายปี 365) + จำนวนเครื่องตามแพ็ก (`pkgPlan()` คิดราคาฝั่งเซิร์ฟ)
+   - ใหม่ `POST /shops/:id/renew {planId, idem}` — หักกระเป๋า + ต่อวันหมด + ตั้งเครื่อง ในคำสั่งเดียว (กันหักซ้ำ/กดพร้อมกัน)
+   - แอปร้าน: โอน/พร้อมเพย์ต้องแนบสลิป ไม่บอกว่าต่ออายุแล้ว · หน้าล็อก/ซื้อขายฝาก โอนเข้าบัญชี **ระบบ** (เดิมโชว์พร้อมเพย์ของร้านเอง) · แจ้งชำระไม่สำเร็จบอกผู้ใช้
+   - paywall: วันหมดในฐานข้อมูลร้าน (`_posActive`) ใช้ **ปลดล็อก** ได้ ไม่ต้องรอ license worker (ใช้แค่ปลดล็อก ไม่ใช้ล็อกเพิ่ม)
+   - หน้าแอดมิน (`admin/index.html` + `KaiDee Back Office.html`): `admFetch()` แนบ token · รอผลเซิร์ฟก่อนเปลี่ยนสถานะในจอ · โชว์แพ็กที่ร้านเลือก
+3. **ตัวเลือกเมนูใช้ได้จริง** (`ee0dcbd`, `bfb3b9e`)
+   - 🚨 เดิมเซิร์ฟ **ไม่เก็บ** options / priceByCh / img / channels / costMethod / bom / recipeByCh → ลูกค้าไม่เห็นตัวเลือก + โหลดเมนูใหม่แล้วหาย · ตอนนี้เก็บในคอลัมน์ `menu.extra` (JSON) · แอปเก็บของในเครื่องไว้ถ้าเซิร์ฟยังไม่มี แล้ว push ขึ้นเอง
+   - เซิร์ฟคิดราคาตัวเลือกเองเป็นยอดขั้นต่ำของออเดอร์ (`promoLinesFromDB` → `optAdd`)
+   - **ชุดตัวเลือก** (`pay.optionSets`, sync ผ่าน settings) — ตั้งครั้งเดียวติ๊กใช้หลายเมนู แก้ชุด = ทุกเมนูเปลี่ยน · หน้าแก้เมนูย้ายตัวเลือกขึ้นต่อจากราคา (ก่อนช่องทางขาย) + ตัวอย่างที่ลูกค้าเห็น
+4. **ราคา Grab/LINE MAN** (`e043312`)
+   - ตั้งค่าร้าน › ช่องทางขาย › "บวกราคาบนช่องทางนี้ %" (`chanCfg.markup`) ใช้กับทุกเมนู (ที่ไม่ได้ตั้งราคาช่องทางเอง) + ตัวเลือก ปัดขึ้นเป็นบาท · helper `priceForCh` / `optPriceForCh` ใน `kaidee-data.jsx`
+   - 🚨 เดิมหน้าขายไม่ใช้ `priceByCh` เลย (ขาย Grab ก็ราคาหน้าร้าน) · ใบเสร็จไม่รวมราคาตัวเลือก — แก้แล้ว
+5. คู่มือต่ออายุ (ร้าน/แอดมิน) + สไลด์สรุป — เป็นไฟล์ .docx/.pptx บนเดสก์ท็อปเจ้าของเครื่อง ไม่อยู่ใน repo
+
+## ⏳ ค้าง / ต้องทำต่อ
+1. **แอดมินต้องตั้งบัญชีรับเงินของระบบ** (Back Office › กระเป๋าเงิน) — ยังว่าง (`GET /wallet-account` = `{}`) ร้านจะเห็น "ยังไม่เปิดรับโอน"
+2. **วันทดลองไม่ตรงกัน** — Back Office ตั้ง 15 วัน · license worker ให้ 30
+3. **ยังไม่ได้ลองบน production จริง:** ต่ออายุครบวง (เติมกระเป๋า → แอดมินยืนยัน → ร้านกดต่อ) · หน้าขายสลับช่องทางกลางบิล · ใบเสร็จ — เทสบนเครื่อง (wrangler dev + headless Chrome) ผ่านหมด
+4. ยืนยัน/ปฏิเสธคำขอชำระแล้ว **ระบบยังไม่แจ้งร้าน**
+5. payment gateway (ตัดบัตร) ยังไม่มี · ปุ่มบัตรซ่อนอยู่
+6. ตรวจราคาตัวเลือกฝั่งเซิร์ฟจับคู่ด้วยชื่อ — ชื่อซ้ำต่างกลุ่มในเมนูเดียวใช้ราคาตัวแรก
+7. deploy มือรอบแรกอัป `kaidee-deploy/assets/.DS_Store` ขึ้นไปด้วย — ควรเพิ่ม `.assetsignore`
+8. license worker ไม่มี `wrangler.toml` ใน repo → deploy อัตโนมัติไม่ได้ (ตั้งใจไม่แตะรอบนี้)
+
+---
+
+# 📌 อ่านตรงนี้ก่อน (สถานะ 2026-08-03 — ข้อ 5 ฟอร์มสมัครไรเดอร์ในแอปร้าน ทำแล้วใน `99599e0`)
 
 ## 🔑 ต้องตั้ง secret ก่อน แจ้งเตือนไรเดอร์ถึงจะทำงาน
 ตั้ง `VAPID_PRIVATE_JWK` ที่ Cloudflare → Workers → **platform** → Settings → Variables and Secrets
