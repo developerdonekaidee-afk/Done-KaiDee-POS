@@ -3446,6 +3446,8 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
           </Field></div>
         </div>
 
+        {/* ตัวเลือกให้ลูกค้าเลือก — อยู่ต่อจากชื่อ/ราคา ก่อนช่องทางขาย (ส่วนหนึ่งของตัวเมนู ใช้บ่อยกว่าราคาแยกช่องทาง) */}
+        <ModifiersEditor options={f.options||[]} onChange={(o)=>setF(p=>({...p, options:o}))} lang={lang} sets={optionSets} onSaveAsSet={onSaveAsSet} itemName={f[lang]||f.th} price={f.price}/>
         {/* channels this item sells on (+ optional per-channel price) */}
         <div style={{ marginBottom:14 }}>
           <Lbl>{TH?'ช่องทางที่ขายเมนูนี้ · ราคาต่อช่องทาง':'Channels & price'}</Lbl>
@@ -3485,8 +3487,6 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
           </div>
         </div>
 
-        {/* ตัวเลือกให้ลูกค้าเลือก — อยู่ต่อจากชื่อ/ราคา (เดิมอยู่ท้ายสุดหลังต้นทุน หาไม่เจอ) */}
-        <ModifiersEditor options={f.options||[]} onChange={(o)=>setF(p=>({...p, options:o}))} lang={lang} sets={optionSets} onSaveAsSet={onSaveAsSet} itemName={f[lang]||f.th} price={f.price}/>
         {/* costing method chooser (per item) */}
         <div style={{ marginBottom:14 }}>
           <Lbl>{TH?'วิธีคิดต้นทุนของเมนูนี้':'How to cost this item'}</Lbl>
