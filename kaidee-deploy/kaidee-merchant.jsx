@@ -37,7 +37,10 @@ function SellScreen({ menu, addSale, addCat, nextQueue, shopName, pay, setPay, q
   const list = menu.filter(m=> cat==='all' || m.cat===cat);
   const lines = Object.entries(ticket).filter(([,e])=>e&&e.qty>0);
   const count = lines.reduce((a,[,e])=>a+e.qty,0);
-  const sub0  = lines.reduce((a,[,e])=> a + ((menuById(e.id)?.price||0)+(e.add||0))*e.qty, 0);
+  // ราคาต่อหน่วยตามช่องทางที่เลือกอยู่ (Grab/LINE MAN ใช้ราคาช่องทาง + ตัวเลือกบวก %) — คิดใหม่ทุกครั้งที่สลับช่องทาง
+  const optsAddOf = (e)=> (e.opts&&e.opts.length) ? kdOptsAdd(e.opts, otype, chanCfg) : (e.add||0);
+  const unitOf = (e)=> priceForCh(menuById(e.id)||{}, otype, chanCfg) + optsAddOf(e);
+  const sub0  = lines.reduce((a,[,e])=> a + unitOf(e)*e.qty, 0);
   const _vat  = (typeof kdVat==='function') ? kdVat(sub0, pay) : { gross:sub0, vat:0, base:sub0, mode:'off' };
   const total = _vat.gross;   // exclusive → บวก VAT เพิ่ม · อื่น ๆ = ยอดสินค้าเดิม
   const cost  = lines.reduce((a,[,e])=> a + (menuById(e.id)?.cost||0)*e.qty, 0);
@@ -99,7 +102,7 @@ function SellScreen({ menu, addSale, addCat, nextQueue, shopName, pay, setPay, q
     const platform=isPlat(otype);
     if(!platform && custReq==='required' && !custName.trim()){ try{ window.alert(lang==='th'?'กรุณาใส่ชื่อลูกค้าก่อน':'Enter customer name first'); }catch(e){} return; }
     const q = otype==='dinein' ? null : (nextQueue? nextQueue(otype) : Math.floor(Math.random()*90+10));
-    const its = lines.map(([,e])=>[e.id, e.qty, (e.opts||[]).map(o=>o.label).join(', '), e.add||0]);
+    const its = lines.map(([,e])=>[e.id, e.qty, (e.opts||[]).map(o=>o.label).join(', '), optsAddOf(e)]);
     const payFinal = platform ? 'platform' : pay;
     const order = { no: Math.floor(Math.random()*400+600), items:its,
       channel:otype, pay:payFinal, platNo: platNo||'', customer: platform?'':custFinal(), note: note.trim(), memberId: member?member.id:null, _redeem: redeemUsed?_rewardAt:0, memberDisc: tierAmt||0, total:net, cost, table: otype==='dinein'?(table||'-'):null, qnum:q, when:'เลย' };
@@ -121,7 +124,7 @@ function SellScreen({ menu, addSale, addCat, nextQueue, shopName, pay, setPay, q
     }
     if(!isPlat(otype) && custReq==='required' && !custName.trim()){ try{ window.alert(lang==='th'?'กรุณาใส่ชื่อลูกค้าก่อน':'Enter customer name first'); }catch(e){} return; }
     const q = otype==='dinein' ? null : (nextQueue? nextQueue(otype) : Math.floor(Math.random()*90+10));
-    const its = lines.map(([,e])=>[e.id, e.qty, (e.opts||[]).map(o=>o.label).join(', '), e.add||0]);
+    const its = lines.map(([,e])=>[e.id, e.qty, (e.opts||[]).map(o=>o.label).join(', '), optsAddOf(e)]);
     const order = { no: Math.floor(Math.random()*400+600), items:its, channel:otype, pay:'later', payLater:true,
       platNo: platNo||'', customer: isPlat(otype)?'':custFinal(), note: note.trim(), memberId: member?member.id:null, _redeem: redeemUsed?_rewardAt:0, memberDisc: tierAmt||0, total:net, cost, table: otype==='dinein'?(table||'-'):null, qnum:q, when:'เลย' };
     commit(order);
@@ -158,7 +161,7 @@ function SellScreen({ menu, addSale, addCat, nextQueue, shopName, pay, setPay, q
               <div>
                 <div style={{ fontSize:13.5, fontWeight:600, lineHeight:1.2, color:'var(--ink)',
                   display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden', minHeight:33 }}>{m[lang]||m.th}</div>
-                <div className="num" style={{ fontSize:16, fontWeight:700, color:'var(--brand-ink)', marginTop:3 }}>{money(m.price)}</div>
+                <div className="num" style={{ fontSize:16, fontWeight:700, color:'var(--brand-ink)', marginTop:3 }}>{money(priceForCh(m, otype, chanCfg))}</div>
               </div>
               {ticket[m.id]>0 && <span className="kd-pop" style={{ position:'absolute', top:6, right:6,
                 background:'var(--brand)', color:'#fff', width:24, height:24, borderRadius:999, fontSize:13,
@@ -190,7 +193,7 @@ function SellScreen({ menu, addSale, addCat, nextQueue, shopName, pay, setPay, q
           <button onClick={clear} className="kd-btn" style={{ padding:'6px 12px', fontSize:13, background:'var(--brand-soft)', color:'var(--brand-ink)' }}>{t('clear')}</button>
         </div>
         <div style={{ overflowY:'auto', padding:'0 20px 28px', flex:1, WebkitOverflowScrolling:'touch' }}>
-          {lines.map(([key,e])=>{ const m=menuById(e.id)||{}; const unit=(m?.price||0)+(e.add||0); const optTxt=(e.opts||[]).map(o=>o.label).join(', '); return (
+          {lines.map(([key,e])=>{ const m=menuById(e.id)||{}; const unit=unitOf(e); const optTxt=(e.opts||[]).map(o=>o.label).join(', '); return (
             <div key={key} style={{ display:'flex', alignItems:'center', gap:12, padding:'11px 0', borderBottom:'1px solid var(--hair)' }}>
               <FoodTile item={m} size={46} radius={11}/>
               <div style={{ flex:1, minWidth:0 }}>
@@ -291,7 +294,7 @@ function SellScreen({ menu, addSale, addCat, nextQueue, shopName, pay, setPay, q
       {okScreen && <PaySuccess data={okScreen} slipMode={slipMode||'optional'} ppName={shopName}
         onBack={()=>{ setOkScreen(null); setPayStep(true); }}
         onConfirm={(extra)=>{ const o=okScreen.order; setOkScreen(null); commit(o, extra||{}); }} />}
-      {pick && <PosOptionSheet item={pick} onClose={()=>setPick(null)} onAdd={(opts,add)=>{ addLine(pick.id,1,opts,add); setPick(null); }}/>}
+      {pick && <PosOptionSheet item={pick} ch={otype} chanCfg={chanCfg} onClose={()=>setPick(null)} onAdd={(opts,add)=>{ addLine(pick.id,1,opts,add); setPick(null); }}/>}
       {slip && <PrintSlip order={slip} shopName={shopName} onClose={()=>setSlip(null)}
         receiptMode={((pay&&pay.print&&pay.print.mode)||'ask')} kitchenAuto={!!(pay&&pay.print&&pay.print.kitchenAuto)} paperDefault={(pay&&pay.print&&pay.print.paper)||'80'} />}
       {addCatOpen && <AddCatSheet onClose={()=>setAddCatOpen(false)} onAdd={(c)=>{ const id=addCat(c); setCat(id); setAddCatOpen(false); toast.show(lang==='th'?'เพิ่มหมวดแล้ว':'Category added'); }}/>}
@@ -301,15 +304,15 @@ function SellScreen({ menu, addSale, addCat, nextQueue, shopName, pay, setPay, q
   );
 }
 
-function PosOptionSheet({ item, onClose, onAdd }){
+function PosOptionSheet({ item, onClose, onAdd, ch, chanCfg }){
   const { t, lang } = useT(); const TH = lang==='th';
   const groups = item.options||[];
   const [sel,setSel] = mUseState(()=>{ const s={}; groups.forEach(g=>{ s[g.id]= g.multi?[]:(g.choices.length?0:null); }); return s; });
   const pickChoice = (g, ci)=> setSel(prev=>{ const n={...prev}; if(g.multi){ const arr=new Set(n[g.id]||[]); arr.has(ci)?arr.delete(ci):arr.add(ci); n[g.id]=[...arr]; } else { n[g.id]=ci; } return n; });
   const chosen = [];
   groups.forEach(g=>{ const v=sel[g.id]; if(g.multi){ (v||[]).forEach(ci=>{ const c=g.choices[ci]; if(c) chosen.push({ g:g.name, label:c.label, price:c.price||0 }); }); } else if(v!=null){ const c=g.choices[v]; if(c) chosen.push({ g:g.name, label:c.label, price:c.price||0 }); } });
-  const add = chosen.reduce((a,c)=>a+(c.price||0),0);
-  const unit = (item.price||0)+add;
+  const add = chosen.reduce((a,c)=>a+(c.price||0),0);   // ราคาฐาน (เก็บในตะกร้า) — หน้าขายคิดตามช่องทางอีกที
+  const unit = priceForCh(item, ch, chanCfg) + kdOptsAdd(chosen, ch, chanCfg);
   return (
     <Sheet open={true} onClose={onClose} height="78%">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'4px 20px 10px' }}>
@@ -325,7 +328,7 @@ function PosOptionSheet({ item, onClose, onAdd }){
             </div>
             <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
               {g.choices.map((c,ci)=>{ const on = g.multi ? (v||[]).includes(ci) : v===ci; return (
-                <button key={ci} onClick={()=>pickChoice(g,ci)} style={{ border:'2px solid '+(on?'var(--brand)':'var(--hair-2)'), background:on?'var(--brand-soft)':'#fff', color:on?'var(--brand-ink)':'var(--ink-2)', cursor:'pointer', borderRadius:11, padding:'9px 13px', fontFamily:'var(--font)', fontWeight:600, fontSize:13.5 }}>{c.label}{c.price>0?` +${money(c.price)}`:''}</button>
+                <button key={ci} onClick={()=>pickChoice(g,ci)} style={{ border:'2px solid '+(on?'var(--brand)':'var(--hair-2)'), background:on?'var(--brand-soft)':'#fff', color:on?'var(--brand-ink)':'var(--ink-2)', cursor:'pointer', borderRadius:11, padding:'9px 13px', fontFamily:'var(--font)', fontWeight:600, fontSize:13.5 }}>{c.label}{c.price>0?` +${money(optPriceForCh(c.price, ch, chanCfg))}`:''}</button>
               );})}
             </div>
           </div>
@@ -507,7 +510,7 @@ function PrintSlip({ order, shopName='ครัวขายดี', onClose, rec
   const doPrint = (whichTab)=>{
     const curTab = whichTab||tab;
     const esc=(s)=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-    const rows=order.items.map(([id,q])=>{ const m=menuById(id)||{}; return { q, name:(m[lang]||m.th||''), price:(m.price||0)*q }; });
+    const rows=order.items.map(([id,q,o,ad])=>{ const m=menuById(id)||{}; return { q, name:(m[lang]||m.th||'')+(o?' ('+o+')':''), price:(priceForCh(m, order.channel)+(Number(ad)||0))*q }; });
     const buyerHtml = isFull ? ('<div class="b name" style="font-size:10px">'+(TH?'ลูกค้า / Customer':'Customer')+'</div>'
       +(buyer.name?'<div class="name" style="font-size:10px">'+esc(buyer.name)+'</div>':'')
       +(buyer.taxId?'<div style="font-size:10px">'+(TH?'เลขผู้เสียภาษี ':'Tax ID ')+esc(buyer.taxId)+(buyer.branch?(' · '+esc(buyer.branch)):'')+'</div>':'')
@@ -622,9 +625,9 @@ function PrintSlip({ order, shopName='ครัวขายดี', onClose, rec
                 {buyer.taxId && <div style={{ color:'#555' }}>{(TH?'เลขผู้เสียภาษี ':'Tax ID ')+buyer.taxId}{buyer.branch?(' · '+buyer.branch):''}</div>}
                 {buyer.addr && <div style={{ color:'#777', lineHeight:1.35 }}>{buyer.addr}</div>}
               </div><div style={dash}/></>}
-              {order.items.map(([id,q],i)=>{ const m=menuById(id)||{}; return (
+              {order.items.map(([id,q,o,ad],i)=>{ const m=menuById(id)||{}; return (
                 <div key={i} style={{ display:'flex', justifyContent:'space-between', fontSize:12.5, marginBottom:4 }}>
-                  <span style={{ flex:1 }}>{q} × {m[lang]||m.th||''}</span><span>{((m.price||0)*q).toLocaleString()}</span></div>
+                  <span style={{ flex:1 }}>{q} × {m[lang]||m.th||''}{o?<span style={{ color:'#666' }}> ({o})</span>:null}</span><span>{((priceForCh(m, order.channel)+(Number(ad)||0))*q).toLocaleString()}</span></div>
               );})}
               <div style={dash}/>
               {hasVat ? (<>

@@ -338,6 +338,8 @@ function KaiDeeApp(){
   // ค่า GP/คอมมิชชัน (%) ต่อช่องทาง — อ่านจาก chanCfg.custom[key].gp (ตั้งตอนเพิ่มช่องทาง)
   const gpOf = (channelKey)=>{ const o=(chanCfg&&chanCfg.gp&&chanCfg.gp[channelKey])||null; if(o && Number(o.gp)>0) return Number(o.gp); const d=(chanCfg&&chanCfg.custom&&chanCfg.custom[channelKey])||null; return d && Number(d.gp)>0 ? Number(d.gp) : 0; };
   const vatOnGpOf = (channelKey)=>{ const o=(chanCfg&&chanCfg.gp&&chanCfg.gp[channelKey])||null; if(o) return !!o.vatOnGp; const d=(chanCfg&&chanCfg.custom&&chanCfg.custom[channelKey])||null; return !!(d && d.vatOnGp); };
+  // บวกราคาบนช่องทาง (%) — ใช้กับเมนูที่ไม่ได้ตั้งราคาช่องทางเอง + ตัวเลือกทุกอัน · 0 = ราคาเท่าหน้าร้าน
+  const setChannelMarkup = (key, pct)=> setChanCfg(prev=>{ const mk={ ...((prev&&prev.markup)||{}) }; const v=Math.max(0, Math.min(300, Number(pct)||0)); if(v>0) mk[key]=v; else delete mk[key]; return { ...prev, markup:mk }; });
   const setChannelGp = (key, def)=> setChanCfg(prev=>{ const gp={ ...((prev&&prev.gp)||{}) }; const g=Number(def&&def.gp)||0; if(g>0||(def&&def.vatOnGp)) gp[key]={ gp:g, vatOnGp:!!(def&&def.vatOnGp) }; else delete gp[key]; return { ...prev, gp }; });
   // ยืนยันรับเงินโอน/พร้อมเพย์ (เทียบสลิป/ยอดเข้าบัญชี) — แนบสลิปหรือไม่ก็ได้
   const verifySale = (id, slip, actual, payStatus)=> setSales(prev=>prev.map(s=>{ if(s.id!==id) return s;
@@ -528,7 +530,7 @@ function KaiDeeApp(){
           if(stg.voidApproval!=null) setPay(p=>({ ...p, voidApproval: stg.voidApproval }));
           if(stg.voidApprover!=null) setPay(p=>({ ...p, voidApprover: stg.voidApprover }));
           if(stg.mgrManageStaff!=null) setPay(p=>({ ...p, mgrManageStaff: stg.mgrManageStaff }));
-          if(stg.chanCfg && (stg.chanCfg.custom || stg.chanCfg.off || stg.chanCfg.gp)) setChanCfg(stg.chanCfg);
+          if(stg.chanCfg && (stg.chanCfg.custom || stg.chanCfg.off || stg.chanCfg.gp || stg.chanCfg.markup)) setChanCfg(stg.chanCfg);
           if(stg.instantPay!=null) setPay(p=>({ ...p, instantPay: stg.instantPay }));
           if(stg.payWorkflow!=null) setPay(p=>({ ...p, payWorkflow: stg.payWorkflow }));
           if(stg.closeGate!=null) setPay(p=>({ ...p, closeGate: stg.closeGate }));
@@ -605,6 +607,7 @@ function KaiDeeApp(){
   // keep a live menu registry so menuById() resolves real shop prices (not just seed)
   // ลูกค้าที่เข้ามาจากหน้าแพลตฟอร์ม (?via=market) ต้องคิดเงินด้วยราคาช่องทาง market ทั้งตะกร้า/หน้าจ่าย
   if(typeof window!=='undefined'){
+    window.__kdChanCfg = chanCfg;
     window.__kdMenu = (typeof kdViaMarket==='function' && kdViaMarket() && typeof marketMenuView==='function') ? marketMenuView(menu) : menu;
     window.__kdPay = pay;
     window.__kdShop = shop;   // ใช้เช็คสิทธิ์ราคาช่องทาง market + ข้อมูลร้านตอนเรียกไรเดอร์
@@ -614,7 +617,7 @@ function KaiDeeApp(){
     register, openRegister, addCashMove, closeRegister, reopenDay, cashDays, startNewShop, quotes, addQuote, updateQuote, deleteQuote,
     voidSale, voidOrder, restockItems, recordOrderSale,
     riders, addRider, updateRider, deleteRider,
-    findMemberByPhone, findMemberById, addMember, updateMember, earnMember, redeemMember, mergeMemberByPhone, gpOf, vatOnGpOf, setChannelGp };
+    findMemberByPhone, findMemberById, addMember, updateMember, earnMember, redeemMember, mergeMemberByPhone, gpOf, vatOnGpOf, setChannelGp, setChannelMarkup };
 
   // ── ลบร้าน = ล้างเครื่องเจ้าของด้วย: ถ้าแอดมินลบร้าน (getMyShop = null ยืนยัน 2 ครั้ง) → ล้าง cache + กลับหน้าสมัคร ──
   React.useEffect(()=>{

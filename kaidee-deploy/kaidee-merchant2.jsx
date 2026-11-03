@@ -890,7 +890,7 @@ function DashboardScreen({ sales:salesAll, menu, raw, costMode, embedded, store 
 }
 
 /* ══════════════ STORE BUILDER ══════════════ */
-function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, removeSaleMode, pay, setPay, members, shop, setShop, addCat, updateCat, deleteCat, sub, setSub, costMode, setCostMode, raw, setRaw, addRaw, startNewShop, purchases, addPurchase, quotes, addQuote, updateQuote, deleteQuote, riders, addRider, updateRider, deleteRider, register, staffList, addStaff, removeStaff, updateStaff, setChannelGp, orders, sales, onGo }){
+function StoreScreen({ setChannelMarkup, menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, removeSaleMode, pay, setPay, members, shop, setShop, addCat, updateCat, deleteCat, sub, setSub, costMode, setCostMode, raw, setRaw, addRaw, startNewShop, purchases, addPurchase, quotes, addQuote, updateQuote, deleteQuote, riders, addRider, updateRider, deleteRider, register, staffList, addStaff, removeStaff, updateStaff, setChannelGp, orders, sales, onGo }){
   const { t, lang } = useT();
   const cats = useCats();
   const [editing,setEditing] = m2State(null); // item or {new:true}
@@ -1172,7 +1172,7 @@ function StoreScreen({ menu, setMenu, chanCfg, addSaleMode, toggleSaleMode, remo
       {staffSheet && <StaffRosterSheet shop={shop} staffList={staffList||[]} addStaff={addStaff} removeStaff={removeStaff} updateStaff={updateStaff} pay={pay} setPay={setPay} onClose={()=>setStaffSheet(false)} />}
       {typeSheet && <ShopTypeSheet shop={shop} setShop={setShop} onClose={()=>setTypeSheet(false)} />}
       {toolsOpen && typeof window!=='undefined' && window.ModuleToolsSheet && React.createElement(window.ModuleToolsSheet,{ shop, setShop, lang, onClose:()=>setToolsOpen(false) })}
-      {saleModeOpen && <ManageSaleModesSheet chanCfg={chanCfg} toggleSaleMode={toggleSaleMode} removeSaleMode={removeSaleMode} setChannelGp={setChannelGp} onAdd={()=>{ setSaleModeOpen(false); setSmAddOpen(true); }} onClose={()=>setSaleModeOpen(false)} />}
+      {saleModeOpen && <ManageSaleModesSheet setChannelMarkup={setChannelMarkup} chanCfg={chanCfg} toggleSaleMode={toggleSaleMode} removeSaleMode={removeSaleMode} setChannelGp={setChannelGp} onAdd={()=>{ setSaleModeOpen(false); setSmAddOpen(true); }} onClose={()=>setSaleModeOpen(false)} />}
       {smAddOpen && <AddSaleModeSheet onClose={()=>{ setSmAddOpen(false); setSaleModeOpen(true); }} onAdd={(def)=>{ addSaleMode&&addSaleMode(def); setSmAddOpen(false); setSaleModeOpen(true); }} />}
     </div>
   );
@@ -3123,6 +3123,12 @@ function ModifiersEditor({ options, onChange, lang, sets, onSaveAsSet, itemName,
               </div>
             </div>))}
         </div>
+        {(()=>{ const cfg=(typeof window!=='undefined'&&window.__kdChanCfg)||{}; const mk=cfg.markup||{}; const ks=Object.keys(mk).filter(k=>Number(mk[k])>0); if(!ks.length) return null;
+          const priced=groups.flatMap(g=>(g.choices||[]).filter(c=>c.label&&c.price>0)).slice(0,2);
+          return (<div style={{ marginTop:8, fontSize:11.5, color:'var(--ink-3)', lineHeight:1.6 }}>
+            {ks.map(k=>{ const m=chMeta(cfg,k); return (<div key={k}>{TH?'บน':'On'} <b style={{ color:'var(--ink-2)' }}>{m[lang]||m.th}</b> (+{mk[k]}%): {money(optPriceForCh(Number(price)||0,k,cfg))}{priced.map((c,i)=><span key={i}> · {c.label} +{money(optPriceForCh(c.price,k,cfg))}</span>)}</div>); })}
+            <div>{TH?'ตั้ง % ได้ที่ ตั้งค่าร้าน › ช่องทางขาย':'Set % in Settings › Sale channels'}</div>
+          </div>); })()}
       </div>}
     </div>
   );
@@ -3265,7 +3271,34 @@ function GpEditor({ k, chanCfg, setChannelGp, TH }){
     </div>
   );
 }
-function ManageSaleModesSheet({ chanCfg, toggleSaleMode, removeSaleMode, setChannelGp, onAdd, onClose }){
+/* บวกราคาบนแพลตฟอร์ม (%) — ตั้งครั้งเดียวต่อช่องทาง ใช้กับทุกเมนู + ตัวเลือกทุกอัน · โชว์ตัวอย่างจากเมนูจริงของร้าน */
+function MarkupEditor({ k, chanCfg, setChannelMarkup, TH }){
+  const cur = (chanCfg && chanCfg.markup && chanCfg.markup[k]) || 0;
+  const [v,setV] = m2State(cur>0 ? String(cur) : '');
+  const pct = Number(v)||0;
+  const menu = (typeof window!=='undefined' && Array.isArray(window.__kdMenu) && window.__kdMenu.length) ? window.__kdMenu : [];
+  const ex = menu.find(m=>m.price>0) || { th:TH?'ข้าวผัด':'Fried rice', price:50 };
+  let exOpt = null; menu.some(m=>(m.options||[]).some(g=>(g.choices||[]).some(c=>{ if(c.price>0){ exOpt=c; return true; } return false; })));
+  if(!exOpt) exOpt = { label:TH?'ไข่ดาว':'Fried egg', price:10 };
+  const up = (p)=> pct>0 ? Math.ceil(p*(1+pct/100) - 1e-9) : p;
+  return (
+    <div style={{ padding:'0 0 12px 22px' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+        <span style={{ fontSize:12, color:'var(--ink-3)', fontWeight:600 }}>{TH?'บวกราคาบนช่องทางนี้':'Price markup'}</span>
+        <div style={{ position:'relative', width:86 }}>
+          <input className="kd-input num" inputMode="decimal" value={v} onChange={e=>{ const nv=e.target.value.replace(/[^0-9.]/g,''); setV(nv); setChannelMarkup(k, nv); }} placeholder="0" style={{ padding:'7px 22px 7px 10px', fontSize:13 }}/>
+          <span style={{ position:'absolute', right:9, top:'50%', transform:'translateY(-50%)', color:'var(--ink-3)', fontSize:12, fontWeight:700 }}>%</span>
+        </div>
+      </div>
+      <div style={{ fontSize:11.5, color:pct>0?'var(--brand-ink)':'var(--ink-3)', marginTop:6, lineHeight:1.5 }}>
+        {pct>0
+          ? (TH?<>เช่น {ex[TH?'th':'en']||ex.th} {money(ex.price)} → <b>{money(up(ex.price))}</b> · {exOpt.label} +{money(exOpt.price)} → <b>+{money(up(exOpt.price))}</b></>
+               :<>e.g. {ex.en||ex.th} {money(ex.price)} → <b>{money(up(ex.price))}</b> · {exOpt.label} +{money(exOpt.price)} → <b>+{money(up(exOpt.price))}</b></>)
+          : (TH?'0 = ราคาเท่าหน้าร้าน · ใส่ % แล้วทุกเมนูและตัวเลือกบวกให้เอง (ปัดขึ้นเป็นบาท)':'0 = same as in-store · set % to raise every item and option (rounded up)')}
+      </div>
+    </div>);
+}
+function ManageSaleModesSheet({ chanCfg, toggleSaleMode, removeSaleMode, setChannelGp, setChannelMarkup, onAdd, onClose }){
   const { lang } = useT(); const TH = lang!=='en';
   const all = allSaleModes(chanCfg);
   const isOn = (k)=> !(chanCfg && chanCfg.off && chanCfg.off[k]);
@@ -3281,6 +3314,7 @@ function ManageSaleModesSheet({ chanCfg, toggleSaleMode, removeSaleMode, setChan
         <button onClick={()=>toggleSaleMode&&toggleSaleMode(k, !on)} style={{ border:'none', background:'none', cursor:'pointer', padding:0 }}><Toggle on={on}/></button>
       </div>
       {m.online && on && setChannelGp && <GpEditor k={k} chanCfg={chanCfg} setChannelGp={setChannelGp} TH={TH}/>}
+      {m.online && on && setChannelMarkup && <MarkupEditor k={k} chanCfg={chanCfg} setChannelMarkup={setChannelMarkup} TH={TH}/>}
     </div>
   ); };
   return (
@@ -3294,7 +3328,7 @@ function ManageSaleModesSheet({ chanCfg, toggleSaleMode, removeSaleMode, setChan
         <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-2)', margin:'4px 2px 2px' }}>{TH?'ในร้าน (รับเงินทันที)':'In-store (paid now)'}</div>
         {inStore.map(k=><Row key={k} k={k}/>)}
         <div style={{ fontSize:12, fontWeight:700, color:'var(--ink-2)', margin:'16px 2px 2px' }}>{TH?'แพลตฟอร์ม / เดลิเวอรี (รับเงินทีหลัง)':'Platforms / delivery (paid later)'}</div>
-        {setChannelGp && <div style={{ fontSize:11, color:'var(--ink-3)', margin:'2px 2px 4px', lineHeight:1.45 }}>{TH?'ตั้ง GP% + VAT ต่อช่องทาง — ระบบใช้คิดยอดที่ควรได้รับในหน้ากระทบยอด/ยืนยันยอด':'Set GP% + VAT per channel — used to compute the expected net on the reconcile screen'}</div>}
+        {setChannelGp && <div style={{ fontSize:11, color:'var(--ink-3)', margin:'2px 2px 4px', lineHeight:1.45 }}>{TH?'ตั้ง GP% + VAT ต่อช่องทาง (ใช้คิดยอดที่ควรได้รับ) · ตั้ง "บวกราคา %" ถ้าขายบนแพลตฟอร์มแพงกว่าหน้าร้าน — หน้าขายคิดให้เองเมื่อเลือกช่องทางนั้น':'Set GP% + VAT per channel — used to compute the expected net on the reconcile screen'}</div>}
         {online.length? online.map(k=><Row key={k} k={k}/>) : <div style={{ fontSize:12.5, color:'var(--ink-3)', padding:'10px 0' }}>{TH?'ยังไม่มี — กด “เพิ่มช่องทาง”':'None yet — tap “Add channel”'}</div>}
       </div>
       <div style={{ padding:'12px 20px 0' }}>
@@ -3474,10 +3508,10 @@ function ItemEditor({ item, onSave, onClose, onDelete, costMode, raw, addRaw, ch
                 <span style={{ flex:1, minWidth:0, fontSize:14, fontWeight:600, color:on?'var(--ink)':'var(--ink-3)' }}>{m[lang]||m.th}</span>
                 {(perCh && k!=='market') ? <div style={{ position:'relative', width:94, opacity:on?1:0.4 }}>
                   <span style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'var(--ink-3)', fontWeight:600, fontSize:13 }}>฿</span>
-                  <input className="kd-input num" disabled={!on} type="number" value={pv} onChange={e=>{ const pb={...(f.priceByCh||{})}; const val=e.target.value; if(val==='') delete pb[k]; else pb[k]=Number(val)||0; upd('priceByCh', pb); }} placeholder={String(f.price||0)} style={{ padding:'8px 8px 8px 22px', textAlign:'right' }}/>
+                  <input className="kd-input num" disabled={!on} type="number" value={pv} onChange={e=>{ const pb={...(f.priceByCh||{})}; const val=e.target.value; if(val==='') delete pb[k]; else pb[k]=Number(val)||0; upd('priceByCh', pb); }} placeholder={String(priceForCh({ ...f, priceByCh:{} }, k, chanCfg))} style={{ padding:'8px 8px 8px 22px', textAlign:'right' }}/>
                 </div> : <span className="num" style={{ fontSize:13, fontWeight:600, color:'var(--ink-3)', opacity:on?1:0.4, display:'flex', alignItems:'center', gap:5 }}>
                   {k==='market' && <span style={{ fontSize:10, fontWeight:700, color:'var(--brand-ink)', background:'var(--brand-soft)', padding:'2px 7px', borderRadius:999, whiteSpace:'nowrap' }}>{TH?'เท่ากลับบ้าน':'= take away'}</span>}
-                  {'฿'+(k==='market' ? priceFor(f,'takeaway') : (f.price||0))}</span>}
+                  {'฿'+(k==='market' ? priceFor(f,'takeaway') : priceForCh(f, k, chanCfg))}</span>}
               </div>
             );
           })}
@@ -4012,7 +4046,7 @@ function MerchantApp({ store }){
         {active==='reports' && <ReportsScreen store={store} />}
         {active==='cash'  && <CashScreen store={store} manager={isStaff} onGoHours={()=>{ try{ window.__kdOpenHours=true; }catch(e){} setTab('store'); }} />}
         {active==='stock' && stockOn && <StockScreen raw={store.raw} addRaw={store.addRaw} updateRaw={store.updateRaw} deleteRaw={store.deleteRaw} purchases={store.purchases} addPurchase={store.addPurchase} wastes={store.wastes} addWaste={store.addWaste} deleteWaste={store.deleteWaste} />}
-        {active==='store' && <StoreScreen menu={store.menu} setMenu={store.setMenu} chanCfg={store.chanCfg} addSaleMode={store.addSaleMode} toggleSaleMode={store.toggleSaleMode} removeSaleMode={store.removeSaleMode} setChannelGp={store.setChannelGp} pay={store.pay} setPay={store.setPay} members={store.members} shop={store.shop} setShop={store.setShop} register={store.register} orders={store.orders} sales={store.sales} onGo={setTab} addCat={store.addCat} updateCat={store.updateCat} deleteCat={store.deleteCat} sub={store.sub} setSub={store.setSub} costMode={store.costMode} setCostMode={store.setCostMode} raw={store.raw} setRaw={store.setRaw} addRaw={store.addRaw} startNewShop={store.startNewShop} purchases={store.purchases} addPurchase={store.addPurchase} quotes={store.quotes} addQuote={store.addQuote} updateQuote={store.updateQuote} deleteQuote={store.deleteQuote} riders={store.riders} addRider={store.addRider} updateRider={store.updateRider} deleteRider={store.deleteRider} staffList={store.staffList} addStaff={store.addStaff} removeStaff={store.removeStaff} updateStaff={store.updateStaff} />}
+        {active==='store' && <StoreScreen menu={store.menu} setMenu={store.setMenu} chanCfg={store.chanCfg} addSaleMode={store.addSaleMode} toggleSaleMode={store.toggleSaleMode} removeSaleMode={store.removeSaleMode} setChannelGp={store.setChannelGp} setChannelMarkup={store.setChannelMarkup} pay={store.pay} setPay={store.setPay} members={store.members} shop={store.shop} setShop={store.setShop} register={store.register} orders={store.orders} sales={store.sales} onGo={setTab} addCat={store.addCat} updateCat={store.updateCat} deleteCat={store.deleteCat} sub={store.sub} setSub={store.setSub} costMode={store.costMode} setCostMode={store.setCostMode} raw={store.raw} setRaw={store.setRaw} addRaw={store.addRaw} startNewShop={store.startNewShop} purchases={store.purchases} addPurchase={store.addPurchase} quotes={store.quotes} addQuote={store.addQuote} updateQuote={store.updateQuote} deleteQuote={store.deleteQuote} riders={store.riders} addRider={store.addRider} updateRider={store.updateRider} deleteRider={store.deleteRider} staffList={store.staffList} addStaff={store.addStaff} removeStaff={store.removeStaff} updateStaff={store.updateStaff} />}
         {active==='staff' && <StaffRosterSheet shop={store.shop} staffList={store.staffList||[]} addStaff={store.addStaff} removeStaff={store.removeStaff} updateStaff={store.updateStaff} onClose={()=>setTab('sell')} managerView />}
         </>}
         </div>

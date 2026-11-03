@@ -358,6 +358,14 @@ function kdMarketPriceOpen(){ try{ const s=(typeof window!=='undefined') && wind
 // ล็อก market = ราคาเดียวกับ "กลับบ้าน" (takeaway) เพราะออเดอร์จากแพลตฟอร์มคือรับกลับ/ให้ไปรับที่ร้าน
 function priceFor(item, k){ if(k==='market' && !kdMarketPriceOpen()) return priceFor(item, 'takeaway');
   const pc=item&&item.priceByCh; const v=pc?pc[k]:null; return (v!=null && v!=='') ? (Number(v)||0) : Number((item&&item.price)||0); }
+// บวกราคาบนช่องทาง (%) — ตั้งครั้งเดียวที่ ตั้งค่าร้าน › ช่องทางขาย (chanCfg.markup) · ใช้กับทุกเมนูที่ไม่ได้ตั้งราคาช่องทางเอง และกับราคาตัวเลือกทุกอัน · ปัดขึ้นเป็นบาท
+function chMarkup(k, cfg){ const c = cfg || (typeof window!=='undefined' && window.__kdChanCfg) || {}; const v = c.markup && c.markup[k]; return Math.max(0, Number(v)||0); }
+const kdUpBy = (p, pct)=>{ p = Number(p)||0; return (pct>0 && p>0) ? Math.ceil(p*(1+pct/100) - 1e-9) : p; };
+// ราคาเมนูบนช่องทาง k: ราคาที่ตั้งเองในเมนู > ราคาปกติบวก % ของช่องทาง
+function priceForCh(item, k, cfg){ const pc=item&&item.priceByCh; const v=pc?pc[k]:null; if(v!=null && v!=='') return Number(v)||0; return kdUpBy(item&&item.price, chMarkup(k, cfg)); }
+// ราคาตัวเลือก (+฿) บนช่องทาง k
+function optPriceForCh(p, k, cfg){ return kdUpBy(p, chMarkup(k, cfg)); }
+const kdOptsAdd = (opts, k, cfg)=> (opts||[]).reduce((a,o)=>a+optPriceForCh(o&&o.price, k, cfg), 0);
 // สูตรตัดสต๊อกต่อช่องทาง (แพ็กเกจต่างกัน) — ไม่ตั้ง = ใช้สูตรเริ่มต้น
 function recipeFor(item, ch){ const rb=item&&item.recipeByCh; if(rb && ch && Array.isArray(rb[ch]) && rb[ch].length) return rb[ch]; return (item&&item.recipe)||[]; }
 // ── ค่าส่ง (นโยบายต่อร้าน): mode customer=ลูกค้าจ่าย · shop=ร้านออกให้ · distance=คิดตามระยะ
@@ -611,6 +619,7 @@ Object.assign(window, {
   DICT, tr, LangCtx, useT, DataCtx, useCats, money, money2, Icon, IC, FARE, calcFare, kdShopOpen, kdShiftExpired,
   CATS, MENU, menuById, STATUS_LABEL, SEED_SALES, saleTotal, saleCost, kdVat, CHANNELS, qLabel, PAYS, RIDER_JOBS,
   DEFAULT_SALEMODES, chMeta, allSaleModes, activeSaleModes, isPlatform, menuSellsOn, priceFor, recipeFor,
+  chMarkup, priceForCh, optPriceForCh, kdOptsAdd,
   kdViaMarket, marketMenuView, kdMarketPriceOpen,
   promoText, promoSubText,
   custLoc, setCustLoc, kdDistKm, kdEtaMin, kdAskLoc, addrBook, saveAddr, delAddr, favShops, toggleFav, kdShrinkImage,
